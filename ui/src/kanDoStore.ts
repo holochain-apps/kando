@@ -15,7 +15,7 @@ import {toPromise} from '@holochain-open-dev/stores'
 
 const ZOME_NAME = 'syn'
 
-export class TalkingStickiesService {
+export class KanDoService {
     constructor(public client: AppAgentClient, public roleName, public zomeName = ZOME_NAME) {}
 
     private callZome(fnName: string, payload: any) {
@@ -30,8 +30,8 @@ export class TalkingStickiesService {
 }
 
 
-export class TalkingStickiesStore {
-    service: TalkingStickiesService;
+export class KanDoStore {
+    service: KanDoService;
     boardList: BoardList;
     createdBoards: Array<EntryHash> = []
     updating = false
@@ -47,7 +47,7 @@ export class TalkingStickiesStore {
         protected zomeName: string = ZOME_NAME
     ) {
         this.client = clientIn
-        this.service = new TalkingStickiesService(
+        this.service = new KanDoService(
           this.client,
           this.roleName,
           this.zomeName

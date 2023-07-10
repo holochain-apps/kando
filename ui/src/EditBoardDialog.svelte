@@ -1,14 +1,13 @@
 <script lang="ts">
     import { Dialog } from 'svelte-materialify';
     import { cloneDeep } from "lodash";
-    import { type Board, type Group, type LabelDef, type BoardState, type BoardType, UngroupedId, type BoardProps } from './board';
+    import { type Board, type Group, type LabelDef, type BoardState, UngroupedId, type BoardProps } from './board';
     import BoardEditor from './BoardEditor.svelte';
-    import type { TalkingStickiesStore } from './kandoStore';
+    import type { KanDoStore } from './kanDoStore';
     import { getContext, onMount } from 'svelte';
     import { isEqual } from 'lodash'
     import type { EntryHashB64 } from '@holochain/client';
 
-    export let boardType
     export let boardHash:EntryHashB64|undefined = undefined
     let editName = ''
     let editGroups: Array<Group> = []
@@ -37,9 +36,9 @@
     export let active = true
     const { getStore } :any = getContext('tsStore');
 
-    const store:TalkingStickiesStore = getStore();
+    const store:KanDoStore = getStore();
 
-    const updateBoard = (hash: EntryHashB64) => async (_type:BoardType, name: string, groups: Group[], labelDefs: LabelDef[], props: BoardProps) => {
+    const updateBoard = (hash: EntryHashB64) => async ( name: string, groups: Group[], labelDefs: LabelDef[], props: BoardProps) => {
         // ignore board type we don't update that.
         const board: Board | undefined = await store.boardList.getBoard(hash)
         if (board) {
@@ -91,5 +90,5 @@
 
 </script>
 <Dialog persistent bind:active>
-    <BoardEditor title="Edit Board" handleSave={updateBoard(boardHash)} handleDelete={archiveBoard(boardHash)} cancelEdit={close} boardType={boardType} text={editName} groups={editGroups} labelDefs={editLabelDefs} props={editProps}/>
+    <BoardEditor title="Edit Board" handleSave={updateBoard(boardHash)} handleDelete={archiveBoard(boardHash)} cancelEdit={close} text={editName} groups={editGroups} labelDefs={editLabelDefs} props={editProps}/>
 </Dialog>

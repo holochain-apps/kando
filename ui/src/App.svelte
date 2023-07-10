@@ -1,6 +1,5 @@
 <script lang="ts">
   import Controller from './Controller.svelte'
-  import { BoardType } from './board'
   import { AppAgentWebsocket, AdminWebsocket } from '@holochain/client';
 
   const appId = import.meta.env.VITE_APP_ID ? import.meta.env.VITE_APP_ID : 'kando'
@@ -34,7 +33,7 @@
 <svelte:head>
 </svelte:head>
 {#if connected}
-  <Controller client={client} boardType={BoardType.KanDo} roleName={roleName}></Controller>
+  <Controller client={client} roleName={roleName}></Controller>
 {:else}
   Connecting...
 {/if}

@@ -1,27 +1,23 @@
 <script lang="ts">
     import Toolbar from './Toolbar.svelte'
     import KanDoPane from './KanDoPane.svelte'
-    import { TalkingStickiesStore } from './kandoStore'
+    import { KanDoStore } from './kanDoStore'
     import { setContext } from 'svelte';
     import type { AppAgentClient } from '@holochain/client';
     import type { SynStore } from '@holochain-syn/store';
-    import { BoardType } from './board';
     import { MaterialAppMin, Icon } from 'svelte-materialify';
     import { mdiShapeSquarePlus, mdiCog, mdiArchiveArrowUp } from '@mdi/js';
     import type { ProfilesStore } from "@holochain-open-dev/profiles";
-  import { get } from 'svelte/store';
 
-    export let boardType:BoardType
     export let roleName = ""
   
     let synStore: SynStore;
-    let tsStore: TalkingStickiesStore;
+    let tsStore: KanDoStore;
     
     export let client : AppAgentClient
     export let profilesStore : ProfilesStore|undefined = undefined
 
     $: activeBoardHash = tsStore && tsStore.boardList ? tsStore.boardList.activeBoardHash : undefined
-    $: activeBoardType = tsStore && tsStore.boardList ? tsStore.boardList.activeBoardType : undefined
 
     initialize()
 
@@ -41,7 +37,7 @@
     $: archivedBoards = boardList ? $boardList.boards.filter((board)=>board.status === "archived") : []
     $: activeBoards = boardList ? $boardList.boards.filter((board)=>board.status !== "archived") : []
     $: boardState = tsStore ? tsStore.boardList.getReadableBoardState($activeBoardHash) :  undefined
-    $: bgUrl = boardState ?  ($boardState.props && $boardState.props.bgUrl) ? $boardState.props.bgUrl : (boardType == BoardType.Stickies? DEFAULT_TS_BG_IMG:DEFAULT_KD_BG_IMG ) : NO_BOARD_IMG
+    $: bgUrl = boardState ?  ($boardState.props && $boardState.props.bgUrl) ? $boardState.props.bgUrl : DEFAULT_KD_BG_IMG : NO_BOARD_IMG
     $: bgImage = `background-image: url("`+ bgUrl+`");`
     $: myAgentPubKey = tsStore ? tsStore.myAgentPubKey() : undefined
 
@@ -55,8 +51,8 @@
         console.log("Error loading boards:", e)
       }
     }
-    function createStore() : TalkingStickiesStore {
-      const store = new TalkingStickiesStore(
+    function createStore() : KanDoStore {
+      const store = new KanDoStore(
         client,
         roleName
       );
@@ -74,24 +70,16 @@
     <div class='app' style={bgImage}>
 
     {#if tsStore}
-      <Toolbar boardType={boardType} profilesStore={profilesStore}/>
+      <Toolbar profilesStore={profilesStore}/>
       {#if ($boardList.avatars[myAgentPubKey] && $boardList.avatars[myAgentPubKey].name) || profilesStore}
         {#if boardList && $boardList.boards.length == 0}
           <div class="welcome-text">
             <h5>Welcome!</h5>
-            {#if boardType == BoardType.Stickies}
-              <p>TalkingStickies offers real-time collaborative sticky-note boards for brain-storming, managing meetings, agendas, etc. </p>
-              <p>
-                Click on the <Icon style="width:20px; color:black; vertical-align: bottom;" path={mdiShapeSquarePlus}></Icon> above to create your first board.
-                You can add groups for your stickies, customize voting categories and settings, and more in the board creation window.
-              </p>
-            {:else}
               <p>KanDo offers real-time collaborative Kanban boards for task and project management. </p>
               <p>
                 Click on the <Icon style="width:20px; color:black; vertical-align: bottom;" path={mdiShapeSquarePlus}></Icon> above to create your first board.
                 You can add columns for your board, customize voting categories and settings, and more in the board creation window.
               </p>
-            {/if}
             <p>You can always edit these settings with the <Icon style="width:20px; color:black; vertical-align: bottom;" path={mdiCog}></Icon> button in the upper right when you have a board selected. </p>
           </div>
         {/if}
@@ -99,17 +87,10 @@
           <div class="welcome-text">
             <!-- {#if !$boardList.agentBoards[myAgentPubKey]} -->
               <p>Active Boards: {activeBoards.length}, Archived Boards: {archivedBoards.length}</p>
-              {#if boardType == BoardType.Stickies}
-                <p>
-                  Select a board from the dropdown above, or add a new one with the  <Icon style="width:20px; color:black; vertical-align: bottom;" path={mdiShapeSquarePlus}></Icon> button.
-                  You can add groups for your stickies, customize voting categories and settings, and more in the board creation window.
-                </p>
-              {:else}
                 <p>
                   Select a board from the dropdown above, or add a new one with the  <Icon style="width:20px; color:black; vertical-align: bottom;" path={mdiShapeSquarePlus}></Icon> button.
                   You can add columns for your board, customize voting categories and settings, and more in the board creation window.
                 </p>
-              {/if}
               <p>You can always edit these settings with the <Icon style="width:20px; color:black; vertical-align: bottom;" path={mdiCog}></Icon> button in the upper right when you have a board selected. </p>
               <p>Any boards that you have archived will appear under the <Icon style="width:20px; color:black; vertical-align: bottom;" path={mdiArchiveArrowUp}></Icon> button, and you can un-archive them by selecting them from the list.</p>
             <!-- {:else}

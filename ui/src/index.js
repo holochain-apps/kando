@@ -14,7 +14,7 @@ export { default as Folk} from './Folk.svelte';
 export { default as NewBoardDialog} from './NewBoardDialog.svelte';
 export { default as EditBoardDialog} from './EditBoardDialog.svelte';
 export { default as SortSelector} from './SortSelector.svelte';
-export { default as StickyEditor} from './StickyEditor.svelte';
+export { default as CardEditor} from './CardEditor.svelte';
 export { default as CardEditor} from './CardEditor.svelte';
 export { default as Toolbar } from './Toolbar.svelte';
 export { default as EmojiIcon } from './icons/EmojiIcon.svelte';

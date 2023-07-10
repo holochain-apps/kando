@@ -5,14 +5,14 @@
     import type { Avatar } from './boardList';
     import AvatarDialog from './AvatarDialog.svelte';
     import { getContext, onMount } from "svelte";
-    import type { TalkingStickiesStore } from "./kandoStore";
+    import type { KanDoStore } from "./kanDoStore";
     import { cloneDeep } from "lodash";
     import AvatarIcon from './AvatarIcon.svelte';
     import type { ProfilesStore } from "@holochain-open-dev/profiles";
     import { get } from 'svelte/store';    
     
     const { getStore } :any = getContext('tsStore');
-    const store:TalkingStickiesStore = getStore();
+    const store:KanDoStore = getStore();
     const myAgentPubKey = store.myAgentPubKey()
     $: avatars = store.boardList.avatars()
     //@ts-ignore

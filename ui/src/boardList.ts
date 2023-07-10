@@ -1,6 +1,6 @@
 import { RootStore, type Commit, type SynGrammar, type SynStore, type Workspace, type WorkspaceStore } from "@holochain-syn/core";
 import type { Dictionary } from "@holochain-open-dev/core-types";
-import { Board, BoardType, CommitTypeBoard, UngroupedId } from "./board";
+import { Board, CommitTypeBoard, UngroupedId } from "./board";
 import type { EntryHashMap, EntryRecord } from "@holochain-open-dev/utils";
 import { derived, get, writable, type Readable, type Writable } from "svelte/store";
 import { boardGrammar, type BoardDelta, type BoardGrammar, type BoardState } from "./board";
@@ -139,7 +139,6 @@ export class BoardList {
     public workspace: WorkspaceStore<BoardListGrammar>
     public boards: Dictionary<Board>
     activeBoardHash: Writable<EntryHashB64| undefined> = writable(undefined)
-    activeBoardType: Writable<BoardType| undefined> = writable(undefined)
 
     constructor(public rootStore: RootStore<BoardListGrammar>, public boardsRootStore: RootStore<BoardGrammar>) {
         this.boards = {}
@@ -252,12 +251,10 @@ export class BoardList {
                 //     ])
                 // }
                 this.activeBoardHash.update((n) => {return hash} )
-                this.activeBoardType.update((n)=> {return board.state().type})
             }
         }
         if (!board) {
             this.activeBoardHash.update((n) => {return undefined} )
-            this.activeBoardType.update((n) => {return undefined} )
         }
     }
 
@@ -292,20 +289,11 @@ export class BoardList {
         const workspaceStore = board.workspace
         const boardHash = board.hashB64()
         this.boards[boardHash] = board 
-        if (options.type === undefined) {
-            options.type = BoardType.Stickies
-        }
         if (!options.name) {
             options.name = "untitled"
         }
         if (options !== undefined) {
             // let changes = []
-            // if (options.type) {
-            //     changes.push({
-            //         type: "set-type",
-            //         boardType: options.type
-            //     })
-            // }
             // if (options.name) {
             //     changes.push({
             //         type: "set-name",
@@ -318,11 +306,11 @@ export class BoardList {
             //         props: options.props
             //     })
             // }
-            // if (options.stickies) {
-            //     options.stickies.forEach((sticky)=>{
+            // if (options.cards) {
+            //     options.cards.forEach((card)=>{
             //         changes.push({
-            //             type: "add-sticky",
-            //             value: sticky,
+            //             type: "add-card",
+            //             value: card,
             //             group: UngroupedId
             //         })
                         

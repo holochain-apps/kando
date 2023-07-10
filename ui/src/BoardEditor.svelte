@@ -1,7 +1,7 @@
 <script lang="ts">
     import {Button, Icon} from "svelte-materialify"
     import { mdiDelete, mdiDragVertical, mdiPlusCircleOutline } from '@mdi/js';
-    import { Group, LabelDef, BoardType, type BoardProps } from './board';
+    import { Group, LabelDef, type BoardProps } from './board';
     import { onMount } from 'svelte';
   	import DragDropList, { VerticalDropZone, reorder, type DropEvent } from 'svelte-dnd-list';
 
@@ -12,25 +12,9 @@
     export let props:BoardProps = {bgUrl: ""}
     export let groups: Array<Group>
     export let labelDefs: Array<LabelDef>
-    export let boardType: BoardType
     export let title
 
     let titleElement
-    let groupsTitle = "Groups"
-    let defaultGroupName = "group"
-
-    const setBoardType = (newBoardType: BoardType) => {
-      if (newBoardType == BoardType.Stickies) {
-        groupsTitle = "Groups"
-        defaultGroupName = "group"
-      } else {
-        if (groups.length == 0) {
-          groups = [new Group("Backlog"), new Group("Prioritized"), new Group("Doing"), new Group("Done")]
-        }
-        groupsTitle = "Columns"
-        defaultGroupName = "column"
-      }
-    }
 
     const addLabelDef = () => {
       labelDefs.push(new LabelDef(`🙂`, `description: edit-me`, 1))
@@ -41,7 +25,7 @@
       labelDefs = labelDefs
     }
     const addGroup = () => {
-      groups.push(new Group(`${defaultGroupName} ${groups.length+1}`))
+      groups.push(new Group(`column ${groups.length+1}`))
       groups = groups
     }
     const deleteGroup = (index) => () => {
@@ -49,7 +33,9 @@
       groups = groups
     }
     onMount( async () => {
-      setBoardType(boardType)
+      if (groups.length == 0) {
+          groups = [new Group("Backlog"), new Group("Prioritized"), new Group("Doing"), new Group("Done")]
+      }
       titleElement.focus()
     })
 
@@ -57,7 +43,7 @@
       if (e.key === "Escape") {
         cancelEdit()
       } else if (e.key === "Enter" && e.ctrlKey) {
-        handleSave(boardType, text, groups, labelDefs, props)
+        handleSave(text, groups, labelDefs, props)
       } else  if (e.key === 'Tab') {
         // trap focus
         const tabbable = Array.from(document.querySelectorAll('input'))
@@ -98,7 +84,7 @@
       <div class="title-text">Title:</div> <input class='textarea' maxlength="60" bind:value={text} bind:this={titleElement} />
     </div>
     <div class="edit-groups unselectable">
-      <div class="title-text">{groupsTitle}:
+      <div class="title-text">Columns:
         <Button icon on:click={() => addGroup()}>
           <Icon size="20px" path={mdiPlusCircleOutline}/>
         </Button>
@@ -161,7 +147,7 @@
       <Button on:click={cancelEdit} style="margin-left:10px" size="small">
         Cancel
       </Button>
-      <Button style="margin-left:10px" size="small" on:click={() => handleSave(boardType, text, groups, labelDefs, props)} class="primary-color">
+      <Button style="margin-left:10px" size="small" on:click={() => handleSave(text, groups, labelDefs, props)} class="primary-color">
         Save
       </Button>
     </div>

@@ -4,26 +4,20 @@ import { v1 as uuidv1 } from "uuid";
 import { type AgentPubKey, type EntryHash, type AgentPubKeyB64, type EntryHashB64, encodeHashToBase64 } from "@holochain/client";
 import type { Dictionary } from "@holochain-open-dev/core-types";
 
-export const DEFAULT_KANBAN_LABEL_DEFS = [
-  {type: "1", emoji: "🐞", toolTip: "Bug", maxVotes: 1},
-  {type: "2", emoji: "➕", toolTip: "Feature", maxVotes: 1},
-  {type: "3", emoji: "🚩", toolTip: "Flagged", maxVotes: 1},
-  {type: "5", emoji: "❗", toolTip: "Risky", maxVotes: 1}
-]
-
-export const enum BoardType {
-  KanDo = 'KanDo',
-  Stickies = 'Stickies'
-}
-
 export class LabelDef {
     type: uuidv1
     constructor(public emoji: string, public toolTip: string){
         this.type = uuidv1()
     }
 }
+export class CategoryDef {
+  type: uuidv1
+  constructor(public emoji: string, public toolTip: string){
+      this.type = uuidv1()
+  }
+}
 
-export type Sticky = {
+export type Card = {
     id: uuidv1;
     text: string;
     props: Object;
@@ -41,21 +35,16 @@ export type BoardProps = {
 }
 
 export interface BoardState {
-  type: BoardType;
   status: string;
   name: string;
   groups: Group[];
   grouping: Dictionary<Array<uuidv1>>;
-  stickies: Sticky[];
+  cards: Card[];
   labelDefs: LabelDef[];
   props: BoardProps;
 }
   
   export type BoardDelta =
-    | {
-        type: "set-type";
-        boardType: BoardType;
-      }
     | {
         type: "set-state";
         state: BoardState;
@@ -65,9 +54,9 @@ export interface BoardState {
         status: string;
       }
     | {
-        type: "add-sticky";
+        type: "add-card";
         group: uuidv1;
-        value: Sticky;
+        value: Card;
       }
     | {
         type: "set-name";
@@ -91,29 +80,29 @@ export interface BoardState {
         order: Array<uuidv1>;
       }
     | {
-        type: "update-sticky-group";
+        type: "update-card-group";
         id: uuidv1;
         group: uuidv1;
         index: undefined | number
       }
     | {
-        type: "update-sticky-props";
+        type: "update-card-props";
         id: uuidv1;
         props: Object;
       }
    | {
-        type: "update-sticky-text";
+        type: "update-card-text";
         id: uuidv1;
         text: string;
       }
 
     | {
-        type: "merge-stickies";
+        type: "merge-cards";
         srcId: uuidv1;
         dstId: uuidv1;
     }
     | {
-        type: "delete-sticky";
+        type: "delete-card";
         id: string;
       };
   
@@ -122,35 +111,35 @@ export interface BoardState {
   BoardState
   >;
   
-  const _removeStickyFromGroups = (state: BoardState, stickyId: uuidv1) => {
+  const _removeCardFromGroups = (state: BoardState, cardId: uuidv1) => {
     _initGrouping(state)
     // remove the item from the group it's in
     Object.entries(state.grouping).forEach(([groupId, itemIds]) =>{
-      const index = itemIds.findIndex((id) => id === stickyId)
+      const index = itemIds.findIndex((id) => id === cardId)
       if (index >= 0) {
         state.grouping[groupId].splice(index,1)
       }
     })
   }
-  const _addStickyToGroup = (state: BoardState, groupId: uuidv1, stickyId: uuidv1, index: undefined|number) => {
+  const _addCardToGroup = (state: BoardState, groupId: uuidv1, cardId: uuidv1, index: undefined|number) => {
     _initGrouping(state)
     // add it to the new group
     if (state.grouping[groupId] !== undefined) {
       if (index === undefined || index >= state.grouping[groupId].length) {
-        state.grouping[groupId].push(stickyId)
+        state.grouping[groupId].push(cardId)
       } else {
-        state.grouping[groupId].splice(index, 0, stickyId)
+        state.grouping[groupId].splice(index, 0, cardId)
       }
     }
     else {
-      state.grouping[groupId] = [stickyId]
+      state.grouping[groupId] = [cardId]
     }
   }
   const _initGrouping = (state) => {
     if (state.grouping === undefined) {
       state.grouping = {}
       const ungrouped = []
-      state.stickies.forEach((sticky)=>ungrouped.push(sticky.id))
+      state.cards.forEach((card)=>ungrouped.push(card.id))
       state.grouping[UngroupedId] = ungrouped
     }
   }
@@ -187,7 +176,7 @@ export interface BoardState {
       state.status = ""
       state.name = "untitled"
       state.groups = [{id:UngroupedId, name:""}]
-      state.stickies = []
+      state.cards = []
       state.labelDefs = []
       state.props = {bgUrl:""}
       _initGrouping(state)
@@ -199,19 +188,15 @@ export interface BoardState {
       _author: AgentPubKey
     ) {
       switch (delta.type) {
-        case "set-type":
-          state.type = delta.boardType
-          break;
         case "set-status":
           state.status = delta.status
           break;
         case "set-state":
-          if (delta.state.type !== undefined) state.type = delta.state.type
           if (delta.state.status !== undefined) state.status = delta.state.status
           if (delta.state.name !== undefined) state.name = delta.state.name
           if (delta.state.groups !== undefined) state.groups = delta.state.groups
           _setGroups(delta.state.groups, state)
-          if (delta.state.stickies !== undefined) state.stickies = delta.state.stickies
+          if (delta.state.cards !== undefined) state.cards = delta.state.cards
           if (delta.state.labelDefs !== undefined) state.labelDefs = delta.state.labelDefs
           if (delta.state.props !== undefined) state.props = delta.state.props
           if (delta.state.grouping !== undefined) {
@@ -237,9 +222,9 @@ export interface BoardState {
         case "set-label-defs":
           state.labelDefs = delta.labelDefs
           break;
-        case "add-sticky":
+        case "add-card":
           _initGrouping(state)    
-          state.stickies.push(delta.value)
+          state.cards.push(delta.value)
           if (state.grouping[delta.group] !== undefined) {
             state.grouping[delta.group].push(delta.value.id)
           }
@@ -247,39 +232,39 @@ export interface BoardState {
             state.grouping[delta.group] = [delta.value.id]
           }
           break;
-        case "update-sticky-text":
-          state.stickies.forEach((sticky, i) => {
-            if (sticky.id === delta.id) {
-              state.stickies[i].text = delta.text;
+        case "update-card-text":
+          state.cards.forEach((card, i) => {
+            if (card.id === delta.id) {
+              state.cards[i].text = delta.text;
             }
           });
           break;
-        case "update-sticky-group":
-          _removeStickyFromGroups(state, delta.id)
-          _addStickyToGroup(state, delta.group, delta.id, delta.index)
+        case "update-card-group":
+          _removeCardFromGroups(state, delta.id)
+          _addCardToGroup(state, delta.group, delta.id, delta.index)
           break;
-        case "update-sticky-props":
-          state.stickies.forEach((sticky, i) => {
-            if (sticky.id === delta.id) {
-              state.stickies[i].props = delta.props;
+        case "update-card-props":
+          state.cards.forEach((card, i) => {
+            if (card.id === delta.id) {
+              state.cards[i].props = delta.props;
             }
           });
           break;
-        case "merge-stickies":
-          const srcIdx = state.stickies.findIndex((sticky) => sticky.id === delta.srcId)
-          const dstIdx = state.stickies.findIndex((sticky) => sticky.id === delta.dstId)
+        case "merge-cards":
+          const srcIdx = state.cards.findIndex((card) => card.id === delta.srcId)
+          const dstIdx = state.cards.findIndex((card) => card.id === delta.dstId)
           if (srcIdx >= 0 && dstIdx >= 0) {
-            _removeStickyFromGroups(state, delta.srcId)
-            const src = state.stickies[srcIdx]
-            const dst = state.stickies[dstIdx]
+            _removeCardFromGroups(state, delta.srcId)
+            const src = state.cards[srcIdx]
+            const dst = state.cards[dstIdx]
             dst.text = `${dst.text}\n\n-----------\n\n${src.text}`
-            state.stickies.splice(srcIdx,1)
+            state.cards.splice(srcIdx,1)
           }
           break;
-        case "delete-sticky":
-          const index = state.stickies.findIndex((sticky) => sticky.id === delta.id)
-          state.stickies.splice(index,1)
-          _removeStickyFromGroups(state, delta.id)
+        case "delete-card":
+          const index = state.cards.findIndex((card) => card.id === delta.id)
+          state.cards.splice(index,1)
+          _removeCardFromGroups(state, delta.id)
           break;
       }
     },

@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { BoardType } from "./board";
-  import TSLogoIcon from "./icons/TSLogoIcon.svelte";
   import KDLogoIcon from "./icons/KDLogoIcon.svelte";
   import BoardMenu from "./BoardMenu.svelte";
   import Folk from "./Folk.svelte";
@@ -11,26 +9,21 @@
 
   export let profilesStore: ProfilesStore|undefined
 
-  export let boardType: BoardType
   let showAbout = false
-  $:bugColor = boardType==BoardType.Stickies ? "color: #3672b9" : "color: #5536f9"
+  $:bugColor = "color: #5536f9"
 </script>
 
 {#if showAbout}
-  <AboutDialog boardType={boardType} bind:active={showAbout} />
+  <AboutDialog bind:active={showAbout} />
 {/if}
 <div class='toolbar'>
   <div class="left-items">
-    {#if boardType === BoardType.Stickies}
-      <div class="logo" title="About TalkingStickies" on:click={()=>showAbout=true}><TSLogoIcon /></div>
-    {:else}
-      <div class="logo" title="About KanDo!" on:click={()=>showAbout=true}><KDLogoIcon /></div>
-    {/if}
-    <BoardMenu boardType={boardType}></BoardMenu>
+    <div class="logo" title="About KanDo!" on:click={()=>showAbout=true}><KDLogoIcon /></div>
+    <BoardMenu ></BoardMenu>
   </div>
   <div class="right-items">
     <Folk profilesStore={profilesStore}></Folk>
-    <a class="bug-link" href="https://github.com/Holo-Host/talking-stickies/issues" title="Report a problem in our GitHub repo" target="_blank">
+    <a class="bug-link" href="https://github.com/Holo-Host/talking-cards/issues" title="Report a problem in our GitHub repo" target="_blank">
       <Icon path={mdiBug} style={bugColor} />
     </a>
   </div>

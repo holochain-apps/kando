@@ -2,14 +2,14 @@
   import { encodeHashToBase64 } from '@holochain/client';
   import { Dialog } from 'svelte-materialify';
   import { getContext } from "svelte";
-  import type { TalkingStickiesStore } from "./kandoStore";
+  import type { KanDoStore } from "./kanDoStore";
   import AvatarIcon from './AvatarIcon.svelte';
   import type { ProfilesStore, Profile} from "@holochain-open-dev/profiles";
   
   export let profilesStore: ProfilesStore|undefined
 
   const { getStore } :any = getContext('tsStore');
-  const store:TalkingStickiesStore = getStore();
+  const store:KanDoStore = getStore();
   $: participants = store.boardList.participants()
   $: activeFolk = $participants.active
 

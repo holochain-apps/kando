@@ -3,13 +3,13 @@
   import CardEditor from "./CardEditor.svelte";
   import EmojiIcon from "./icons/EmojiIcon.svelte";
   import { sortBy } from "lodash/fp";
-  import type { TalkingStickiesStore } from "./kandoStore";
+  import type { KanDoStore } from "./kanDoStore";
   import SortSelector from "./SortSelector.svelte";
   import { Marked, Renderer } from "@ts-stack/markdown";
   import { cloneDeep } from "lodash";
   import { Pane } from "./pane";
   import type { v1 as uuidv1 } from "uuid";
-  import { type Sticky, BoardType, Group, UngroupedId } from "./board";
+  import { type Card, Group, UngroupedId } from "./board";
   import { mdiArchive, mdiArchiveCheck, mdiArrowRightThick, mdiCloseBoxOutline, mdiCog, mdiExport, mdiPlusCircleOutline } from "@mdi/js";
   import { Icon, Button } from "svelte-materialify";
   import EditBoardDialog from "./EditBoardDialog.svelte";
@@ -38,13 +38,13 @@
   }
 
   const { getStore } :any = getContext("tsStore");
-  let tsStore: TalkingStickiesStore = getStore();
+  let tsStore: KanDoStore = getStore();
 
   $: activeHash = tsStore.boardList.activeBoardHash;
   $: state = tsStore.boardList.getReadableBoardState($activeHash);
-  $: items = $state ? $state.stickies : undefined;
+  $: items = $state ? $state.cards : undefined;
   $: sortCards = sortOption
-    ? sortBy((sticky: Sticky) => countLabels(sticky.props, sortOption) * -1)
+    ? sortBy((card: Card) => countLabels(card.props, sortOption) * -1)
     : (items) => items;
 
   $: unused = groupCards(items);
@@ -55,7 +55,7 @@
   let editingCardId: uuidv1
 
   let columns:Dictionary<Group> = {}
-  let cardsMap:Dictionary<Sticky> ={}
+  let cardsMap:Dictionary<Card> ={}
 
   let showArchived = false
 
@@ -82,7 +82,7 @@
   };
   
   const createCard = (text:string, _groupId: uuidv1, props:any) => {
-    pane.addSticky(text, creatingInColumn, props)
+    pane.addCard(text, creatingInColumn, props)
     creatingInColumn = undefined
   }
 
@@ -182,7 +182,7 @@
       if (dragWithSelf) {
         dragOrder-=1
       }
-      pane.dispatch("requestChange",[{ type: "update-sticky-group", id:srcId, group:column.id, index: dragOrder }])
+      pane.dispatch("requestChange",[{ type: "update-card-group", id:srcId, group:column.id, index: dragOrder }])
     }
     clearDrag()
     //console.log("handleDragDropColumn",e, column )
@@ -214,7 +214,7 @@
 </script>
 <div class="board">
   {#if editing}
-    <EditBoardDialog bind:active={editing} boardHash={cloneDeep($activeHash)} boardType={BoardType.KanDo}></EditBoardDialog>
+    <EditBoardDialog bind:active={editing} boardHash={cloneDeep($activeHash)}></EditBoardDialog>
   {/if}
   <div class="top-bar">
     <div class="left-items">
@@ -232,7 +232,7 @@
       <Button size=small icon on:click={()=>editing=true} title="Settings">
         <Icon path={mdiCog} />
       </Button>
-      <Button size=small icon on:click={() => pane.exportBoard(BoardType.KanDo, $state)} title="Export">
+      <Button size=small icon on:click={() => pane.exportBoard($state)} title="Export">
         <Icon path={mdiExport} />
       </Button>
       <Button size=small icon on:click={closeBoard} title="Close">
@@ -262,17 +262,17 @@
                 <CardEditor
                   title="Edit Card"
                   handleSave={
-                    pane.updateSticky(items, cardId, clearEdit)
+                    pane.updateCard(items, cardId, clearEdit)
                   }
                   handleDelete={
                     columnId === UngroupedId ?
-                      pane.deleteSticky(cardId, clearEdit) :
+                      pane.deleteCard(cardId, clearEdit) :
                       undefined
                   }
                   handleArchive={
                     columnId !== UngroupedId ?
                     () => {
-                      pane.dispatch("requestChange",[{ type: "update-sticky-group", id:cardId, group:UngroupedId  }])
+                      pane.dispatch("requestChange",[{ type: "update-card-group", id:cardId, group:UngroupedId  }])
                       clearEdit()
                     } :
                     undefined

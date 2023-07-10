@@ -1,20 +1,17 @@
 <script lang="ts">
     import { Menu, Button, List, ListItem, Icon } from 'svelte-materialify';
     import { getContext } from "svelte";
-    import type { TalkingStickiesStore } from "./kandoStore";
+    import type { KanDoStore } from "./kanDoStore";
     import type { EntryHashB64 } from '@holochain/client';
-    import type { BoardType } from './board';
     import NewBoardDialog from './NewBoardDialog.svelte';
     import { mdiChevronDown, mdiImport, mdiShapeSquarePlus, mdiArchiveArrowUp } from '@mdi/js';
 
 
     let creating = false
 
-    export let boardType: BoardType
-
     const { getStore } :any = getContext('tsStore');
 
-    const store:TalkingStickiesStore = getStore();
+    const store:KanDoStore = getStore();
     $: boardList = store.boardList.stateStore()
     $: activeHash = store.boardList.activeBoardHash;
     $: state = store.boardList.getReadableBoardState($activeHash);
@@ -32,10 +29,6 @@
 
         reader.addEventListener("load", async () => {
             const b = JSON.parse(reader.result as string)
-            if (b.type != boardType) {
-                alert(`This file does not appear to be a ${boardType} board`)
-                return
-            }
             const board = await store.boardList.makeBoard(b)
             selectBoard(board.hashB64())
         }, false);
@@ -90,7 +83,7 @@
 {/if}
 
 {#if creating}
-    <NewBoardDialog boardType={boardType} bind:active={creating}></NewBoardDialog>
+    <NewBoardDialog bind:active={creating}></NewBoardDialog>
 {/if}
 </div>
 <style>
