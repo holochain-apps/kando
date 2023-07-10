@@ -1,6 +1,6 @@
-# TalkingStickies & KanDo!
+# KanDo!
 
-Holochain hApps for collaborative KanBan boards.
+Holochain hApp for collaborative KanBan boards.
 
 Real-time colloaboration delivered by [syn](https://github.com/holochain/syn).
 
