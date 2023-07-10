@@ -1,0 +1,19 @@
+---
+manifest_version: "1"
+name: kando
+
+integrity:
+  network_seed: ~
+  properties:
+    type: "KanDo"
+  origin_time: 2023-07-03T23:05:19.470323Z
+  zomes:
+    - name: syn_integrity
+      bundled: ../../../target/wasm32-unknown-unknown/release/syn_integrity.wasm
+
+coordinator:
+  zomes:
+    - name: syn
+      bundled: ../../../target/wasm32-unknown-unknown/release/syn.wasm
+      dependencies:
+        - name: syn_integrity
