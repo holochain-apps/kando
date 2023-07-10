@@ -3,7 +3,7 @@
   import CardEditor from "./CardEditor.svelte";
   import EmojiIcon from "./icons/EmojiIcon.svelte";
   import { sortBy } from "lodash/fp";
-  import type { TalkingStickiesStore } from "./talkingStickiesStore";
+  import type { TalkingStickiesStore } from "./kandoStore";
   import SortSelector from "./SortSelector.svelte";
   import { Marked, Renderer } from "@ts-stack/markdown";
   import { cloneDeep } from "lodash";
@@ -257,7 +257,7 @@
             <div>{columnId === UngroupedId ? "Archived" : columns[columnId].name}</div>
           </div>
           <div class="cards">
-          {#each sorted(cardIds, sortCards) as { id:cardId, text, votes, props }, i}
+          {#each sorted(cardIds, sortCards) as { id:cardId, text, labels, props }, i}
               {#if editingCardId === cardId}
                 <CardEditor
                   title="Edit Card"
@@ -283,7 +283,7 @@
                   props={props}
                   avatars={avatars}
                   active={editingCardId}
-                  labelTypes={$state.voteTypes}
+                  labelTypes={$state.labelDefs}
                 />
               {/if}
                 {#if 
@@ -310,10 +310,10 @@
                     {@html Marked.parse(text)}
                   </div>
                   <div class="labels">
-                    {#each $state.voteTypes as {type, emoji, toolTip}}
+                    {#each $state.labelDefs as {type, emoji, toolTip}}
                       {#if isLabeled(props, type)}
                         <div title={toolTip}>
-                        <EmojiIcon emoji={emoji} class="vote-icon"/>
+                        <EmojiIcon emoji={emoji} class="label-icon"/>
                         </div>
                       {/if}
                     {/each}
@@ -333,7 +333,7 @@
           {#if creatingInColumn !==undefined  && creatingInColumn == columnId}
             <CardEditor                   
               title="New Card"
-              handleSave={createCard} {cancelEdit} avatars={avatars} active={creatingInColumn} labelTypes={$state.voteTypes}/>
+              handleSave={createCard} {cancelEdit} avatars={avatars} active={creatingInColumn} labelTypes={$state.labelDefs}/>
           {/if}
           <div class="column-item column-footer">
             <Button style="padding: 0 5px;" size="small" text on:click={newCard(columnId)}>

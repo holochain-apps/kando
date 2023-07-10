@@ -1,6 +1,6 @@
 // @ts-nocheck
 export * from './board';
-export * from './talkingStickiesStore';
+export * from './kandoStore';
 export * from './boardList';
 export { default as Controller } from './Controller.svelte';
 export { default as BoardEditor } from './BoardEditor.svelte';
@@ -8,7 +8,6 @@ export { default as AvatarIcon } from './AvatarIcon.svelte';
 export { default as AvatarDialog } from './AvatarDialog.svelte';
 export { default as AboutDialog } from './AboutDialog.svelte';
 export { default as ParticipantsDialog } from './ParticipantsDialog.svelte';
-export { default as BoardPane } from './BoardPane.svelte';
 export { default as KanDoPane } from './KanDoPane.svelte';
 export { default as BoardMenu} from './BoardMenu.svelte';
 export { default as Folk} from './Folk.svelte';

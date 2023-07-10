@@ -6,7 +6,7 @@
   import type { Readable } from 'svelte/store';
   import { Button, Dialog } from "svelte-materialify"
   import { onMount } from "svelte";
-  import type { VoteType } from "./board";
+  import type { LabelDef } from "./board";
 
   export let handleSave
   export let handleDelete = undefined
@@ -16,7 +16,7 @@
   export let groupId = undefined
   export let props = {color: "white", agents:[]}
   export let avatars: Readable<Dictionary<Avatar>> 
-  export let labelTypes: Array<VoteType>
+  export let labelTypes: Array<LabelDef>
   export let active = false
   export let title
 
@@ -52,7 +52,7 @@
   }
 
   const labelOptions = () : ObjectOption[] => {
-    const options:ObjectOption[] = labelTypes.map(({type, emoji, toolTip, maxVotes}) => 
+    const options:ObjectOption[] = labelTypes.map(({type, emoji, toolTip}) => 
     {return {label: `${emoji} ${toolTip}`, value: type}} )
     return options
   }

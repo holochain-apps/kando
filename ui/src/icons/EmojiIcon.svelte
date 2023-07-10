@@ -7,7 +7,7 @@ let className = ''
   .icon-size {
     font-size: 16px;
   }
-  .vote-icon {
+  .label-icon {
     margin-right: 2px;
   }
 </style>

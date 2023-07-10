@@ -334,10 +334,10 @@ export class BoardList {
             //         groups: options.groups
             //     })
             // }
-            // if (options.voteTypes) {
+            // if (options.labelDefs) {
             //     changes.push({
-            //         type: "set-vote-types",
-            //         voteTypes: options.voteTypes
+            //         type: "set-label-defs",
+            //         labelDefs: options.labelDefs
             //     })
             // }
             let changes = [{

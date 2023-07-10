@@ -1,7 +1,7 @@
 <script lang="ts">
     import { Menu, Button, List, ListItem, Icon } from 'svelte-materialify';
     import { getContext } from "svelte";
-    import type { TalkingStickiesStore } from "./talkingStickiesStore";
+    import type { TalkingStickiesStore } from "./kandoStore";
     import type { EntryHashB64 } from '@holochain/client';
     import type { BoardType } from './board';
     import NewBoardDialog from './NewBoardDialog.svelte';

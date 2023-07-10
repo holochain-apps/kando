@@ -1,7 +1,7 @@
 <script lang="ts">
   import EmojiIcon from './icons/EmojiIcon.svelte'
   import { getContext } from "svelte";
-  import type { TalkingStickiesStore } from "./talkingStickiesStore";
+  import type { TalkingStickiesStore } from "./kandoStore";
 
   export let setSortOption
   export let sortOption
@@ -40,7 +40,7 @@
 </style>
 
 <div class='sort-options'>
-  {#each $state.voteTypes as {type, toolTip, emoji}}
+  {#each $state.labelDefs as {type, toolTip, emoji}}
   <div on:click={handleClick(type)} class='wrapper' class:selected={sortOption === type} title="Sort by '{emoji}'">
     <EmojiIcon emoji="{emoji}" on:click={handleClick(type)}/>
   </div>

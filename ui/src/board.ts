@@ -4,13 +4,7 @@ import { v1 as uuidv1 } from "uuid";
 import { type AgentPubKey, type EntryHash, type AgentPubKeyB64, type EntryHashB64, encodeHashToBase64 } from "@holochain/client";
 import type { Dictionary } from "@holochain-open-dev/core-types";
 
-export const DEFAULT_STICKIE_VOTE_TYPES = [
-    {type: "1", emoji: "🗨", toolTip: "I want to talk about this one.", maxVotes: 3},
-    {type: "2", emoji: "⭐", toolTip: "Interesting!", maxVotes: 1},
-    {type: "3", emoji: "❓", toolTip: "I have questions about this topic.", maxVotes: 1},
-]
-
-export const DEFAULT_KANBAN_VOTE_TYPES = [
+export const DEFAULT_KANBAN_LABEL_DEFS = [
   {type: "1", emoji: "🐞", toolTip: "Bug", maxVotes: 1},
   {type: "2", emoji: "➕", toolTip: "Feature", maxVotes: 1},
   {type: "3", emoji: "🚩", toolTip: "Flagged", maxVotes: 1},
@@ -22,9 +16,9 @@ export const enum BoardType {
   Stickies = 'Stickies'
 }
 
-export class VoteType {
+export class LabelDef {
     type: uuidv1
-    constructor(public emoji: string, public toolTip: string, public maxVotes: number){
+    constructor(public emoji: string, public toolTip: string){
         this.type = uuidv1()
     }
 }
@@ -32,7 +26,6 @@ export class VoteType {
 export type Sticky = {
     id: uuidv1;
     text: string;
-    votes: Object;
     props: Object;
 };
   
@@ -54,7 +47,7 @@ export interface BoardState {
   groups: Group[];
   grouping: Dictionary<Array<uuidv1>>;
   stickies: Sticky[];
-  voteTypes: VoteType[];
+  labelDefs: LabelDef[];
   props: BoardProps;
 }
   
@@ -89,8 +82,8 @@ export interface BoardState {
         props: BoardProps;
       }
     | {
-        type: "set-vote-types";
-        voteTypes: VoteType[];
+        type: "set-label-defs";
+        labelDefs: LabelDef[];
       }
     | {
         type: "set-group-order";
@@ -113,13 +106,7 @@ export interface BoardState {
         id: uuidv1;
         text: string;
       }
-    | {
-        type: "update-sticky-votes";
-        id: uuidv1;
-        voteType: string;
-        voter: AgentPubKeyB64;
-        count: number
-      }
+
     | {
         type: "merge-stickies";
         srcId: uuidv1;
@@ -201,7 +188,7 @@ export interface BoardState {
       state.name = "untitled"
       state.groups = [{id:UngroupedId, name:""}]
       state.stickies = []
-      state.voteTypes = []
+      state.labelDefs = []
       state.props = {bgUrl:""}
       _initGrouping(state)
     },
@@ -225,7 +212,7 @@ export interface BoardState {
           if (delta.state.groups !== undefined) state.groups = delta.state.groups
           _setGroups(delta.state.groups, state)
           if (delta.state.stickies !== undefined) state.stickies = delta.state.stickies
-          if (delta.state.voteTypes !== undefined) state.voteTypes = delta.state.voteTypes
+          if (delta.state.labelDefs !== undefined) state.labelDefs = delta.state.labelDefs
           if (delta.state.props !== undefined) state.props = delta.state.props
           if (delta.state.grouping !== undefined) {
             state.grouping = delta.state.grouping
@@ -247,8 +234,8 @@ export interface BoardState {
           _initGrouping(state)
           state.grouping[delta.id] = delta.order
           break;
-        case "set-vote-types":
-          state.voteTypes = delta.voteTypes
+        case "set-label-defs":
+          state.labelDefs = delta.labelDefs
           break;
         case "add-sticky":
           _initGrouping(state)    
@@ -275,16 +262,6 @@ export interface BoardState {
           state.stickies.forEach((sticky, i) => {
             if (sticky.id === delta.id) {
               state.stickies[i].props = delta.props;
-            }
-          });
-          break;
-        case "update-sticky-votes":
-          state.stickies.forEach((sticky, i) => {
-            if (sticky.id === delta.id) {
-              if (!state.stickies[i].votes[delta.voteType]) {
-                state.stickies[i].votes[delta.voteType] = {}
-              }
-              state.stickies[i].votes[delta.voteType][delta.voter] = delta.count;
             }
           });
           break;

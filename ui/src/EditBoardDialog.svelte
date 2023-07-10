@@ -1,9 +1,9 @@
 <script lang="ts">
     import { Dialog } from 'svelte-materialify';
     import { cloneDeep } from "lodash";
-    import { type Board, type Group, type VoteType, type BoardState, type BoardType, UngroupedId, type BoardProps } from './board';
+    import { type Board, type Group, type LabelDef, type BoardState, type BoardType, UngroupedId, type BoardProps } from './board';
     import BoardEditor from './BoardEditor.svelte';
-    import type { TalkingStickiesStore } from './talkingStickiesStore';
+    import type { TalkingStickiesStore } from './kandoStore';
     import { getContext, onMount } from 'svelte';
     import { isEqual } from 'lodash'
     import type { EntryHashB64 } from '@holochain/client';
@@ -12,7 +12,7 @@
     export let boardHash:EntryHashB64|undefined = undefined
     let editName = ''
     let editGroups: Array<Group> = []
-    let editVoteTypes = []
+    let editLabelDefs = []
     let editProps:BoardProps = {bgUrl:""}
 
     onMount(async () => {
@@ -22,7 +22,7 @@
             const state = board.state()
             editName = state.name
             editGroups = cloneDeep(state.groups)
-            editVoteTypes = cloneDeep(state.voteTypes)
+            editLabelDefs = cloneDeep(state.labelDefs)
             editProps = state.props ? cloneDeep(state.props) : {bgUrl:""}
             // remove the ungrouped ID TODO find a better way.
             const index = editGroups.findIndex((g)=>g.id == UngroupedId)
@@ -39,7 +39,7 @@
 
     const store:TalkingStickiesStore = getStore();
 
-    const updateBoard = (hash: EntryHashB64) => async (_type:BoardType, name: string, groups: Group[], voteTypes: VoteType[], props: BoardProps) => {
+    const updateBoard = (hash: EntryHashB64) => async (_type:BoardType, name: string, groups: Group[], labelDefs: LabelDef[], props: BoardProps) => {
         // ignore board type we don't update that.
         const board: Board | undefined = await store.boardList.getBoard(hash)
         if (board) {
@@ -69,9 +69,9 @@
             props: props
             })
         }
-        if (!isEqual(voteTypes, state.voteTypes)) {
-            changes.push({type: 'set-vote-types',
-            voteTypes: voteTypes
+        if (!isEqual(labelDefs, state.labelDefs)) {
+            changes.push({type: 'set-label-defs',
+            labelDefs: labelDefs
             })
         }
         if (changes.length > 0) {
@@ -91,5 +91,5 @@
 
 </script>
 <Dialog persistent bind:active>
-    <BoardEditor title="Edit Board" handleSave={updateBoard(boardHash)} handleDelete={archiveBoard(boardHash)} cancelEdit={close} boardType={boardType} text={editName} groups={editGroups} voteTypes={editVoteTypes} props={editProps}/>
+    <BoardEditor title="Edit Board" handleSave={updateBoard(boardHash)} handleDelete={archiveBoard(boardHash)} cancelEdit={close} boardType={boardType} text={editName} groups={editGroups} labelDefs={editLabelDefs} props={editProps}/>
 </Dialog>

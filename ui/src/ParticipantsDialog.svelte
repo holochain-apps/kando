@@ -2,7 +2,7 @@
   import { encodeHashToBase64 } from '@holochain/client';
   import { Dialog } from 'svelte-materialify';
   import { getContext } from "svelte";
-  import type { TalkingStickiesStore } from "./talkingStickiesStore";
+  import type { TalkingStickiesStore } from "./kandoStore";
   import AvatarIcon from './AvatarIcon.svelte';
   import type { ProfilesStore, Profile} from "@holochain-open-dev/profiles";
   

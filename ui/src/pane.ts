@@ -2,7 +2,6 @@ import { createEventDispatcher } from "svelte";
 import { BoardType, type BoardState, type Sticky } from "./board";
 import { v1 as uuidv1 } from "uuid";
 import { cloneDeep, isEqual } from "lodash";
-import type { AgentPubKeyB64 } from "@holochain/client";
 import sanitize from "sanitize-filename";
 
 const download = (filename: string, text: string) => {
@@ -38,7 +37,7 @@ export class Pane {
           id: uuidv1(),
           text,
           props,
-          votes: {
+          labels: {
           },
         };
         this.dispatch("requestChange", [{ type: "add-sticky", value: sticky, group}]);
@@ -69,44 +68,5 @@ export class Pane {
         closeFn()
     };
  
-    voteOnSticky = (agent:AgentPubKeyB64, stickies, id: uuidv1, type, max) => {
-        const sticky = stickies.find((sticky) => sticky.id === id);
-        if (!sticky) {
-          console.error("Failed to find sticky with id", id);
-          return;
-        }
-        let votes = {
-          ...sticky.votes,
-        }
-        if (typeof votes[type] === 'undefined') {
-          votes[type] = {}
-          votes[type][agent] = 1
-        } else {
-          let voteBump = ((sticky.votes[type][agent] || 0) + 1)
-          if (voteBump > max) {
-            voteBump = 0
-          }
-          votes = {
-            ...sticky.votes,
-            [type]: {
-              ...sticky.votes[type],
-              [agent]: voteBump,
-            },
-          }
-        }
-        console.log("VOTING", agent);
-        console.log("votes before", sticky.votes);
-        console.log("votes after", votes);
-    
-        this.dispatch("requestChange", [
-          {
-            type: "update-sticky-votes",
-            id: sticky.id,
-            voteType: type,
-            voter: agent,
-            count: votes[type][agent],
-          },
-        ]);
-    };
 
 }

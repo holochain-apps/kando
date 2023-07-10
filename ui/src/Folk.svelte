@@ -5,7 +5,7 @@
     import type { Avatar } from './boardList';
     import AvatarDialog from './AvatarDialog.svelte';
     import { getContext, onMount } from "svelte";
-    import type { TalkingStickiesStore } from "./talkingStickiesStore";
+    import type { TalkingStickiesStore } from "./kandoStore";
     import { cloneDeep } from "lodash";
     import AvatarIcon from './AvatarIcon.svelte';
     import type { ProfilesStore } from "@holochain-open-dev/profiles";

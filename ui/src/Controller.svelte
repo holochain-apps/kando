@@ -1,8 +1,7 @@
 <script lang="ts">
     import Toolbar from './Toolbar.svelte'
-    import BoardPane from './BoardPane.svelte'
     import KanDoPane from './KanDoPane.svelte'
-    import { TalkingStickiesStore } from './talkingStickiesStore'
+    import { TalkingStickiesStore } from './kandoStore'
     import { setContext } from 'svelte';
     import type { AppAgentClient } from '@holochain/client';
     import type { SynStore } from '@holochain-syn/store';
@@ -129,12 +128,7 @@
         {/if}
       {/if}
       {#if $activeBoardHash !== undefined}
-        {#if $activeBoardType === BoardType.Stickies}
-          <BoardPane on:requestChange={(event) => {tsStore.boardList.requestBoardChanges($activeBoardHash,event.detail)}}/>
-        {/if}
-        {#if $activeBoardType === BoardType.KanDo}
-          <KanDoPane on:requestChange={(event) => {tsStore.boardList.requestBoardChanges($activeBoardHash,event.detail)}}/>
-        {/if}
+        <KanDoPane on:requestChange={(event) => {tsStore.boardList.requestBoardChanges($activeBoardHash,event.detail)}}/>
       {/if}
     {:else}
       <div class="loading"><div class="loader"></div></div>

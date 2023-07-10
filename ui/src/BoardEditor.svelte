@@ -1,7 +1,7 @@
 <script lang="ts">
     import {Button, Icon} from "svelte-materialify"
     import { mdiDelete, mdiDragVertical, mdiPlusCircleOutline } from '@mdi/js';
-    import { Group, VoteType, BoardType, type BoardProps } from './board';
+    import { Group, LabelDef, BoardType, type BoardProps } from './board';
     import { onMount } from 'svelte';
   	import DragDropList, { VerticalDropZone, reorder, type DropEvent } from 'svelte-dnd-list';
 
@@ -11,7 +11,7 @@
     export let text = ''
     export let props:BoardProps = {bgUrl: ""}
     export let groups: Array<Group>
-    export let voteTypes: Array<VoteType>
+    export let labelDefs: Array<LabelDef>
     export let boardType: BoardType
     export let title
 
@@ -32,13 +32,13 @@
       }
     }
 
-    const addVoteType = () => {
-      voteTypes.push(new VoteType(`🙂`, `description: edit-me`, 1))
-      voteTypes = voteTypes
+    const addLabelDef = () => {
+      labelDefs.push(new LabelDef(`🙂`, `description: edit-me`, 1))
+      labelDefs = labelDefs
     }
-    const deleteVoteType = (index) => () => {
-      voteTypes.splice(index, 1)
-      voteTypes = voteTypes
+    const deleteLabelDef = (index) => () => {
+      labelDefs.splice(index, 1)
+      labelDefs = labelDefs
     }
     const addGroup = () => {
       groups.push(new Group(`${defaultGroupName} ${groups.length+1}`))
@@ -57,7 +57,7 @@
       if (e.key === "Escape") {
         cancelEdit()
       } else if (e.key === "Enter" && e.ctrlKey) {
-        handleSave(boardType, text, groups, voteTypes, props)
+        handleSave(boardType, text, groups, labelDefs, props)
       } else  if (e.key === 'Tab') {
         // trap focus
         const tabbable = Array.from(document.querySelectorAll('input'))
@@ -82,12 +82,12 @@
 
       groups = reorder(groups, from.index, to.index);
     }
-    const onDropVoteTypes = ({ detail: { from, to } }: CustomEvent<DropEvent>) => {
-      if (!to || from === to || from.dropZoneID !== "voteTypes") {
+    const onDropLabelDefs = ({ detail: { from, to } }: CustomEvent<DropEvent>) => {
+      if (!to || from === to || from.dropZoneID !== "labelDefs") {
         return;
       }
 
-      voteTypes = reorder(voteTypes, from.index, to.index);
+      labelDefs = reorder(labelDefs, from.index, to.index);
     }
 </script>
 
@@ -121,38 +121,28 @@
         </div>
       </DragDropList>
     </div>
-    <div class="edit-vote-types unselectable">
+    <div class="edit-label-defs unselectable">
       <div class="title-text">
-        {#if boardType == BoardType.Stickies}
-          Voting Types:
-        {:else}
-          Labels:
-        {/if}
+        Labels:
 
-        <Button icon on:click={() => addVoteType()}>
+        <Button icon on:click={() => addLabelDef()}>
           <Icon size="20px" path={mdiPlusCircleOutline}/>
         </Button>
       </div>
       <DragDropList
-        id="voteTypes"
+        id="labelDefs"
         type={VerticalDropZone}
 	      itemSize={45}
-        itemCount={voteTypes.length}
-        on:drop={onDropVoteTypes}
+        itemCount={labelDefs.length}
+        on:drop={onDropLabelDefs}
         let:index
         itemClass="unselectable"
         >
-        <div class="vote-type">
+        <div class="label-def">
           <Icon path={mdiDragVertical}/>
-          {#if boardType == BoardType.Stickies}
-          <input class='textarea emoji-input' bind:value={voteTypes[index].emoji} title="emoji"/>
-          <input class='textarea num-input' bind:value={voteTypes[index].maxVotes} title="max votes on type per card" />
-          <input class='textarea' bind:value={voteTypes[index].toolTip} title="description"/>
-          {:else}
-          <input class='textarea emoji-input' bind:value={voteTypes[index].emoji} title="label emoji"/>
-          <input class='textarea' bind:value={voteTypes[index].toolTip} title="label name"/>
-          {/if}
-          <Button icon on:click={deleteVoteType(index)} >
+          <input class='textarea emoji-input' bind:value={labelDefs[index].emoji} title="label emoji"/>
+          <input class='textarea' bind:value={labelDefs[index].toolTip} title="label name"/>
+          <Button icon on:click={deleteLabelDef(index)} >
             <Icon path={mdiDelete} />
           </Button>
         </div>
@@ -171,7 +161,7 @@
       <Button on:click={cancelEdit} style="margin-left:10px" size="small">
         Cancel
       </Button>
-      <Button style="margin-left:10px" size="small" on:click={() => handleSave(boardType, text, groups, voteTypes, props)} class="primary-color">
+      <Button style="margin-left:10px" size="small" on:click={() => handleSave(boardType, text, groups, labelDefs, props)} class="primary-color">
         Save
       </Button>
     </div>
@@ -219,7 +209,7 @@
     display: flex;
     flex-direction: row;
   }
-  .vote-type {
+  .label-def {
     display: flex;
     flex-direction: row;
     align-items: center;
