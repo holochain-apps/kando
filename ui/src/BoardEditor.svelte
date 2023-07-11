@@ -1,7 +1,7 @@
 <script lang="ts">
     import {Button, Icon} from "svelte-materialify"
     import { mdiDelete, mdiDragVertical, mdiPlusCircleOutline } from '@mdi/js';
-    import { Group, LabelDef, type BoardProps } from './board';
+    import { Group, LabelDef, type BoardProps, CategoryDef } from './board';
     import { onMount } from 'svelte';
   	import DragDropList, { VerticalDropZone, reorder, type DropEvent } from 'svelte-dnd-list';
 
@@ -9,9 +9,10 @@
     export let handleDelete = undefined
     export let cancelEdit
     export let text = ''
-    export let props:BoardProps = {bgUrl: ""}
+    export let props:BoardProps = {bgUrl: "",labels: []}
     export let groups: Array<Group>
     export let labelDefs: Array<LabelDef>
+    export let categoryDefs: Array<CategoryDef>
     export let title
 
     let titleElement
@@ -23,6 +24,14 @@
     const deleteLabelDef = (index) => () => {
       labelDefs.splice(index, 1)
       labelDefs = labelDefs
+    }
+    const addCategoryDef = () => {
+      categoryDefs.push(new CategoryDef(`description: edit-me`,"red"))
+      categoryDefs = categoryDefs
+    }
+    const deleteCategoryDef = (index) => () => {
+      categoryDefs.splice(index, 1)
+      categoryDefs = categoryDefs
     }
     const addGroup = () => {
       groups.push(new Group(`column ${groups.length+1}`))
@@ -74,6 +83,13 @@
       }
 
       labelDefs = reorder(labelDefs, from.index, to.index);
+    }
+    const onDropCategoryDefs = ({ detail: { from, to } }: CustomEvent<DropEvent>) => {
+      if (!to || from === to || from.dropZoneID !== "categoryDefs") {
+        return;
+      }
+
+      categoryDefs = reorder(categoryDefs, from.index, to.index);
     }
 </script>
 
@@ -134,6 +150,33 @@
         </div>
       </DragDropList> 
     </div>
+    <div class="edit-category-defs unselectable">
+      <div class="title-text">
+        Categories:
+
+        <Button icon on:click={() => addCategoryDef()}>
+          <Icon size="20px" path={mdiPlusCircleOutline}/>
+        </Button>
+      </div>
+      <DragDropList
+        id="categoryDefs"
+        type={VerticalDropZone}
+	      itemSize={45}
+        itemCount={categoryDefs.length}
+        on:drop={onDropCategoryDefs}
+        let:index
+        itemClass="unselectable"
+        >
+        <div class="category-def">
+          <Icon path={mdiDragVertical}/>
+          <input class='textarea' bind:value={categoryDefs[index].name} title="category name"/>
+          <input class='textarea' bind:value={categoryDefs[index].color} title="category color"/>
+          <Button icon on:click={deleteCategoryDef(index)} >
+            <Icon path={mdiDelete} />
+          </Button>
+        </div>
+      </DragDropList> 
+    </div>
     <div class="edit-title">
       <div class="title-text">Background Image:</div> <input class='textarea' maxlength="255" bind:value={props.bgUrl} />
     </div>
@@ -147,7 +190,7 @@
       <Button on:click={cancelEdit} style="margin-left:10px" size="small">
         Cancel
       </Button>
-      <Button style="margin-left:10px" size="small" on:click={() => handleSave(text, groups, labelDefs, props)} class="primary-color">
+      <Button style="margin-left:10px" size="small" on:click={() => handleSave(text, groups, labelDefs, categoryDefs, props)} class="primary-color">
         Save
       </Button>
     </div>
@@ -195,7 +238,7 @@
     display: flex;
     flex-direction: row;
   }
-  .label-def {
+  .label-def, .category-def {
     display: flex;
     flex-direction: row;
     align-items: center;

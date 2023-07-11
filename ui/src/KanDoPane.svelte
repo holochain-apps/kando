@@ -284,6 +284,7 @@
                   avatars={avatars}
                   active={editingCardId}
                   labelTypes={$state.labelDefs}
+                  categories={$state.categoryDefs}
                 />
               {/if}
                 {#if 
@@ -304,7 +305,7 @@
 
 
                   on:click={editCard(cardId, text)} 
-                  style:background-color={props && props["color"] ? props["color"] : "white"}
+                  style:background-color={props && props.category ?  $state.categoryDefs.find(c=>c.type == props.category).color : "white"}
                   >
                   <div class="card-content">
                     {@html Marked.parse(text)}
@@ -333,7 +334,7 @@
           {#if creatingInColumn !==undefined  && creatingInColumn == columnId}
             <CardEditor                   
               title="New Card"
-              handleSave={createCard} {cancelEdit} avatars={avatars} active={creatingInColumn} labelTypes={$state.labelDefs}/>
+              handleSave={createCard} {cancelEdit} avatars={avatars} active={creatingInColumn} labelTypes={$state.labelDefs} categories={$state.categoryDefs} />
           {/if}
           <div class="column-item column-footer">
             <Button style="padding: 0 5px;" size="small" text on:click={newCard(columnId)}>

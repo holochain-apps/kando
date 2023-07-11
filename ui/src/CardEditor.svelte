@@ -4,9 +4,10 @@
   import type { ObjectOption } from 'svelte-multiselect'
   import type { Avatar } from './boardList';
   import type { Readable } from 'svelte/store';
-  import { Button, Dialog } from "svelte-materialify"
+  import { Menu, Button, List, ListItem, Icon, Dialog } from 'svelte-materialify';
   import { onMount } from "svelte";
-  import type { LabelDef } from "./board";
+  import type { CategoryDef, LabelDef } from "./board";
+  import { mdiChevronDown, mdiImport, mdiShapeSquarePlus, mdiArchiveArrowUp } from '@mdi/js';
 
   export let handleSave
   export let handleDelete = undefined
@@ -14,9 +15,10 @@
   export let cancelEdit
   export let text = ''
   export let groupId = undefined
-  export let props = {color: "white", agents:[]}
+  export let props = {category: undefined, agents:[]}
   export let avatars: Readable<Dictionary<Avatar>> 
   export let labelTypes: Array<LabelDef>
+  export let categories: Array<CategoryDef>
   export let active = false
   export let title
 
@@ -36,8 +38,8 @@
   }) 
 
   const colors=["white","#D4F3EE","#E0D7FF","#FFCCE1","#D7EEFF", "#FAFFC7", "red", "green", "yellow", "LightSkyBlue", "grey"]
-  const setColor = (color) => {
-    props.color  = color
+  const setCategory= (type) => {
+    props.category  = type
     props = props
   }
   const setAgents = () => {
@@ -64,6 +66,7 @@
 
   let selectedAvatars = []
   let selectedLabels = []
+  let selectedCategory = ""
 
   const handleKeydown = (e) => {
     if (e.key === "Enter" && e.ctrlKey) {
@@ -73,7 +76,9 @@
       cancelEdit()
     }
   }
-
+  const getCategory = () => {
+    return categories.find(c=>c.type == props.category)
+  }
 </script>
 <Dialog persistent bind:active>
 <div class='card-editor' style:background-color={props.color} on:keydown={handleKeydown}>
@@ -81,15 +86,30 @@
 
   <div class="card-elements">
     <textarea class='textarea' bind:value={text} bind:this={inputElement} />
-    <div class="color-buttons">
-      {#each colors as color}
-        <div class="color-button{props.color == color?" selected":""}" on:click={()=>setColor(color)} style:background-color={color}></div>
-      {/each}
-    </div>
   </div>
+  {#if categories.length > 0}
+    <Menu>
+        <div slot="activator">
+            <Button style="margin-left:10px" title="Archived Boards">
+                Category {#if props.category}: {getCategory().name}{/if}
+                <Icon path={mdiChevronDown}></Icon>
+            </Button>
+        </div>
+        <List>
+            <ListItem dense={true} on:click={()=>setCategory(undefined)}>No Category</ListItem>
+
+            {#each categories as category }
+              <ListItem dense={true} on:click={()=>setCategory(category.type)}>{category.name}</ListItem>
+            {/each}
+        </List>
+    </Menu>
+    {#if props.category}<div style="background-color:{getCategory().color}">&nbsp;</div>{/if}
+  {/if}
+  {#if labelTypes.length > 0}
   <div class="multi-select">
     Labels: <MultiSelect bind:selected={selectedLabels} options={labelOptions()} on:change={(_event)=>setLabels()} />
   </div>
+  {/if}
   {#if Object.keys($avatars).length > 0}
   <div class="multi-select">
     Assigned To: <MultiSelect bind:selected={selectedAvatars} options={avatarNames()} on:change={(_event)=>setAgents()} />
@@ -118,7 +138,6 @@
 <style>
   .card-editor {
     display: flex;
-    background-color: #D4F3EE;
     flex-basis: 270px;
     margin: 20px;
     font-style: normal;
@@ -137,6 +156,7 @@
     box-sizing: border-box;
     border-radius: 3px;
     width: 100%;
+    min-height: 200px;
     font-weight: normal;
     padding: 2px;
   }

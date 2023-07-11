@@ -1,7 +1,7 @@
 <script lang="ts">
     import { Dialog } from 'svelte-materialify';
     import { cloneDeep } from "lodash";
-    import { type Board, type Group, type LabelDef, type BoardState, UngroupedId, type BoardProps } from './board';
+    import { type Board, type Group, type LabelDef, type BoardState, UngroupedId, type BoardProps, CategoryDef } from './board';
     import BoardEditor from './BoardEditor.svelte';
     import type { KanDoStore } from './kanDoStore';
     import { getContext, onMount } from 'svelte';
@@ -12,7 +12,8 @@
     let editName = ''
     let editGroups: Array<Group> = []
     let editLabelDefs = []
-    let editProps:BoardProps = {bgUrl:""}
+    let editCategoryDefs = []
+    let editProps:BoardProps = {bgUrl:"",labels:[]}
 
     onMount(async () => {
 
@@ -22,6 +23,7 @@
             editName = state.name
             editGroups = cloneDeep(state.groups)
             editLabelDefs = cloneDeep(state.labelDefs)
+            editCategoryDefs = cloneDeep(state.categoryDefs)
             editProps = state.props ? cloneDeep(state.props) : {bgUrl:""}
             // remove the ungrouped ID TODO find a better way.
             const index = editGroups.findIndex((g)=>g.id == UngroupedId)
@@ -38,7 +40,7 @@
 
     const store:KanDoStore = getStore();
 
-    const updateBoard = (hash: EntryHashB64) => async ( name: string, groups: Group[], labelDefs: LabelDef[], props: BoardProps) => {
+    const updateBoard = (hash: EntryHashB64) => async ( name: string, groups: Group[], labelDefs: LabelDef[],  categoryDefs: CategoryDef[], props: BoardProps) => {
         // ignore board type we don't update that.
         const board: Board | undefined = await store.boardList.getBoard(hash)
         if (board) {
@@ -73,6 +75,11 @@
             labelDefs: labelDefs
             })
         }
+        if (!isEqual(categoryDefs, state.categoryDefs)) {
+            changes.push({type: 'set-category-defs',
+            categoryDefs: categoryDefs
+            })
+        }
         if (changes.length > 0) {
             await store.boardList.requestBoardChanges(hash,changes)
         }
@@ -90,5 +97,5 @@
 
 </script>
 <Dialog persistent bind:active>
-    <BoardEditor title="Edit Board" handleSave={updateBoard(boardHash)} handleDelete={archiveBoard(boardHash)} cancelEdit={close} text={editName} groups={editGroups} labelDefs={editLabelDefs} props={editProps}/>
+    <BoardEditor title="Edit Board" handleSave={updateBoard(boardHash)} handleDelete={archiveBoard(boardHash)} cancelEdit={close} text={editName} groups={editGroups} labelDefs={editLabelDefs} categoryDefs={editCategoryDefs} props={editProps}/>
 </Dialog>

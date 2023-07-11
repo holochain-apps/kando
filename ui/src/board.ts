@@ -10,9 +10,10 @@ export class LabelDef {
         this.type = uuidv1()
     }
 }
+
 export class CategoryDef {
   type: uuidv1
-  constructor(public emoji: string, public toolTip: string){
+  constructor(public name: string, public color: string){
       this.type = uuidv1()
   }
 }
@@ -31,7 +32,9 @@ export class Group {
       }
 }
 export type BoardProps = {
-  bgUrl: string
+  bgUrl: string,
+  labels: Array<uuidv1>,
+  category?: uuidv1
 }
 
 export interface BoardState {
@@ -41,6 +44,7 @@ export interface BoardState {
   grouping: Dictionary<Array<uuidv1>>;
   cards: Card[];
   labelDefs: LabelDef[];
+  categoryDefs: CategoryDef[];
   props: BoardProps;
 }
   
@@ -73,6 +77,10 @@ export interface BoardState {
     | {
         type: "set-label-defs";
         labelDefs: LabelDef[];
+      }
+      | {
+        type: "set-category-defs";
+        categoryDefs: CategoryDef[];
       }
     | {
         type: "set-group-order";
@@ -178,7 +186,8 @@ export interface BoardState {
       state.groups = [{id:UngroupedId, name:""}]
       state.cards = []
       state.labelDefs = []
-      state.props = {bgUrl:""}
+      state.categoryDefs = []
+      state.props = {bgUrl:"", labels:[]}
       _initGrouping(state)
     },
     applyDelta( 
@@ -198,6 +207,7 @@ export interface BoardState {
           _setGroups(delta.state.groups, state)
           if (delta.state.cards !== undefined) state.cards = delta.state.cards
           if (delta.state.labelDefs !== undefined) state.labelDefs = delta.state.labelDefs
+          if (delta.state.categoryDefs !== undefined) state.categoryDefs = delta.state.categoryDefs
           if (delta.state.props !== undefined) state.props = delta.state.props
           if (delta.state.grouping !== undefined) {
             state.grouping = delta.state.grouping
@@ -221,6 +231,9 @@ export interface BoardState {
           break;
         case "set-label-defs":
           state.labelDefs = delta.labelDefs
+          break;
+        case "set-category-defs":
+          state.categoryDefs = delta.categoryDefs
           break;
         case "add-card":
           _initGrouping(state)    
