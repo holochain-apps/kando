@@ -23,8 +23,9 @@
     "svelte-multiselect": "^8.2.0",
     "uuid": "^8.3.2",
     "svelte-dnd-list": "0.1.8",
-    "sanitize-filename": "1.6.3"
-
+    "sanitize-filename": "1.6.3",
+    "svelte-awesome-color-picker": "2.4.6",
+    "emoji-picker-element": "1.18.3"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^2.0.2",

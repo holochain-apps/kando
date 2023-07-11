@@ -1,9 +1,11 @@
 <script lang="ts">
     import {Button, Icon} from "svelte-materialify"
-    import { mdiDelete, mdiDragVertical, mdiPlusCircleOutline } from '@mdi/js';
+    import { mdiCancel, mdiClose, mdiDelete, mdiDragVertical, mdiPlusCircleOutline } from '@mdi/js';
     import { Group, LabelDef, type BoardProps, CategoryDef } from './board';
     import { onMount } from 'svelte';
   	import DragDropList, { VerticalDropZone, reorder, type DropEvent } from 'svelte-dnd-list';
+    import ColorPicker from 'svelte-awesome-color-picker';
+    import 'emoji-picker-element';
 
     export let handleSave
     export let handleDelete = undefined
@@ -18,7 +20,7 @@
     let titleElement
 
     const addLabelDef = () => {
-      labelDefs.push(new LabelDef(`🙂`, `description: edit-me`, 1))
+      labelDefs.push(new LabelDef(`🙂`, `description: edit-me`))
       labelDefs = labelDefs
     }
     const deleteLabelDef = (index) => () => {
@@ -26,7 +28,7 @@
       labelDefs = labelDefs
     }
     const addCategoryDef = () => {
-      categoryDefs.push(new CategoryDef(`description: edit-me`,"red"))
+      categoryDefs.push(new CategoryDef(``,"red"))
       categoryDefs = categoryDefs
     }
     const deleteCategoryDef = (index) => () => {
@@ -91,6 +93,9 @@
 
       categoryDefs = reorder(categoryDefs, from.index, to.index);
     }
+   let showEmojiPicker :number|undefined = undefined
+   let showColorPicker :number|undefined = undefined
+   let hex
 </script>
 
 <svelte:window on:keydown={handleKeydown}/>
@@ -131,7 +136,22 @@
           <Icon size="20px" path={mdiPlusCircleOutline}/>
         </Button>
       </div>
+      {#if showEmojiPicker !== undefined}
+        <div style="display:flex;flex-direction:row"> 
+          <emoji-picker on:emoji-click={(e)=>  {
+            labelDefs[showEmojiPicker].emoji = e.detail.unicode
+            console.log(e.detail)
+            showEmojiPicker = undefined
+          }
+          }></emoji-picker>
+          <Button icon on:click={()=>showEmojiPicker=undefined} >
+            <Icon path={mdiClose} />
+          </Button>
+    
+        </div>
+      {/if}
       <DragDropList
+        style="min-height:200px"
         id="labelDefs"
         type={VerticalDropZone}
 	      itemSize={45}
@@ -142,7 +162,9 @@
         >
         <div class="label-def">
           <Icon path={mdiDragVertical}/>
-          <input class='textarea emoji-input' bind:value={labelDefs[index].emoji} title="label emoji"/>
+          <Button icon on:click={()=>showEmojiPicker = index} >
+            <span style="font-size:180%">{labelDefs[index].emoji}</span>
+          </Button>
           <input class='textarea' bind:value={labelDefs[index].toolTip} title="label name"/>
           <Button icon on:click={deleteLabelDef(index)} >
             <Icon path={mdiDelete} />
@@ -158,6 +180,24 @@
           <Icon size="20px" path={mdiPlusCircleOutline}/>
         </Button>
       </div>
+      {#if showColorPicker !== undefined}
+        <div style="display:flex;flex-direction:row"> 
+          <ColorPicker label=" " bind:hex
+            isPopup={false}
+            isOpen={true}
+            isInput={false}
+            on:input={()=>{
+              categoryDefs[showColorPicker].color = hex
+              showColorPicker = undefined
+            }}
+          />
+
+          <Button icon on:click={()=>showColorPicker=undefined} >
+            <Icon path={mdiClose} />
+          </Button>
+        </div>
+      {/if}
+
       <DragDropList
         id="categoryDefs"
         type={VerticalDropZone}
@@ -169,8 +209,10 @@
         >
         <div class="category-def">
           <Icon path={mdiDragVertical}/>
-          <input class='textarea' bind:value={categoryDefs[index].name} title="category name"/>
-          <input class='textarea' bind:value={categoryDefs[index].color} title="category color"/>
+          <Button icon on:click={()=>showColorPicker = index} >
+            <div style="width:30px;height:30px;font-size:180%;border-radius:50%;background-color:{categoryDefs[index].color}"></div>
+          </Button>
+          <input class='textarea' style="margin-left:10px" bind:value={categoryDefs[index].name} title="category name"/>
           <Button icon on:click={deleteCategoryDef(index)} >
             <Icon path={mdiDelete} />
           </Button>
@@ -217,7 +259,6 @@
     width: 100%;
     padding: 5px;
     margin-right: 5px;
-    margin-bottom: 5px;
     font-weight: normal;
   }
   .emoji-input {
@@ -243,6 +284,8 @@
     flex-direction: row;
     align-items: center;
   }
+  .category-def {
+  }
   .title-text {
     display: flex;
     flex-direction: row;
@@ -257,5 +300,12 @@
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
+}
+.modal {
+  background-color: var(--light-text-color);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 </style>
