@@ -1,6 +1,7 @@
 <script lang="ts">
   import Controller from './Controller.svelte'
   import { AppAgentWebsocket, AdminWebsocket } from '@holochain/client';
+  import '@shoelace-style/shoelace/dist/themes/light.css';
 
   const appId = import.meta.env.VITE_APP_ID ? import.meta.env.VITE_APP_ID : 'kando'
   const roleName = 'kando'

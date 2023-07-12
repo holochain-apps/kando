@@ -4,10 +4,12 @@
   import type { ObjectOption } from 'svelte-multiselect'
   import type { Avatar } from './boardList';
   import type { Readable } from 'svelte/store';
-  import { Menu, Button, List, ListItem, Icon, Dialog } from 'svelte-materialify';
+  import { Button, Icon, Dialog } from 'svelte-materialify';
   import { onMount } from "svelte";
   import type { CategoryDef, LabelDef } from "./board";
-  import { mdiChevronDown, mdiImport, mdiShapeSquarePlus, mdiArchiveArrowUp } from '@mdi/js';
+  import { mdiChevronDown } from '@mdi/js';
+  import '@shoelace-style/shoelace/dist/components/select/select.js';
+  import '@shoelace-style/shoelace/dist/components/option/option.js';
 
   export let handleSave
   export let handleDelete = undefined
@@ -88,22 +90,25 @@
     <textarea class='textarea' bind:value={text} bind:this={inputElement} />
   </div>
   {#if categories.length > 0}
-    <Menu>
-        <div slot="activator">
-            <Button style="margin-left:10px" title="Archived Boards">
-                Category {#if props.category}: {getCategory().name}{/if}
-                <Icon path={mdiChevronDown}></Icon>
-            </Button>
-        </div>
-        <List>
-            <ListItem dense={true} on:click={()=>setCategory(undefined)}>No Category</ListItem>
 
-            {#each categories as category }
-              <ListItem dense={true} on:click={()=>setCategory(category.type)}>{category.name}</ListItem>
-            {/each}
-        </List>
-    </Menu>
-    {#if props.category}<div style="background-color:{getCategory().color}">&nbsp;</div>{/if}
+  <div style="display:flex; flex-direction:row;align-items:flex-end">
+    <sl-select
+      value={props.category}
+      label="Category"
+      on:sl-change={(e)=>{
+        setCategory(e.target.value)
+      }}
+      >
+      <sl-option value={""}>No Category</sl-option>
+      {#each categories as category }
+        <sl-option value={category.type}>{category.name}</sl-option>
+      {/each}
+    </sl-select>
+        
+    {#if props.category}
+      <div style="margin-left:10px;margin-bottom:3px;width:30px;height:30px;border-radius:50%;background-color:{getCategory().color}"></div>
+    {/if}
+  </div>
   {/if}
   {#if labelTypes.length > 0}
   <div class="multi-select">

@@ -334,7 +334,7 @@ export class BoardList {
                 },
             ]
             if (changes.length > 0) {
-                workspaceStore.requestChanges(changes)
+                board.requestChanges(changes)
                 await workspaceStore.commitChanges()
             }
 

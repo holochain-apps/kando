@@ -1,11 +1,13 @@
 <script lang="ts">
     import {Button, Icon} from "svelte-materialify"
-    import { mdiCancel, mdiClose, mdiDelete, mdiDragVertical, mdiPlusCircleOutline } from '@mdi/js';
+    import { mdiDelete, mdiDragVertical, mdiPlusCircleOutline } from '@mdi/js';
     import { Group, LabelDef, type BoardProps, CategoryDef } from './board';
     import { onMount } from 'svelte';
   	import DragDropList, { VerticalDropZone, reorder, type DropEvent } from 'svelte-dnd-list';
     import ColorPicker from 'svelte-awesome-color-picker';
     import 'emoji-picker-element';
+    import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
+    import '@shoelace-style/shoelace/dist/components/button/button.js';
 
     export let handleSave
     export let handleDelete = undefined
@@ -94,6 +96,7 @@
       categoryDefs = reorder(categoryDefs, from.index, to.index);
     }
    let showEmojiPicker :number|undefined = undefined
+   let emojiDialog,colorDialog
    let showColorPicker :number|undefined = undefined
    let hex
 </script>
@@ -136,20 +139,16 @@
           <Icon size="20px" path={mdiPlusCircleOutline}/>
         </Button>
       </div>
-      {#if showEmojiPicker !== undefined}
-        <div style="display:flex;flex-direction:row"> 
+      <sl-dialog label="Choose Emoji" bind:this={emojiDialog}>
           <emoji-picker on:emoji-click={(e)=>  {
             labelDefs[showEmojiPicker].emoji = e.detail.unicode
             console.log(e.detail)
             showEmojiPicker = undefined
+            emojiDialog.hide()
           }
           }></emoji-picker>
-          <Button icon on:click={()=>showEmojiPicker=undefined} >
-            <Icon path={mdiClose} />
-          </Button>
     
-        </div>
-      {/if}
+      </sl-dialog>
       <DragDropList
         style="min-height:200px"
         id="labelDefs"
@@ -162,7 +161,7 @@
         >
         <div class="label-def">
           <Icon path={mdiDragVertical}/>
-          <Button icon on:click={()=>showEmojiPicker = index} >
+          <Button icon on:click={()=>{showEmojiPicker = index;emojiDialog.show()}} >
             <span style="font-size:180%">{labelDefs[index].emoji}</span>
           </Button>
           <input class='textarea' bind:value={labelDefs[index].toolTip} title="label name"/>
@@ -180,23 +179,32 @@
           <Icon size="20px" path={mdiPlusCircleOutline}/>
         </Button>
       </div>
-      {#if showColorPicker !== undefined}
-        <div style="display:flex;flex-direction:row"> 
+      <sl-dialog label="Choose Color" bind:this={colorDialog}>
+
           <ColorPicker label=" " bind:hex
             isPopup={false}
             isOpen={true}
             isInput={false}
-            on:input={()=>{
-              categoryDefs[showColorPicker].color = hex
-              showColorPicker = undefined
-            }}
           />
-
-          <Button icon on:click={()=>showColorPicker=undefined} >
-            <Icon path={mdiClose} />
-          </Button>
-        </div>
-      {/if}
+          <div style="display: flex; flex-direction: row; justify-content:flex-end;">
+            <div id="cancel-button" >
+              <sl-button
+                label="Cancel"
+                on:click={() => colorDialog.hide()}
+                style=" margin-right: 16px"
+                >Cancel</sl-button>
+            </div>
+            <div id="save-button" >
+              <sl-button 
+                style=""
+                on:click={() => {
+                  categoryDefs[showColorPicker].color = hex
+                  colorDialog.hide()
+                }}
+                variant=primary>Save</sl-button>
+            </div>
+          </div>
+      </sl-dialog>
 
       <DragDropList
         id="categoryDefs"
@@ -209,7 +217,9 @@
         >
         <div class="category-def">
           <Icon path={mdiDragVertical}/>
-          <Button icon on:click={()=>showColorPicker = index} >
+          <Button icon on:click={()=>{
+            hex = categoryDefs[index].color
+            showColorPicker = index;colorDialog.show()}} >
             <div style="width:30px;height:30px;font-size:180%;border-radius:50%;background-color:{categoryDefs[index].color}"></div>
           </Button>
           <input class='textarea' style="margin-left:10px" bind:value={categoryDefs[index].name} title="category name"/>

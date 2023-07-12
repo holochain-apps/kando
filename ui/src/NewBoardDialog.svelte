@@ -3,7 +3,7 @@
     import BoardEditor from './BoardEditor.svelte';
     import type { KanDoStore } from './kanDoStore';
     import { getContext } from 'svelte';
-  import type { BoardProps, Group, LabelDef } from './board';
+  import type { BoardProps, CategoryDef, Group, LabelDef } from './board';
 
   let editLabelDefs = []
   let editCategoryDefs = []
@@ -12,9 +12,9 @@
 
     const store:KanDoStore = getStore();
 
-    const addBoard = async (name: string, groups: Group[], labelDefs: LabelDef[], props: BoardProps) => {
+    const addBoard = async (name: string, groups: Group[], labelDefs: LabelDef[], categoryDefs: CategoryDef[], props: BoardProps) => {
         // @ts-ignore
-        const board = await store.boardList.makeBoard({name, groups, labelDefs, editCategoryDefs, props, status:""})
+        const board = await store.boardList.makeBoard({name, groups, labelDefs, categoryDefs, props, status:""})
         store.boardList.setActiveBoard(board.hashB64())
         active = false
     }
