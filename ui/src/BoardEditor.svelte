@@ -1,6 +1,4 @@
 <script lang="ts">
-    import {Button, Icon} from "svelte-materialify"
-    import { mdiDelete, mdiDragVertical, mdiPlusCircleOutline } from '@mdi/js';
     import { Group, LabelDef, type BoardProps, CategoryDef } from './board';
     import { onMount } from 'svelte';
   	import DragDropList, { VerticalDropZone, reorder, type DropEvent } from 'svelte-dnd-list';
@@ -8,18 +6,18 @@
     import 'emoji-picker-element';
     import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
     import '@shoelace-style/shoelace/dist/components/button/button.js';
+    import '@shoelace-style/shoelace/dist/components/input/input.js';
+    import Fa from 'svelte-fa'
+    import { faPlus, faGripVertical, faTrash} from '@fortawesome/free-solid-svg-icons';
 
     export let handleSave
     export let handleDelete = undefined
     export let cancelEdit
     export let text = ''
-    export let props:BoardProps = {bgUrl: "",labels: []}
+    export let props:BoardProps = {category:"", bgUrl: "",labels: []}
     export let groups: Array<Group>
     export let labelDefs: Array<LabelDef>
     export let categoryDefs: Array<CategoryDef>
-    export let title
-
-    let titleElement
 
     const addLabelDef = () => {
       labelDefs.push(new LabelDef(`🙂`, `description: edit-me`))
@@ -49,7 +47,6 @@
       if (groups.length == 0) {
           groups = [new Group("Backlog"), new Group("Prioritized"), new Group("Doing"), new Group("Done")]
       }
-      titleElement.focus()
     })
 
     const handleKeydown = (e) => {
@@ -68,7 +65,6 @@
         index += tabbable.length + (e.shiftKey ? -1 : 1);
         index %= tabbable.length;
 
-        //@ts-ignore
         tabbable[index].focus();
         e.preventDefault();
       }
@@ -103,15 +99,14 @@
 
 <svelte:window on:keydown={handleKeydown}/>
   <div class='board-editor'>
-    <div class="dialog-title">{title}</div>
     <div class="edit-title">
-      <div class="title-text">Title:</div> <input class='textarea' maxlength="60" bind:value={text} bind:this={titleElement} />
+      <div class="title-text">Title:</div> <sl-input class='textarea' maxlength="60" bind={text}  on:input={e=>text= e.target.value}></sl-input>
     </div>
     <div class="edit-groups unselectable">
       <div class="title-text">Columns:
-        <Button icon on:click={() => addGroup()}>
-          <Icon size="20px" path={mdiPlusCircleOutline}/>
-        </Button>
+        <sl-button circle size="small" on:click={() => addGroup()}>
+          <Fa icon={faPlus}/>
+        </sl-button>
       </div>
       <DragDropList
         id="groups"
@@ -123,11 +118,11 @@
         itemClass="unselectable"
         >
         <div class="group">
-          <Icon path={mdiDragVertical}/>
-          <input class='textarea' bind:value={groups[index].name} />
-          <Button icon on:click={deleteGroup(index)}>
-            <Icon path={mdiDelete}/>
-          </Button>
+          <div class="grip" ><Fa icon={faGripVertical}/></div>
+          <sl-input class='textarea' value={groups[index].name} on:input={e=>groups[index].name = e.target.value}>
+          <sl-button circle size="small"  on:click={deleteGroup(index)}>
+          <Fa icon={faTrash}/>
+          </sl-button>
         </div>
       </DragDropList>
     </div>
@@ -135,9 +130,9 @@
       <div class="title-text">
         Labels:
 
-        <Button icon on:click={() => addLabelDef()}>
-          <Icon size="20px" path={mdiPlusCircleOutline}/>
-        </Button>
+        <sl-button circle size="small"  on:click={() => addLabelDef()}>
+          <Fa icon={faPlus}/>
+        </sl-button>
       </div>
       <sl-dialog label="Choose Emoji" bind:this={emojiDialog}>
           <emoji-picker on:emoji-click={(e)=>  {
@@ -150,7 +145,6 @@
     
       </sl-dialog>
       <DragDropList
-        style="min-height:200px"
         id="labelDefs"
         type={VerticalDropZone}
 	      itemSize={45}
@@ -160,14 +154,15 @@
         itemClass="unselectable"
         >
         <div class="label-def">
-          <Icon path={mdiDragVertical}/>
-          <Button icon on:click={()=>{showEmojiPicker = index;emojiDialog.show()}} >
+          <div class="grip" ><Fa icon={faGripVertical}/></div>
+          <sl-button on:click={()=>{showEmojiPicker = index;emojiDialog.show()}} >
             <span style="font-size:180%">{labelDefs[index].emoji}</span>
-          </Button>
-          <input class='textarea' bind:value={labelDefs[index].toolTip} title="label name"/>
-          <Button icon on:click={deleteLabelDef(index)} >
-            <Icon path={mdiDelete} />
-          </Button>
+          </sl-button>
+          <sl-input class='textarea' value={labelDefs[index].toolTip} title="label name"
+          on:input={e=>labelDefs[index].toolTip = e.target.value}> </sl-input>
+          <sl-button on:click={deleteLabelDef(index)} >
+            <Fa icon={faTrash}/>
+          </sl-button>
         </div>
       </DragDropList> 
     </div>
@@ -175,9 +170,9 @@
       <div class="title-text">
         Categories:
 
-        <Button icon on:click={() => addCategoryDef()}>
-          <Icon size="20px" path={mdiPlusCircleOutline}/>
-        </Button>
+        <sl-button circle size="small" on:click={() => addCategoryDef()}>
+          <Fa icon={faPlus}/>
+        </sl-button>
       </div>
       <sl-dialog label="Choose Color" bind:this={colorDialog}>
 
@@ -216,35 +211,36 @@
         itemClass="unselectable"
         >
         <div class="category-def">
-          <Icon path={mdiDragVertical}/>
-          <Button icon on:click={()=>{
+          <div class="grip" ><Fa icon={faGripVertical}/></div>
+          <sl-button icon on:click={()=>{
             hex = categoryDefs[index].color
             showColorPicker = index;colorDialog.show()}} >
             <div style="width:30px;height:30px;font-size:180%;border-radius:50%;background-color:{categoryDefs[index].color}"></div>
-          </Button>
-          <input class='textarea' style="margin-left:10px" bind:value={categoryDefs[index].name} title="category name"/>
-          <Button icon on:click={deleteCategoryDef(index)} >
-            <Icon path={mdiDelete} />
-          </Button>
+          </sl-button>
+          <sl-input class='textarea' style="margin-left:10px" value={categoryDefs[index].name} title="category name"
+          on:input={e=>categoryDefs[index].name = e.target.value}></sl-input>
+          <sl-button icon on:click={deleteCategoryDef(index)} >
+            <Fa icon={faTrash}/>
+          </sl-button>
         </div>
       </DragDropList> 
     </div>
     <div class="edit-title">
-      <div class="title-text">Background Image:</div> <input class='textarea' maxlength="255" bind:value={props.bgUrl} />
+      <div class="title-text">Background Image:</div> <sl-input class='textarea' maxlength="255" value={props.bgUrl} on:input={e=>props.bgUrl = e.target.value} />
     </div>
 
     <div class='controls'>
       {#if handleDelete}
-        <Button on:click={handleDelete} size="small">
+        <sl-button on:click={handleDelete}>
           Archive
-        </Button>
+        </sl-button>
       {/if}
-      <Button on:click={cancelEdit} style="margin-left:10px" size="small">
+      <sl-button on:click={cancelEdit} style="margin-left:10px">
         Cancel
-      </Button>
-      <Button style="margin-left:10px" size="small" on:click={() => handleSave(text, groups, labelDefs, categoryDefs, props)} class="primary-color">
+      </sl-button>
+      <sl-button style="margin-left:10px" on:click={() => handleSave(text, groups, labelDefs, categoryDefs, props)} variant="primary">
         Save
-      </Button>
+      </sl-button>
     </div>
  </div>
 
@@ -254,7 +250,6 @@
   .board-editor {
     display: flex;
     flex-basis: 270px;
-    margin: 20px;
     font-style: normal;
     font-weight: 600;
     color: #000000;
@@ -262,21 +257,12 @@
     justify-content: flex-start;
   }
   .textarea {
-    background-color: rgba(255, 255, 255, 0.72);
-    border: 1px solid #C9C9C9;
-    box-sizing: border-box;
-    border-radius: 3px;
     width: 100%;
     padding: 5px;
     margin-right: 5px;
     font-weight: normal;
   }
-  .emoji-input {
-    width: 30px;
-  }
-  .num-input {
-    width: 20px;
-  }
+
   .controls {
     display: flex;
     flex-direction: row;
@@ -288,13 +274,16 @@
   .group {
     display: flex;
     flex-direction: row;
+    align-items: center;
   }
   .label-def, .category-def {
     display: flex;
     flex-direction: row;
     align-items: center;
   }
-  .category-def {
+  .grip {
+    margin-right:10px;
+    cursor: pointer;
   }
   .title-text {
     display: flex;

@@ -7,7 +7,7 @@
     import { mdiChevronDown, mdiImport, mdiShapeSquarePlus, mdiArchiveArrowUp } from '@mdi/js';
 
 
-    let creating = false
+    let newBoardDialog
 
     const { getStore } :any = getContext('tsStore');
 
@@ -41,7 +41,7 @@
 
 <div class="board-menu">
 <input style="display:none" type="file" accept=".json" on:change={(e)=>onFileSelected(e)} bind:this={fileinput} >
-<Button icon on:click={()=>creating = true} style="margin-left:10px" title="New Board"><Icon path={mdiShapeSquarePlus} /></Button>
+<Button icon on:click={()=>newBoardDialog.open()} style="margin-left:10px" title="New Board"><Icon path={mdiShapeSquarePlus} /></Button>
 <Button icon on:click={()=>{fileinput.click();}} title="Import Board"><Icon path={mdiImport} /></Button>
 {#if activeBoards}
 <Menu>
@@ -82,9 +82,8 @@
 </Menu>
 {/if}
 
-{#if creating}
-    <NewBoardDialog bind:active={creating}></NewBoardDialog>
-{/if}
+<NewBoardDialog bind:this={newBoardDialog}></NewBoardDialog>
+
 </div>
 <style>
   .board-menu {

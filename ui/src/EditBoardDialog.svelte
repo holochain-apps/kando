@@ -1,5 +1,4 @@
 <script lang="ts">
-    import { Dialog } from 'svelte-materialify';
     import { cloneDeep } from "lodash";
     import { type Board, type Group, type LabelDef, type BoardState, UngroupedId, type BoardProps, CategoryDef } from './board';
     import BoardEditor from './BoardEditor.svelte';
@@ -7,14 +6,18 @@
     import { getContext, onMount } from 'svelte';
     import { isEqual } from 'lodash'
     import type { EntryHashB64 } from '@holochain/client';
+    import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
+    import '@shoelace-style/shoelace/dist/components/button/button.js';
+    import type SlDialog from '@shoelace-style/shoelace/dist/components/dialog/dialog';
 
     export let boardHash:EntryHashB64|undefined = undefined
     let editName = ''
     let editGroups: Array<Group> = []
     let editLabelDefs = []
     let editCategoryDefs = []
-    let editProps:BoardProps = {bgUrl:"",labels:[]}
+    let editProps:BoardProps = {category:"", bgUrl:"",labels:[]}
 
+    let dialog: SlDialog
     onMount(async () => {
 
         const board: Board | undefined = await store.boardList.getBoard(boardHash)
@@ -30,12 +33,13 @@
             if (index != -1) {
                 editGroups.splice(index,1)
             }
+            console.log("DI",dialog)
+            dialog.show()
         } else {
             console.log("board not found:", boardHash)
         }
     })
 
-    export let active = true
     const { getStore } :any = getContext('tsStore');
 
     const store:KanDoStore = getStore();
@@ -91,11 +95,15 @@
         close()
     }
     const close = ()=>{
-        active=false
+        dialog.hide()
         boardHash=undefined
     }
 
 </script>
-<Dialog persistent bind:active>
-    <BoardEditor title="Edit Board" handleSave={updateBoard(boardHash)} handleDelete={archiveBoard(boardHash)} cancelEdit={close} text={editName} groups={editGroups} labelDefs={editLabelDefs} categoryDefs={editCategoryDefs} props={editProps}/>
-</Dialog>
+<sl-dialog persistent bind:this={dialog} label="Edit Board" 
+on:sl-request-close={(event)=>{
+    if (event.detail.source === 'overlay') {
+    event.preventDefault();    
+}}}>
+    <BoardEditor handleSave={updateBoard(boardHash)} handleDelete={archiveBoard(boardHash)} cancelEdit={close} text={editName} groups={editGroups} labelDefs={editLabelDefs} categoryDefs={editCategoryDefs} props={editProps}/>
+</sl-dialog>
