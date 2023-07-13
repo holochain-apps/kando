@@ -1,15 +1,15 @@
 <script lang="ts">
   import type { Dictionary } from "@holochain-open-dev/core-types";
-  import MultiSelect from 'svelte-multiselect'
   import type { ObjectOption } from 'svelte-multiselect'
   import type { Avatar } from './boardList';
   import type { Readable } from 'svelte/store';
   import { Button, Icon, Dialog } from 'svelte-materialify';
   import { onMount } from "svelte";
   import type { CategoryDef, LabelDef } from "./board";
-  import { mdiChevronDown } from '@mdi/js';
   import '@shoelace-style/shoelace/dist/components/select/select.js';
   import '@shoelace-style/shoelace/dist/components/option/option.js';
+  import type { AgentPubKeyB64 } from "@holochain/client/lib/types";
+  import { cloneDeep } from "lodash";
 
   export let handleSave
   export let handleDelete = undefined
@@ -28,16 +28,20 @@
   onMount(() => {
       inputElement.focus()
       if (props.agents !== undefined) {
-        selectedAvatars = props.agents.map(a=> {return {label: $avatars[a].name ? $avatars[a].name : "unamed", value: a}})
+        selectedAvatars = cloneDeep(props.agents)
       }
       if (props["labels"] !== undefined) {
-        selectedLabels = props["labels"].filter(l=>labelTypes.findIndex(lt=>lt.type==l) >= 0).map(l=> {
+        calcSelectedLabels(props["labels"])
+      }
+  })
+
+  const calcSelectedLabels = (labels:Array<string>) => {
+    selectedLabels = labels.filter(l=>labelTypes.findIndex(lt=>lt.type==l) >= 0).map(l=> {
           const idx = labelTypes.findIndex(lt => lt.type==l)
           const {emoji, toolTip} = labelTypes[idx]
           return {label: `${emoji} ${toolTip}`, value: l}
         })
-      }
-  }) 
+  }
 
   const colors=["white","#D4F3EE","#E0D7FF","#FFCCE1","#D7EEFF", "#FAFFC7", "red", "green", "yellow", "LightSkyBlue", "grey"]
   const setCategory= (type) => {
@@ -45,8 +49,7 @@
     props = props
   }
   const setAgents = () => {
-    props.agents = selectedAvatars.map(o => o.value)
-    props = props
+    props.agents = selectedAvatars
   }
 
   const avatarNames = () : ObjectOption[] => {
@@ -66,7 +69,7 @@
     props = props
   }
 
-  let selectedAvatars = []
+  let selectedAvatars:Array<AgentPubKeyB64> = []
   let selectedLabels = []
 
   const handleKeydown = (e) => {
@@ -80,6 +83,7 @@
   const getCategory = () => {
     return categories.find(c=>c.type == props.category) || ""
   }
+let labelSelect
 </script>
 <Dialog persistent bind:active>
 <div class='card-editor' style:background-color={props.color} on:keydown={handleKeydown}>
@@ -91,7 +95,6 @@
   {#if categories.length > 0}
 
   <div style="display:flex; flex-direction:row;align-items:flex-end">
-    {props.category}
     <sl-select
       value={props.category}
       label="Category"
@@ -112,17 +115,29 @@
   {/if}
   {#if labelTypes.length > 0}
   <div class="multi-select">
-    Labels: <MultiSelect bind:selected={selectedLabels} options={labelOptions()} on:change={(_event)=>setLabels()} />
+
+    <sl-select
+      bind:this={labelSelect}
+      value={selectedLabels.map(l=>l.value)}
+      label="Labels"
+      multiple 
+      >
+      {#each labelOptions() as option}
+        <sl-option value={option.value}>{option.label}</sl-option>
+      {/each}
+    </sl-select>
+
+
   </div>
   {/if}
   {#if Object.keys($avatars).length > 0}
   <div class="multi-select">
     <sl-select
-      value={selectedAvatars}
+      value={selectedAvatars.join(" ")}
       label="Assigned To"
       on:sl-change={(e)=>{
-        console.log(e.target.value)
         selectedAvatars = e.target.value
+        setAgents()
       }}
       multiple 
       >
@@ -147,7 +162,11 @@
     <Button style="margin-left:5px" size="small"on:click={cancelEdit}>
       Cancel
     </Button>
-    <Button style="margin-left:5px" size="small" class="primary-color" on:click={() => handleSave(text, groupId, props)}>
+    <Button style="margin-left:5px" size="small" class="primary-color" on:click={() => {
+      setAgents()
+      props["labels"]= labelSelect.value
+      handleSave(text, groupId, props)
+      }}>
       Save
     </Button>
   </div>
@@ -188,22 +207,5 @@
     justify-content: flex-end;
     padding-left: 7px;
     padding-top: 10px;
-  }
-  .color-buttons {
-    display: flex;
-    justify-content: space-between;
-    flex-direction: column;
-    align-items: center;
-    cursor: pointer;
-    margin-left: 5px;
-  }
-  .color-button {
-    width: 15px;
-    height: 15px;
-    margin: 2px;
-    outline: 1px lightgray solid;
-  }
-  .selected {
-    outline: 1px #000 solid;
   }
 </style>

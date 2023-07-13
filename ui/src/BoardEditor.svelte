@@ -30,7 +30,7 @@
       labelDefs = labelDefs
     }
     const addCategoryDef = () => {
-      categoryDefs.push(new CategoryDef(``,"red"))
+      categoryDefs.push(new CategoryDef(``,"#e9d74b"))
       categoryDefs = categoryDefs
     }
     const deleteCategoryDef = (index) => () => {
