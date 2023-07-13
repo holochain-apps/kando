@@ -17,7 +17,7 @@
   export let cancelEdit
   export let text = ''
   export let groupId = undefined
-  export let props = {category: undefined, agents:[]}
+  export let props = {category: "", agents:[]}
   export let avatars: Readable<Dictionary<Avatar>> 
   export let labelTypes: Array<LabelDef>
   export let categories: Array<CategoryDef>
@@ -68,7 +68,6 @@
 
   let selectedAvatars = []
   let selectedLabels = []
-  let selectedCategory = ""
 
   const handleKeydown = (e) => {
     if (e.key === "Enter" && e.ctrlKey) {
@@ -79,7 +78,7 @@
     }
   }
   const getCategory = () => {
-    return categories.find(c=>c.type == props.category)
+    return categories.find(c=>c.type == props.category) || ""
   }
 </script>
 <Dialog persistent bind:active>
@@ -92,6 +91,7 @@
   {#if categories.length > 0}
 
   <div style="display:flex; flex-direction:row;align-items:flex-end">
+    {props.category}
     <sl-select
       value={props.category}
       label="Category"
@@ -117,7 +117,20 @@
   {/if}
   {#if Object.keys($avatars).length > 0}
   <div class="multi-select">
-    Assigned To: <MultiSelect bind:selected={selectedAvatars} options={avatarNames()} on:change={(_event)=>setAgents()} />
+    <sl-select
+      value={selectedAvatars}
+      label="Assigned To"
+      on:sl-change={(e)=>{
+        console.log(e.target.value)
+        selectedAvatars = e.target.value
+      }}
+      multiple 
+      >
+      {#each avatarNames() as avatar}
+      <sl-option value={avatar.value}>{avatar.label}</sl-option>
+      {/each}
+    </sl-select>
+
   </div>
   {/if}
   <div class='controls'>

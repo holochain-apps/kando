@@ -34,7 +34,7 @@ export class Group {
 export type BoardProps = {
   bgUrl: string,
   labels: Array<uuidv1>,
-  category?: uuidv1
+  category: uuidv1
 }
 
 export interface BoardState {
@@ -236,7 +236,7 @@ export interface BoardState {
           state.categoryDefs = delta.categoryDefs
           break;
         case "add-card":
-          _initGrouping(state)    
+          _initGrouping(state)
           state.cards.push(delta.value)
           if (state.grouping[delta.group] !== undefined) {
             state.grouping[delta.group].push(delta.value.id)
