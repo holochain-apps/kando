@@ -2,29 +2,27 @@
   import KDLogoIcon from "./icons/KDLogoIcon.svelte";
   import BoardMenu from "./BoardMenu.svelte";
   import Folk from "./Folk.svelte";
-  import { Icon, Button } from 'svelte-materialify';
-  import { mdiBug } from '@mdi/js';
   import AboutDialog from "./AboutDialog.svelte";
   import type { ProfilesStore } from "@holochain-open-dev/profiles";
+  import { faBug } from "@fortawesome/free-solid-svg-icons";
+  import Fa from "svelte-fa";
 
   export let profilesStore: ProfilesStore|undefined
 
-  let showAbout = false
+  let aboutDialog
   $:bugColor = "color: #5536f9"
 </script>
 
-{#if showAbout}
-  <AboutDialog bind:active={showAbout} />
-{/if}
+  <AboutDialog bind:this={aboutDialog} />
 <div class='toolbar'>
   <div class="left-items">
-    <div class="logo" title="About KanDo!" on:click={()=>showAbout=true}><KDLogoIcon /></div>
+    <div class="logo" title="About KanDo!" on:click={()=>aboutDialog.open()}><KDLogoIcon /></div>
     <BoardMenu ></BoardMenu>
   </div>
   <div class="right-items">
     <Folk profilesStore={profilesStore}></Folk>
-    <a class="bug-link" href="https://github.com/Holo-Host/talking-cards/issues" title="Report a problem in our GitHub repo" target="_blank">
-      <Icon path={mdiBug} style={bugColor} />
+    <a href="https://github.com/holochain-apps/kando/issues" title="Report a problem in our GitHub repo" target="_blank">
+      <div class="nav-button"><Fa icon={faBug} size=2x style={bugColor} /></div>
     </a>
   </div>
 </div>

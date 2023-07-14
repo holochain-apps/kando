@@ -1,6 +1,5 @@
 <script lang="ts">
-    import { Button, Icon } from 'svelte-materialify';
-    import { mdiAccountGroup } from '@mdi/js';
+    import '@shoelace-style/shoelace/dist/components/button/button.js';
     import ParticipantsDialog from './ParticipantsDialog.svelte';
     import type { Avatar } from './boardList';
     import AvatarDialog from './AvatarDialog.svelte';
@@ -10,7 +9,9 @@
     import AvatarIcon from './AvatarIcon.svelte';
     import type { ProfilesStore } from "@holochain-open-dev/profiles";
     import { get } from 'svelte/store';    
-    
+    import Fa from 'svelte-fa'
+    import { faUserGroup } from '@fortawesome/free-solid-svg-icons';
+
     const { getStore } :any = getContext('tsStore');
     const store:KanDoStore = getStore();
     const myAgentPubKey = store.myAgentPubKey()
@@ -20,14 +21,14 @@
     $: myName =  myProfile ? myProfile.nickname : $avatars[myAgentPubKey]? $avatars[myAgentPubKey].name : ""
     $: myAvatar = $avatars[myAgentPubKey]? $avatars[myAgentPubKey] : undefined
     $: participants = store.boardList.participants()
-    let showParticipants = false
-    let editingAvatar = false
+    let participantsDialog
+    let editAvatarDialog
     let avatar: Avatar = {name:"", url:""}
     export let profilesStore: ProfilesStore|undefined
 
     onMount(async () => {
         if (!myName) {
-            editingAvatar = true
+            editAvatarDialog.open()
         }
 	});
 
@@ -36,23 +37,21 @@
         if (myAvatar) {
         avatar = myAvatar
         }
-        editingAvatar = true
+        editAvatarDialog.open()
     }
     const setAvatar = (avatar: Avatar) => {
         store.boardList.requestChanges([{type:'set-avatar', pubKey:store.myAgentPubKey(), avatar:cloneDeep(avatar)}])
-        editingAvatar = false
+        editAvatarDialog.close()
     }
 
 </script>
-<Button icon on:click={()=>{showParticipants=true}} style="margin-left:10px" title="Show Participants"><Icon path={mdiAccountGroup} />{$participants.active.length }</Button>
+<div class="nav-button" on:click={()=>{participantsDialog.open()}}  title="Show Participants">
+    <Fa icon={faUserGroup} size=2x/>{$participants.active.length }</div>
 {#if !profilesStore}
-<Button icon on:click={editAvatar} title={myName ? myName:"Edit Avatar"} style="margin-left:10px"><AvatarIcon avatar={myAvatar} border={false}></AvatarIcon></Button>
+<div class="nav-button" on:click={editAvatar} title={myName ? myName:"Edit Avatar"}>
+    <AvatarIcon size={30} avatar={myAvatar} border={false}></AvatarIcon></div>
 {/if}
 
-{#if showParticipants}
-<ParticipantsDialog bind:active={showParticipants} avatars={$avatars} profilesStore={profilesStore}/>
-{/if}
+<ParticipantsDialog bind:this={participantsDialog} avatars={$avatars} profilesStore={profilesStore}/>
 
-{#if editingAvatar}
-<AvatarDialog handleSave={setAvatar} bind:active={editingAvatar} avatar={avatar} />
-{/if}
+<AvatarDialog handleSave={setAvatar} bind:this={editAvatarDialog} avatar={avatar} />

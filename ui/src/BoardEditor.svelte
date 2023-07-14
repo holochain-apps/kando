@@ -1,6 +1,6 @@
 <script lang="ts">
-    import { Group, LabelDef, type BoardProps, CategoryDef } from './board';
-    import { onMount } from 'svelte';
+    import { Group, LabelDef, type BoardProps, CategoryDef, UngroupedId, Board } from './board';
+    import { getContext, onMount } from 'svelte';
   	import DragDropList, { VerticalDropZone, reorder, type DropEvent } from 'svelte-dnd-list';
     import ColorPicker from 'svelte-awesome-color-picker';
     import 'emoji-picker-element';
@@ -9,15 +9,54 @@
     import '@shoelace-style/shoelace/dist/components/input/input.js';
     import Fa from 'svelte-fa'
     import { faPlus, faGripVertical, faTrash} from '@fortawesome/free-solid-svg-icons';
+    import { cloneDeep } from "lodash";
+
+    import type { KanDoStore } from './kanDoStore';
+  import type { EntryHashB64 } from '@holochain/client';
+
+    const { getStore } :any = getContext('tsStore');
+
+    const store:KanDoStore = getStore();
 
     export let handleSave
     export let handleDelete = undefined
     export let cancelEdit
-    export let text = ''
-    export let props:BoardProps = {category:"", bgUrl: "",labels: []}
-    export let groups: Array<Group>
-    export let labelDefs: Array<LabelDef>
-    export let categoryDefs: Array<CategoryDef>
+
+    let boardHash:EntryHashB64|undefined = undefined
+    let text = ''
+    let props:BoardProps = {bgUrl: ""}
+    let groups: Array<Group> = []
+    let labelDefs: Array<LabelDef> = []
+    let categoryDefs: Array<CategoryDef> = []
+    let nameInput
+    export const reset = () => {
+      text = ''
+      props = {bgUrl: ""}
+      groups = [new Group("Backlog"), new Group("Prioritized"), new Group("Doing"), new Group("Done")]
+      labelDefs = []
+      categoryDefs = []
+    }
+
+    export const  edit = async (hash: EntryHashB64)=> {
+      boardHash = hash
+      const board: Board | undefined = await store.boardList.getBoard(boardHash)
+      if (board) {
+          const state = board.state()
+          text = state.name
+          nameInput.value = text
+          groups = cloneDeep(state.groups)
+          labelDefs = cloneDeep(state.labelDefs)
+          categoryDefs = cloneDeep(state.categoryDefs)
+          props = state.props ? cloneDeep(state.props) : {bgUrl:""}
+          // remove the ungrouped ID TODO find a better way.
+          const index = groups.findIndex((g)=>g.id == UngroupedId)
+          if (index != -1) {
+              groups.splice(index,1)
+          }
+      } else {
+          console.log("board not found:", boardHash)
+      }
+    }
 
     const addLabelDef = () => {
       labelDefs.push(new LabelDef(`🙂`, `description: edit-me`))
@@ -44,9 +83,6 @@
       groups = groups
     }
     onMount( async () => {
-      if (groups.length == 0) {
-          groups = [new Group("Backlog"), new Group("Prioritized"), new Group("Doing"), new Group("Done")]
-      }
     })
 
     const handleKeydown = (e) => {
@@ -100,7 +136,7 @@
 <svelte:window on:keydown={handleKeydown}/>
   <div class='board-editor'>
     <div class="edit-title">
-      <div class="title-text">Title:</div> <sl-input class='textarea' maxlength="60" bind={text}  on:input={e=>text= e.target.value}></sl-input>
+      <div class="title-text">Title:</div> <sl-input class='textarea' maxlength="60" bind:this={nameInput}  on:input={e=>text= e.target.value}></sl-input>
     </div>
     <div class="edit-groups unselectable">
       <div class="title-text">Columns:
@@ -119,8 +155,8 @@
         >
         <div class="group">
           <div class="grip" ><Fa icon={faGripVertical}/></div>
-          <sl-input class='textarea' value={groups[index].name} on:input={e=>groups[index].name = e.target.value}>
-          <sl-button circle size="small"  on:click={deleteGroup(index)}>
+          <sl-input class='textarea' value={groups[index].name} on:input={e=>groups[index].name = e.target.value}></sl-input>
+          <sl-button size="small"  on:click={deleteGroup(index)}>
           <Fa icon={faTrash}/>
           </sl-button>
         </div>
@@ -160,7 +196,7 @@
           </sl-button>
           <sl-input class='textarea' value={labelDefs[index].toolTip} title="label name"
           on:input={e=>labelDefs[index].toolTip = e.target.value}> </sl-input>
-          <sl-button on:click={deleteLabelDef(index)} >
+          <sl-button size="small"  on:click={deleteLabelDef(index)} >
             <Fa icon={faTrash}/>
           </sl-button>
         </div>
@@ -219,7 +255,7 @@
           </sl-button>
           <sl-input class='textarea' style="margin-left:10px" value={categoryDefs[index].name} title="category name"
           on:input={e=>categoryDefs[index].name = e.target.value}></sl-input>
-          <sl-button icon on:click={deleteCategoryDef(index)} >
+          <sl-button size="small" on:click={deleteCategoryDef(index)} >
             <Fa icon={faTrash}/>
           </sl-button>
         </div>

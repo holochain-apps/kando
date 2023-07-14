@@ -1,8 +1,7 @@
 import type { RootStore, SynGrammar, WorkspaceStore } from "@holochain-syn/core";
 import { get } from "svelte/store";
 import { v1 as uuidv1 } from "uuid";
-import { type AgentPubKey, type EntryHash, type AgentPubKeyB64, type EntryHashB64, encodeHashToBase64 } from "@holochain/client";
-import type { Dictionary } from "@holochain-open-dev/core-types";
+import { type AgentPubKey, type EntryHash, type EntryHashB64, encodeHashToBase64 } from "@holochain/client";
 
 export class LabelDef {
     type: uuidv1
@@ -18,10 +17,17 @@ export class CategoryDef {
   }
 }
 
+export type CardProps = {
+  title: string,
+  description: string,
+  category: uuidv1,
+  agents: Array<EntryHashB64>,
+  labels: Array<uuidv1>,
+}
+
 export type Card = {
     id: uuidv1;
-    text: string;
-    props: Object;
+    props: CardProps;
 };
   
 export const UngroupedId = "_"
@@ -33,15 +39,13 @@ export class Group {
 }
 export type BoardProps = {
   bgUrl: string,
-  labels: Array<uuidv1>,
-  category: uuidv1
 }
 
 export interface BoardState {
   status: string;
   name: string;
   groups: Group[];
-  grouping: Dictionary<Array<uuidv1>>;
+  grouping: {[key: string]: Array<uuidv1>}
   cards: Card[];
   labelDefs: LabelDef[];
   categoryDefs: CategoryDef[];
@@ -96,19 +100,8 @@ export interface BoardState {
     | {
         type: "update-card-props";
         id: uuidv1;
-        props: Object;
+        props: CardProps;
       }
-   | {
-        type: "update-card-text";
-        id: uuidv1;
-        text: string;
-      }
-
-    | {
-        type: "merge-cards";
-        srcId: uuidv1;
-        dstId: uuidv1;
-    }
     | {
         type: "delete-card";
         id: string;
@@ -123,6 +116,7 @@ export interface BoardState {
     _initGrouping(state)
     // remove the item from the group it's in
     Object.entries(state.grouping).forEach(([groupId, itemIds]) =>{
+      //@ts-ignore
       const index = itemIds.findIndex((id) => id === cardId)
       if (index >= 0) {
         state.grouping[groupId].splice(index,1)
@@ -187,7 +181,7 @@ export interface BoardState {
       state.cards = []
       state.labelDefs = []
       state.categoryDefs = []
-      state.props = {bgUrl:"", labels:[]}
+      state.props = {bgUrl:""}
       _initGrouping(state)
     },
     applyDelta( 
@@ -245,13 +239,6 @@ export interface BoardState {
             state.grouping[delta.group] = [delta.value.id]
           }
           break;
-        case "update-card-text":
-          state.cards.forEach((card, i) => {
-            if (card.id === delta.id) {
-              state.cards[i].text = delta.text;
-            }
-          });
-          break;
         case "update-card-group":
           _removeCardFromGroups(state, delta.id)
           _addCardToGroup(state, delta.group, delta.id, delta.index)
@@ -262,17 +249,6 @@ export interface BoardState {
               state.cards[i].props = delta.props;
             }
           });
-          break;
-        case "merge-cards":
-          const srcIdx = state.cards.findIndex((card) => card.id === delta.srcId)
-          const dstIdx = state.cards.findIndex((card) => card.id === delta.dstId)
-          if (srcIdx >= 0 && dstIdx >= 0) {
-            _removeCardFromGroups(state, delta.srcId)
-            const src = state.cards[srcIdx]
-            const dst = state.cards[dstIdx]
-            dst.text = `${dst.text}\n\n-----------\n\n${src.text}`
-            state.cards.splice(srcIdx,1)
-          }
           break;
         case "delete-card":
           const index = state.cards.findIndex((card) => card.id === delta.id)
@@ -309,6 +285,7 @@ export class Board {
         this.workspace.leaveWorkspace()
     }
     state(): BoardState {
+        //@ts-ignore
         return get(this.workspace.state)
     }
     requestChanges(deltas: Array<BoardDelta>) {

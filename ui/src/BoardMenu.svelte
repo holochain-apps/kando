@@ -1,10 +1,13 @@
 <script lang="ts">
-    import { Menu, Button, List, ListItem, Icon } from 'svelte-materialify';
+    import { Menu, List, ListItem } from 'svelte-materialify';
     import { getContext } from "svelte";
     import type { KanDoStore } from "./kanDoStore";
     import type { EntryHashB64 } from '@holochain/client';
     import NewBoardDialog from './NewBoardDialog.svelte';
-    import { mdiChevronDown, mdiImport, mdiShapeSquarePlus, mdiArchiveArrowUp } from '@mdi/js';
+  import { faArchive, faChevronDown, faFileImport, faSquarePlus } from '@fortawesome/free-solid-svg-icons';
+  import Fa from 'svelte-fa';
+  import '@shoelace-style/shoelace/dist/components/select/select.js';
+  import '@shoelace-style/shoelace/dist/components/option/option.js';
 
 
     let newBoardDialog
@@ -41,36 +44,27 @@
 
 <div class="board-menu">
 <input style="display:none" type="file" accept=".json" on:change={(e)=>onFileSelected(e)} bind:this={fileinput} >
-<Button icon on:click={()=>newBoardDialog.open()} style="margin-left:10px" title="New Board"><Icon path={mdiShapeSquarePlus} /></Button>
-<Button icon on:click={()=>{fileinput.click();}} title="Import Board"><Icon path={mdiImport} /></Button>
+<div class="nav-button" on:click={()=>newBoardDialog.open()} style="margin-left:10px" title="New Board"><Fa icon={faSquarePlus} size=2x /></div>
+<div class="nav-button" on:click={()=>{fileinput.click();}} title="Import Board"><Fa icon={faFileImport} size=2x/></div>
 {#if activeBoards}
-<Menu>
-    <div slot="activator">
-        <Button style="margin-left:10px">
-            {#if $activeHash}
-                {$state.name}
-            {:else}
-                <i>Select Board</i>
-            {/if}
-            <Icon path={mdiChevronDown}></Icon>
-        </Button>
-    </div>
-    <List>
-        {#each $boardList.boards as board }
-            {#if board.status !== "archived" }
-                <ListItem dense={true} on:click={()=>selectBoard(board.hash)}>{board.name}</ListItem>
-            {/if}
-        {/each}
-    </List>
-</Menu>
+<sl-select
+    placeholder="Select Board"
+    on:sl-change={(e)=>{selectBoard(e.target.value)}}
+>
+    {#each $boardList.boards as board }
+        {#if board.status !== "archived" }
+            <sl-option value={board.hash}>{board.name}</sl-option>
+        {/if}
+    {/each}
+</sl-select>
 {/if}
 {#if archivedBoards}
 <Menu>
     <div slot="activator">
-        <Button style="margin-left:10px" title="Archived Boards">
-            <Icon path={mdiArchiveArrowUp}></Icon>
-            <Icon path={mdiChevronDown}></Icon>
-        </Button>
+        <sl-button style="margin-left:10px" title="Archived Boards">
+            <Fa icon={faArchive}></Fa>
+            <Fa icon={faChevronDown}></Fa>
+        </sl-button>
     </div>
     <List>
         {#each $boardList.boards as board }

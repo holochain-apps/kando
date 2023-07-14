@@ -1,38 +1,63 @@
 <script lang="ts">
-  import type { Dictionary } from "@holochain-open-dev/core-types";
-  import type { ObjectOption } from 'svelte-multiselect'
   import type { Avatar } from './boardList';
   import type { Readable } from 'svelte/store';
-  import { Button, Icon, Dialog } from 'svelte-materialify';
   import { onMount } from "svelte";
-  import type { CategoryDef, LabelDef } from "./board";
+  import type { CardProps, CategoryDef, LabelDef } from "./board";
   import '@shoelace-style/shoelace/dist/components/select/select.js';
   import '@shoelace-style/shoelace/dist/components/option/option.js';
+  import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
+  import '@shoelace-style/shoelace/dist/components/input/input.js';
   import type { AgentPubKeyB64 } from "@holochain/client/lib/types";
   import { cloneDeep } from "lodash";
+  import type { v1 as uuidv1 } from "uuid";
 
   export let handleSave
   export let handleDelete = undefined
   export let handleArchive = undefined
   export let cancelEdit
-  export let text = ''
-  export let groupId = undefined
-  export let props = {category: "", agents:[]}
-  export let avatars: Readable<Dictionary<Avatar>> 
+  
+  export let avatars: Readable<{[key: string]: Avatar}> 
   export let labelTypes: Array<LabelDef>
   export let categories: Array<CategoryDef>
-  export let active = false
   export let title
+
+  const DEFAULT_PROPS = {title:"", description:"", category: "", agents:[], labels:[]}
+
+  let props:CardProps = DEFAULT_PROPS
+  let cardId:uuidv1 = ""
+  let columnId = undefined
+
+
+  let dialog
+
+  export const open = ()=>{
+    props = cloneDeep(DEFAULT_PROPS)
+    init()
+  }
+
+  export const edit = (id: uuidv1, prps:CardProps, col:uuidv1)=>{
+    cardId = id
+    props = prps
+    init()
+  }
+
+  const init = () => {
+    if (props.agents !== undefined) {
+        selectedAvatars = cloneDeep(props.agents)
+    } else {
+      selectedAvatars = []
+    }
+    if (props.labels !== undefined) {
+        calcSelectedLabels(props.labels)
+    } else {
+      calcSelectedLabels([])
+    }
+    dialog.show()
+  }
 
   let inputElement
   onMount(() => {
-      inputElement.focus()
-      if (props.agents !== undefined) {
-        selectedAvatars = cloneDeep(props.agents)
-      }
-      if (props["labels"] !== undefined) {
-        calcSelectedLabels(props["labels"])
-      }
+    //  inputElement.focus()
   })
 
   const calcSelectedLabels = (labels:Array<string>) => {
@@ -52,20 +77,20 @@
     props.agents = selectedAvatars
   }
 
-  const avatarNames = () : ObjectOption[] => {
-    const options:ObjectOption[] = Object.entries($avatars).map(([key,value]) => 
-    {return {label: value.name ? value.name:key, value: key}} )
+  const avatarNames = () => {
+    const options= Object.entries($avatars).map(([key,value]) => 
+    {return {label: value["name"] ? value["name"]:key, value: key}} )
     return options
   }
 
-  const labelOptions = () : ObjectOption[] => {
-    const options:ObjectOption[] = labelTypes.map(({type, emoji, toolTip}) => 
+  const labelOptions = ()  => {
+    const options = labelTypes.map(({type, emoji, toolTip}) => 
     {return {label: `${emoji} ${toolTip}`, value: type}} )
     return options
   }
 
   const setLabels = () => {
-    props["labels"] = selectedLabels.map(o => o.value)
+    props.labels = selectedLabels.map(o => o.value)
     props = props
   }
 
@@ -74,23 +99,32 @@
 
   const handleKeydown = (e) => {
     if (e.key === "Enter" && e.ctrlKey) {
-      handleSave(text, groupId, props)
+      handleSave(columnId, props)
     }
     if (e.key === "Escape") {
+      close()
       cancelEdit()
     }
   }
-  const getCategory = () => {
-    return categories.find(c=>c.type == props.category) || ""
+  const getCategory = () : CategoryDef | undefined => {
+    return categories.find(c=>c.type == props.category)
   }
+
+  export const close = ()=>{
+    dialog.hide()
+  } 
+
 let labelSelect
 </script>
-<Dialog persistent bind:active>
-<div class='card-editor' style:background-color={props.color} on:keydown={handleKeydown}>
-  <div class="dialog-title">{title}</div>
+<sl-dialog bind:this={dialog} label={title}>
+<div class='card-editor' on:keydown={handleKeydown}>
 
   <div class="card-elements">
-    <textarea class='textarea' bind:value={text} bind:this={inputElement} />
+    <sl-input label="Title" class='textarea' value={props.title} bind:this={inputElement}
+    on:sl-input={e=>props.title = e.target.value} ></sl-input>
+    <sl-textarea rows=10 label="Description" class='textarea' value={props.description} 
+    on:sl-input={e=>props.description = e.target.value} ><sl-textarea>
+
   </div>
   {#if categories.length > 0}
 
@@ -150,33 +184,34 @@ let labelSelect
   {/if}
   <div class='controls'>
     {#if handleDelete}
-      <Button size="small" class="red white-text" on:click={handleDelete}>
+      <sl-button variant="danger" on:click={()=>handleDelete(cardId)}>
         Delete
-      </Button>
+      </sl-button>
     {/if}
     {#if handleArchive}
-      <Button size="small" on:click={handleArchive}>
+      <sl-button style="margin-left:5px" on:click={()=>{close();handleArchive()}}>
         Archive
-      </Button>
+      </sl-button>
     {/if}
-    <Button style="margin-left:5px" size="small"on:click={cancelEdit}>
+    <sl-button style="margin-left:5px" on:click={()=>{close();cancelEdit()}}>
       Cancel
-    </Button>
-    <Button style="margin-left:5px" size="small" class="primary-color" on:click={() => {
+    </sl-button>
+    <sl-button style="margin-left:5px" variant="primary" on:click={() => {
       setAgents()
-      props["labels"]= labelSelect.value
-      handleSave(text, groupId, props)
+      if (labelTypes.length > 0)
+        props.labels= labelSelect.value
+      handleSave(columnId, props)
+      close()
       }}>
       Save
-    </Button>
+    </sl-button>
   </div>
 </div>
-</Dialog>
+</sl-dialog>
 <style>
   .card-editor {
     display: flex;
     flex-basis: 270px;
-    margin: 20px;
     font-style: normal;
     color: #000000;
     justify-content: space-between;
@@ -184,19 +219,10 @@ let labelSelect
   }
   .card-elements {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     flex-basis: 100%;
   }
-  .textarea {
-    background-color: rgba(255, 255, 255, 0.72);
-    border: 1px solid #C9C9C9;
-    box-sizing: border-box;
-    border-radius: 3px;
-    width: 100%;
-    min-height: 200px;
-    font-weight: normal;
-    padding: 2px;
-  }
+
   .multi-select {
     margin: 5px 0;
   }

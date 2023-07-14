@@ -5,9 +5,9 @@
     import { setContext } from 'svelte';
     import type { AppAgentClient } from '@holochain/client';
     import type { SynStore } from '@holochain-syn/store';
-    import { MaterialAppMin, Icon } from 'svelte-materialify';
-    import { mdiShapeSquarePlus, mdiCog, mdiArchiveArrowUp } from '@mdi/js';
     import type { ProfilesStore } from "@holochain-open-dev/profiles";
+  import Fa from 'svelte-fa';
+  import { faCog, faFileImport, faSquarePlus } from '@fortawesome/free-solid-svg-icons';
 
     export let roleName = ""
   
@@ -30,8 +30,6 @@
     });
     const DEFAULT_KD_BG_IMG = "https://images.unsplash.com/photo-1557682250-33bd709cbe85"
     //const DEFAULT_KD_BG_IMG = "https://img.freepik.com/free-photo/studio-background-concept-abstract-empty-light-gradient-purple-studio-room-background-product-plain-studio-background_1258-54461.jpg"
-    const DEFAULT_TS_BG_IMG = "https://img.freepik.com/free-photo/fading-blue-background_53876-88684.jpg"
-    //const DEFAULT_TS_BG_IMG = "https://ceptr.org/images/banner.jpg"
     const NO_BOARD_IMG = "https://holochain.org/img/big_logo.png"
     $: boardList = tsStore? tsStore.boardList.stateStore() : undefined
     $: archivedBoards = boardList ? $boardList.boards.filter((board)=>board.status === "archived") : []
@@ -66,7 +64,6 @@
   </svelte:head>
   <div class="flex-scrollable-parent">
     <div class="flex-scrollable-container">
-  <MaterialAppMin >
     <div class='app' style={bgImage}>
 
     {#if tsStore}
@@ -74,13 +71,13 @@
       {#if ($boardList.avatars[myAgentPubKey] && $boardList.avatars[myAgentPubKey].name) || profilesStore}
         {#if boardList && $boardList.boards.length == 0}
           <div class="welcome-text">
-            <h5>Welcome!</h5>
+            <h2>Welcome!</h2>
               <p>KanDo offers real-time collaborative Kanban boards for task and project management. </p>
               <p>
-                Click on the <Icon style="width:20px; color:black; vertical-align: bottom;" path={mdiShapeSquarePlus}></Icon> above to create your first board.
+                Click on the <Fa style="width:20px; color:black; " icon={faSquarePlus}></Fa> above to create your first board.
                 You can add columns for your board, customize voting categories and settings, and more in the board creation window.
               </p>
-            <p>You can always edit these settings with the <Icon style="width:20px; color:black; vertical-align: bottom;" path={mdiCog}></Icon> button in the upper right when you have a board selected. </p>
+            <p>You can always edit these settings with the <Fa style="width:20px; color:black; " icon={faCog}></Fa> button in the upper right when you have a board selected. </p>
           </div>
         {/if}
         {#if boardList && $boardList.boards.length > 0 && $activeBoardHash === undefined}
@@ -88,11 +85,11 @@
             <!-- {#if !$boardList.agentBoards[myAgentPubKey]} -->
               <p>Active Boards: {activeBoards.length}, Archived Boards: {archivedBoards.length}</p>
                 <p>
-                  Select a board from the dropdown above, or add a new one with the  <Icon style="width:20px; color:black; vertical-align: bottom;" path={mdiShapeSquarePlus}></Icon> button.
+                  Select a board from the dropdown above, or add a new one with the  <Fa style="width:20px; color:black; " icon={faSquarePlus}></Fa> button.
                   You can add columns for your board, customize voting categories and settings, and more in the board creation window.
                 </p>
-              <p>You can always edit these settings with the <Icon style="width:20px; color:black; vertical-align: bottom;" path={mdiCog}></Icon> button in the upper right when you have a board selected. </p>
-              <p>Any boards that you have archived will appear under the <Icon style="width:20px; color:black; vertical-align: bottom;" path={mdiArchiveArrowUp}></Icon> button, and you can un-archive them by selecting them from the list.</p>
+              <p>You can always edit these settings with the <Fa style="width:20px; color:black; " icon={faCog}></Fa> button in the upper right when you have a board selected. </p>
+              <p>Any boards that you have archived will appear under the <Fa style="width:20px; color:black; " icon={faFileImport}></Fa> button, and you can un-archive them by selecting them from the list.</p>
             <!-- {:else}
               <h4> My Boards</h4>
               <div class="my-boards">
@@ -115,7 +112,7 @@
       <div class="loading"><div class="loader"></div></div>
     {/if}
   </div>
-</MaterialAppMin>
+
 </div></div>
 <style>
   .app {

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { encodeHashToBase64 } from '@holochain/client';
-  import { Dialog } from 'svelte-materialify';
+  import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
   import { getContext } from "svelte";
   import type { KanDoStore } from "./kanDoStore";
   import AvatarIcon from './AvatarIcon.svelte';
@@ -16,12 +16,14 @@
 
   $: allProfiles = profilesStore ? profilesStore.allProfiles : undefined
 
-  export let active = false;
   export let avatars
+  export const close=()=>{dialog.hide()}
+  export const open=()=>{dialog.show()}
+  let dialog
 
   const handleKeydown = (e) => {
     if (e.key === "Escape") {
-        active=false
+        close()
     }
   }
   const getProfile = (folk) : Profile | undefined => {
@@ -39,9 +41,8 @@
 </script>
 <svelte:window on:keydown={handleKeydown}/>
 
-<Dialog bind:active>
+<sl-dialog label="Participants Online" bind:this={dialog}>
     <div class="participants">
-        <div class="dialog-title">Participants Online</div>
         <div class="list">
             {#if profilesStore}
                 {#each activeFolk.map(f=>{return {folk:f, profile:getProfile(f)}}) as {folk, profile}}
@@ -71,11 +72,10 @@
             {/if}
         </div>
     </div>
-</Dialog>
+</sl-dialog>
 
 <style>
     .participants {
-        margin: 20px;
     }
     .list {
         display: flex;

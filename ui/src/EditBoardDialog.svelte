@@ -1,6 +1,4 @@
 <script lang="ts">
-    import { cloneDeep } from "lodash";
-    import { type Board, type Group, type LabelDef, type BoardState, UngroupedId, type BoardProps, CategoryDef } from './board';
     import BoardEditor from './BoardEditor.svelte';
     import type { KanDoStore } from './kanDoStore';
     import { getContext, onMount } from 'svelte';
@@ -9,44 +7,28 @@
     import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
     import '@shoelace-style/shoelace/dist/components/button/button.js';
     import type SlDialog from '@shoelace-style/shoelace/dist/components/dialog/dialog';
+  import type { Board, BoardProps, BoardState, CategoryDef, Group, LabelDef } from './board';
 
-    export let boardHash:EntryHashB64|undefined = undefined
-    let editName = ''
-    let editGroups: Array<Group> = []
-    let editLabelDefs = []
-    let editCategoryDefs = []
-    let editProps:BoardProps = {category:"", bgUrl:"",labels:[]}
+    let boardHash:EntryHashB64|undefined = undefined
 
     let dialog: SlDialog
     onMount(async () => {
 
-        const board: Board | undefined = await store.boardList.getBoard(boardHash)
-        if (board) {
-            const state = board.state()
-            editName = state.name
-            editGroups = cloneDeep(state.groups)
-            editLabelDefs = cloneDeep(state.labelDefs)
-            editCategoryDefs = cloneDeep(state.categoryDefs)
-            editProps = state.props ? cloneDeep(state.props) : {bgUrl:""}
-            // remove the ungrouped ID TODO find a better way.
-            const index = editGroups.findIndex((g)=>g.id == UngroupedId)
-            if (index != -1) {
-                editGroups.splice(index,1)
-            }
-            console.log("DI",dialog)
-            dialog.show()
-        } else {
-            console.log("board not found:", boardHash)
-        }
     })
+
+    export const  open = async (hash: EntryHashB64)=> {
+        boardHash = hash
+        boardEditor.edit(hash)
+        dialog.show()
+    }
 
     const { getStore } :any = getContext('tsStore');
 
     const store:KanDoStore = getStore();
 
-    const updateBoard = (hash: EntryHashB64) => async ( name: string, groups: Group[], labelDefs: LabelDef[],  categoryDefs: CategoryDef[], props: BoardProps) => {
+    const updateBoard = async ( name: string, groups: Group[], labelDefs: LabelDef[],  categoryDefs: CategoryDef[], props: BoardProps) => {
         // ignore board type we don't update that.
-        const board: Board | undefined = await store.boardList.getBoard(hash)
+        const board: Board | undefined = await store.boardList.getBoard(boardHash)
         if (board) {
         let changes = []
         const state: BoardState = board.state()
@@ -85,25 +67,25 @@
             })
         }
         if (changes.length > 0) {
-            await store.boardList.requestBoardChanges(hash,changes)
+            await store.boardList.requestBoardChanges(boardHash, changes)
         }
         }
         close()
     }
-    const archiveBoard = (hash: EntryHashB64) => () => {
-        store.boardList.archiveBoard(hash)
+    const archiveBoard = () => {
+        store.boardList.archiveBoard(boardHash)
         close()
     }
     const close = ()=>{
         dialog.hide()
         boardHash=undefined
     }
-
+    let boardEditor
 </script>
 <sl-dialog persistent bind:this={dialog} label="Edit Board" 
 on:sl-request-close={(event)=>{
     if (event.detail.source === 'overlay') {
     event.preventDefault();    
 }}}>
-    <BoardEditor handleSave={updateBoard(boardHash)} handleDelete={archiveBoard(boardHash)} cancelEdit={close} text={editName} groups={editGroups} labelDefs={editLabelDefs} categoryDefs={editCategoryDefs} props={editProps}/>
+    <BoardEditor bind:this={boardEditor} handleSave={updateBoard} handleDelete={archiveBoard} cancelEdit={close}/>
 </sl-dialog>

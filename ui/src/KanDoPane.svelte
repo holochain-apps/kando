@@ -1,23 +1,43 @@
 <script lang="ts">
-  import { getContext } from "svelte";
+  import { createEventDispatcher, getContext } from "svelte";
   import CardEditor from "./CardEditor.svelte";
   import EmojiIcon from "./icons/EmojiIcon.svelte";
   import { sortBy } from "lodash/fp";
   import type { KanDoStore } from "./kanDoStore";
   import SortSelector from "./SortSelector.svelte";
   import { Marked, Renderer } from "@ts-stack/markdown";
-  import { cloneDeep } from "lodash";
-  import { Pane } from "./pane";
-  import type { v1 as uuidv1 } from "uuid";
-  import { type Card, Group, UngroupedId } from "./board";
-  import { mdiArchive, mdiArchiveCheck, mdiArrowRightThick, mdiCloseBoxOutline, mdiCog, mdiExport, mdiPlusCircleOutline } from "@mdi/js";
-  import { Icon, Button } from "svelte-materialify";
+  import { v1 as uuidv1 } from "uuid";
+  import { type Card, Group, UngroupedId, type CardProps, type BoardState } from "./board";
   import EditBoardDialog from "./EditBoardDialog.svelte";
-  import type { Dictionary } from "@holochain-open-dev/core-types";
   import AvatarIcon from "./AvatarIcon.svelte";
   import { decodeHashFromBase64 } from "@holochain/client";
+  import { cloneDeep, isEqual } from "lodash";
+  import sanitize from "sanitize-filename";
+  import Fa from "svelte-fa";
+  import { faArchive, faArrowRight, faClose, faCog, faFileExport, faPlus, faXmark } from "@fortawesome/free-solid-svg-icons";
 
-  const pane = new Pane();
+
+  const download = (filename: string, text: string) => {
+    var element = document.createElement('a');
+    element.setAttribute('href', 'data:text/json;charset=utf-8,' + encodeURIComponent(text));
+    element.setAttribute('download', filename);
+
+    element.style.display = 'none';
+    document.body.appendChild(element);
+
+    element.click();
+
+    document.body.removeChild(element);
+  }
+
+  const exportBoard = (state: BoardState) => {
+        const prefix = "kando"
+        const fileName = sanitize(`${prefix}_export_${state.name}.json`)
+        download(fileName, JSON.stringify(state))
+        alert(`Your board was exported to your Downloads folder as: '${fileName}'`)
+    }
+
+  const dispatch = createEventDispatcher()
 
   Marked.setOptions
   ({
@@ -47,15 +67,24 @@
     ? sortBy((card: Card) => countLabels(card.props, sortOption) * -1)
     : (items) => items;
 
-  $: unused = groupCards(items);
   $: avatars = tsStore.boardList.avatars()
 
   let creatingInColumn: uuidv1 | undefined = undefined;
-  let editText = "";
+  let createCardDialog
+  let editCardDialog
   let editingCardId: uuidv1
 
-  let columns:Dictionary<Group> = {}
-  let cardsMap:Dictionary<Card> ={}
+  let columns:{ [key:string]: Group } = {}
+  let cardsMap:{ [key:string]:Card } ={}
+  $: unused = groupCards(items);
+  const groupCards = (items) => {
+    if ($state) {
+      columns = {}
+      $state.groups.forEach(g => columns[g.id] = cloneDeep(g))
+      cardsMap = {} 
+      items.forEach(s => cardsMap[s.id] = cloneDeep(s))
+    }
+  }
 
   let showArchived = false
 
@@ -67,28 +96,18 @@
     return items
   }
 
-  // TODO refactor into pane?
-  const groupCards = (items) => {
-    if ($state) {
-      columns = {}
-      $state.groups.forEach(g => columns[g.id] = cloneDeep(g))
-      cardsMap = {} 
-      items.forEach(s => cardsMap[s.id] = cloneDeep(s))
-    }
-  }
-
   const newCard = (group: uuidv1) => () => {
       creatingInColumn = group;
+      createCardDialog.open()
   };
   
-  const createCard = (text:string, _groupId: uuidv1, props:any) => {
-    pane.addCard(text, creatingInColumn, props)
+  const createCard = (_groupId: uuidv1, props:any) => {
+    addCard(creatingInColumn, props)
     creatingInColumn = undefined
   }
 
   const clearEdit = () => {
     editingCardId = undefined;
-    editText = "";
   };
 
   const cancelEdit = () => {
@@ -96,22 +115,53 @@
     clearEdit();
   }
   
-  const editCard = (id: uuidv1, text: string) => () => {
+  const editCard = (id: uuidv1, props:Object) => () => {
     editingCardId = id;
-    editText = text;
+    editCardDialog.edit(id, props)
   };
 
+  const addCard = (column: uuidv1, props: CardProps) => {
+      if (column === undefined) {column = 0}
+      const card:Card = {
+        id: uuidv1(),
+        props,
+      };
+      dispatch("requestChange", [{ type: "add-card", value: card, group: column}]);
+  };
+
+  const updateCard = (_groupId: uuidv1, props:CardProps) => {
+      const card = items.find((card) => card.id === editingCardId);
+      if (!card) {
+        console.error("Failed to find item with id", editingCardId);
+      } else {
+        let changes = []
+        console.log("card.props", card.props, "props", props)
+        if (!isEqual(card.props, props)) {
+          changes.push({ type: "update-card-props", id: card.id, props: cloneDeep(props)})
+        }
+        if (changes.length > 0) {
+        dispatch("requestChange", changes);
+        }
+      }
+      clearEdit()
+  };
+    
+  const deleteCard = (id: uuidv1) => {
+        dispatch("requestChange", [{ type: "delete-card", id }]);
+        clearEdit()
+    };
+
   const countLabels = (props, type) : number | undefined => {
-    if (typeof props["labels"] === 'undefined') {
+    if (typeof props.labels === 'undefined') {
       return undefined
     }
-    return props["labels"].includes(type) ? 1 : 0
+    return props.labels.includes(type) ? 1 : 0
   };
 
   const closeBoard = () => {
     tsStore.boardList.closeActiveBoard();
   };
-  let editing = false
+  let editBoardDialog
   let dragOn = true
   let draggingHandled = true
   let draggedItemId = ""
@@ -182,7 +232,7 @@
       if (dragWithSelf) {
         dragOrder-=1
       }
-      pane.dispatch("requestChange",[{ type: "update-card-group", id:srcId, group:column.id, index: dragOrder }])
+      dispatch("requestChange",[{ type: "update-card-group", id:srcId, group:column.id, index: dragOrder }])
     }
     clearDrag()
     //console.log("handleDragDropColumn",e, column )
@@ -196,7 +246,7 @@
   }
 
   const isLabeled = (props, type: string) :boolean => {
-    return (props["labels"]!== undefined) && props["labels"].includes(type)
+    return (props.labels!== undefined) && props.labels.includes(type)
   }
 
   $: sortedColumns = () => {
@@ -211,11 +261,10 @@
     }
   }
 
+
 </script>
 <div class="board">
-  {#if editing}
-    <EditBoardDialog bind:active={editing} boardHash={cloneDeep($activeHash)}></EditBoardDialog>
-  {/if}
+    <EditBoardDialog bind:this={editBoardDialog}></EditBoardDialog>
   <div class="top-bar">
     <div class="left-items">
       <h5>{$state.name}</h5>
@@ -225,22 +274,42 @@
         Sort: <SortSelector {setSortOption} {sortOption} />
       </div>
       <div class="archived">
-        <Button size=small icon on:click={()=>showArchived=!showArchived} title={showArchived ? "Hide Archived Cards" : "Show Archived Cards"}>
-          <Icon path={showArchived ? mdiArchiveCheck : mdiArchive} />
-        </Button>
+        <sl-button circle on:click={()=>showArchived=!showArchived} title={showArchived ? "Hide Archived Cards" : "Show Archived Cards"}>
+          <Fa icon={showArchived ? faArchive: faArchive} />
+        </sl-button>
       </div>
-      <Button size=small icon on:click={()=>editing=true} title="Settings">
-        <Icon path={mdiCog} />
-      </Button>
-      <Button size=small icon on:click={() => pane.exportBoard($state)} title="Export">
-        <Icon path={mdiExport} />
-      </Button>
-      <Button size=small icon on:click={closeBoard} title="Close">
-        <Icon path={mdiCloseBoxOutline} />
-      </Button>
+      <sl-button circle on:click={()=> editBoardDialog.open(cloneDeep($activeHash))} title="Settings">
+        <Fa icon={faCog} size="1x"/>
+      </sl-button>
+      <sl-button circle on:click={() => exportBoard($state)} title="Export">
+        <Fa icon={faFileExport} />
+      </sl-button>
+      <sl-button circle on:click={closeBoard} title="Close">
+        <Fa icon={faClose} />
+      </sl-button>
     </div>
   </div>
   {#if $state}
+  <CardEditor
+    bind:this={createCardDialog}              
+    title="New Card"
+    handleSave={createCard} {cancelEdit} avatars={avatars} labelTypes={$state.labelDefs} categories={$state.categoryDefs} />
+  <CardEditor
+    bind:this={editCardDialog}
+    title="Edit Card"
+    handleSave={updateCard}
+    handleDelete={deleteCard}
+    handleArchive={() => {
+        dispatch("requestChange",[{ type: "update-card-group", id:editingCardId, group:UngroupedId  }])
+        clearEdit()
+    }}
+    {cancelEdit}
+    avatars={avatars}
+    labelTypes={$state.labelDefs}
+    categories={$state.categoryDefs}
+  />
+
+
     <div class="columns">
       {#each sortedColumns() as [columnId, cardIds], i}
         <div class="column-wrap">
@@ -257,42 +326,13 @@
             <div>{columnId === UngroupedId ? "Archived" : columns[columnId].name}</div>
           </div>
           <div class="cards">
-          {#each sorted(cardIds, sortCards) as { id:cardId, text, labels, props }, i}
-              {#if editingCardId === cardId}
-                <CardEditor
-                  title="Edit Card"
-                  handleSave={
-                    pane.updateCard(items, cardId, clearEdit)
-                  }
-                  handleDelete={
-                    columnId === UngroupedId ?
-                      pane.deleteCard(cardId, clearEdit) :
-                      undefined
-                  }
-                  handleArchive={
-                    columnId !== UngroupedId ?
-                    () => {
-                      pane.dispatch("requestChange",[{ type: "update-card-group", id:cardId, group:UngroupedId  }])
-                      clearEdit()
-                    } :
-                    undefined
-                  }
-                  {cancelEdit}
-                  text={editText}
-                  groupId={columnId}
-                  props={props}
-                  avatars={avatars}
-                  active={editingCardId}
-                  labelTypes={$state.labelDefs}
-                  categories={$state.categoryDefs}
-                />
-              {/if}
+          {#each sorted($state.grouping[columnId], sortCards) as { id:cardId, text, labels, props }, i}
                 {#if 
                   dragTarget == columnId && 
                   cardId!=draggedItemId && 
                   dragOrder == i && 
                   (!dragWithSelf || $state.grouping[columnId][dragOrder-1] != draggedItemId) }
-                 <div> <Icon path={mdiArrowRightThick} /> </div>
+                 <div> <Fa icon={faArrowRight} /> </div>
                 {/if}
                 <div 
                   class="card"
@@ -304,11 +344,12 @@
                   on:dragend={handleDragEnd}
 
 
-                  on:click={editCard(cardId, text)} 
+                  on:click={editCard(cardId, props)} 
                   style:background-color={props && props.category ?  $state.categoryDefs.find(c=>c.type == props.category).color : "white"}
                   >
                   <div class="card-content">
-                    {@html Marked.parse(text)}
+                    <h3>{props.title}</h3>
+                    {@html Marked.parse(props.description)}
                   </div>
                   <div class="labels">
                     {#each $state.labelDefs as {type, emoji, toolTip}}
@@ -327,20 +368,17 @@
                 </div>
         {/each}
           {#if dragTarget == columnId && dragOrder == $state.grouping[columnId].length}
-            <div> <Icon path={mdiArrowRightThick} /> </div>
+            <div> <Fa icon={faArrowRight} />  </div>
           {/if}
 
           </div>
-          {#if creatingInColumn !==undefined  && creatingInColumn == columnId}
-            <CardEditor                   
-              title="New Card"
-              handleSave={createCard} {cancelEdit} avatars={avatars} active={creatingInColumn} labelTypes={$state.labelDefs} categories={$state.categoryDefs} />
-          {/if}
           <div class="column-item column-footer">
-            <Button style="padding: 0 5px;" size="small" text on:click={newCard(columnId)}>
-              Add Card
-              <Icon style="margin-left:5px" size="20px" path={mdiPlusCircleOutline}/>
-            </Button>
+            <sl-button style="padding: 0 5px;" size="small" text on:click={newCard(columnId)}>
+              <div style="display: flex;">
+                Add Card
+                <div style="margin-left:5px"><Fa icon={faPlus}/></div>
+              </div>
+            </sl-button>
           </div>
         </div>
         </div>
@@ -349,20 +387,6 @@
   {/if}
 </div>
 <style>
-  :global(.dialog-title) {
-    display: flex;
-    justify-content: space-between;
-    font-size: 110%;
-    font-weight: bold;
-    border-bottom: solid 1px gray;
-    margin-bottom: 12px;
-    margin-left: -20px;
-    padding-left: 20px;
-    padding-right: 20px;
-    margin-right: -20px;
-    margin-top: -20px;
-    padding-top: 12px;
-  }
   .board {
     display: flex;
     flex-direction: column;
@@ -402,8 +426,7 @@
     height: 47px;
     padding-right: 10px;
   }
-  .archived {
-  }
+ 
   .columns {
     display: flex;
     flex: 0 1 auto;
@@ -474,7 +497,6 @@
   .card-content {
     overflow-y: auto;
     max-height: 200px;
-    margin-top: 16px;
     padding: 0 5px;
   }
   .labels {

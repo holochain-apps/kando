@@ -1,41 +1,48 @@
 <script lang="ts">
-    import { Dialog, Button } from 'svelte-materialify';
+    import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
+    import '@shoelace-style/shoelace/dist/components/button/button.js';
     import AvatarIcon from './AvatarIcon.svelte';
 
-    export let active = false;
     export let avatar
     export let handleSave
 
     const handleKeydown = (e) => {
       if (e.key === "Escape") {
-        active=false
+        close()
       } else if (e.key === "Enter" && e.ctrlKey && avatar.name!=="") {
         handleSave(avatar)
       }
     }
-
+    export const close=()=>{dialog.hide()}
+    export const open=()=>{dialog.show()}
+    let dialog
 </script>
 <svelte:window on:keydown={handleKeydown}/>
 
-<Dialog persistent bind:active>
+<sl-dialog label="Edit Profile" bind:this={dialog}>
     <div class="avatar-editor">
-      <div class="dialog-title">Edit Profile</div>
-      Name: <input class='textarea' bind:value={avatar.name} />
-      Avatar Image URL: 
-      <span class="row">
+      <sl-input label="Name" class='textarea' value={avatar.name} on:input={e=>avatar.name=e.target.value} ></sl-input>
+       
+      <span class="row" style="margin-top:10px;align-items:flex-end">
+        <sl-input label="Avatar Image URL" class='textarea' value={avatar.url} on:input={e=>avatar.url=e.target.value}></sl-input>
         <AvatarIcon avatar={avatar} size={30} style="margin-right:10px"/>
-        <input class='textarea' bind:value={avatar.url} />
       </span>
       <div class='controls'>
-          <Button on:click={()=>active=false} style="margin-left:10px" size="small">
-              Cancel
-          </Button>
-          <Button disabled={avatar.name==""} style="margin-left:10px" size="small" on:click={() => handleSave(avatar)} class={avatar.name!=="" ? "primary-color":""}>
-              Save
-          </Button>
+        <div id="cancel-button" >
+          <sl-button
+            label="Cancel"
+            on:click={() => close()}
+            style=" margin-right: 16px"
+            >Cancel</sl-button>
+        </div>
+        <div id="save-button" >
+          <sl-button 
+            on:click={() => {close();handleSave(avatar)}}
+            variant=primary>Save</sl-button>
+        </div>
       </div>
     </div>
-</Dialog>
+</sl-dialog>
 
 <style>
     .row {
@@ -45,7 +52,6 @@
     .avatar-editor {
       display: flex;
       flex-basis: 270px;
-      margin: 20px;
       font-style: normal;
       font-weight: 600;
       color: #000000;
@@ -61,12 +67,7 @@
       padding-top: 10px;
     }
     .textarea {
-      background-color: rgba(255, 255, 255, 0.72);
-      border: 1px solid #C9C9C9;
-      box-sizing: border-box;
-      border-radius: 3px;
       width: 100%;
       font-weight: normal;
-      padding: 5px;
     }
 </style>

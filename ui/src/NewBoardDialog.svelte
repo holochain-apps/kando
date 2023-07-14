@@ -22,8 +22,10 @@
         dialog.hide()
     }
     export const open = ()=> {
+        boardEditor.reset()
         dialog.show()
     }
+    let boardEditor
 
 </script>
 <sl-dialog bind:this={dialog} label="New Board"
@@ -31,5 +33,5 @@
         if (event.detail.source === 'overlay') {
         event.preventDefault();    
   }}}>
-    <BoardEditor  handleSave={addBoard} cancelEdit={()=>dialog.hide()} labelDefs={editLabelDefs} categoryDefs={editCategoryDefs} groups={[]} props={{category:"", bgUrl:"", labels:[]}} />
+    <BoardEditor bind:this={boardEditor}  handleSave={addBoard} cancelEdit={()=>dialog.hide()} />
 </sl-dialog>
