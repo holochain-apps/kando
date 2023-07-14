@@ -1,7 +1,7 @@
 import type { RootStore, SynGrammar, WorkspaceStore } from "@holochain-syn/core";
 import { get } from "svelte/store";
 import { v1 as uuidv1 } from "uuid";
-import { type AgentPubKey, type EntryHash, type EntryHashB64, encodeHashToBase64 } from "@holochain/client";
+import { type AgentPubKey, type EntryHash, type EntryHashB64, encodeHashToBase64, type AgentPubKeyB64, type Timestamp } from "@holochain/client";
 
 export class LabelDef {
     type: uuidv1
@@ -25,9 +25,17 @@ export type CardProps = {
   labels: Array<uuidv1>,
 }
 
+export type Comment = {
+  id: uuidv1;
+  agent: AgentPubKeyB64,
+  text: string,
+  time: Timestamp
+}
+
 export type Card = {
     id: uuidv1;
     props: CardProps;
+    comments: Array<Comment>
 };
   
 export const UngroupedId = "_"
@@ -101,6 +109,11 @@ export interface BoardState {
         type: "update-card-props";
         id: uuidv1;
         props: CardProps;
+      }
+    | {
+        type: "add-card-comment";
+        id: uuidv1;
+        comment: Comment;
       }
     | {
         type: "delete-card";
@@ -247,6 +260,13 @@ export interface BoardState {
           state.cards.forEach((card, i) => {
             if (card.id === delta.id) {
               state.cards[i].props = delta.props;
+            }
+          });
+          break;
+        case "add-card-comment":
+          state.cards.forEach((card, i) => {
+            if (card.id === delta.id) {
+              state.cards[i].comments.push(delta.comment);
             }
           });
           break;

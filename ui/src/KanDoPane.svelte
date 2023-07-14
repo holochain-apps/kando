@@ -14,7 +14,8 @@
   import { cloneDeep, isEqual } from "lodash";
   import sanitize from "sanitize-filename";
   import Fa from "svelte-fa";
-  import { faArchive, faArrowRight, faClose, faCog, faFileExport, faPlus, faXmark } from "@fortawesome/free-solid-svg-icons";
+  import { faArchive, faArrowRight, faClose, faCog, faComments, faFileExport, faPlus, faXmark } from "@fortawesome/free-solid-svg-icons";
+  import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
 
 
   const download = (filename: string, text: string) => {
@@ -124,10 +125,23 @@
       if (column === undefined) {column = 0}
       const card:Card = {
         id: uuidv1(),
+        comments: [],
         props,
       };
       dispatch("requestChange", [{ type: "add-card", value: card, group: column}]);
   };
+
+  const addComment = (id: uuidv1, text: string) => {
+    const comment = {
+      id: uuidv1(),
+      text,
+      agent: tsStore.myAgentPubKey(),
+      timestamp: new Date().getTime()
+    }
+
+    dispatch("requestChange", [{ type: "add-card-comment", id, comment}]);
+  }
+
 
   const updateCard = (_groupId: uuidv1, props:CardProps) => {
       const card = items.find((card) => card.id === editingCardId);
@@ -261,7 +275,8 @@
     }
   }
 
-
+let commenting= false
+let commentText
 </script>
 <div class="board">
     <EditBoardDialog bind:this={editBoardDialog}></EditBoardDialog>
@@ -326,7 +341,7 @@
             <div>{columnId === UngroupedId ? "Archived" : columns[columnId].name}</div>
           </div>
           <div class="cards">
-          {#each sorted($state.grouping[columnId], sortCards) as { id:cardId, text, labels, props }, i}
+          {#each sorted($state.grouping[columnId], sortCards) as { id:cardId, comments, labels, props }, i}
                 {#if 
                   dragTarget == columnId && 
                   cardId!=draggedItemId && 
@@ -344,10 +359,12 @@
                   on:dragend={handleDragEnd}
 
 
-                  on:click={editCard(cardId, props)} 
+      
                   style:background-color={props && props.category ?  $state.categoryDefs.find(c=>c.type == props.category).color : "white"}
                   >
-                  <div class="card-content">
+                  <div class="card-content"
+                    on:click={editCard(cardId, props)} 
+                  >
                     <h3>{props.title}</h3>
                     {@html Marked.parse(props.description)}
                   </div>
@@ -365,6 +382,27 @@
                       <AvatarIcon size={20} avatar={$avatars[agent]} key={decodeHashFromBase64(agent)}/>
                     {/each}
                   {/if}
+                  <div class="comments">
+                    <div on:click={
+                      ()=>commenting=!commenting
+                    }><Fa icon={faComments} /></div>
+                    {#if commenting}
+                      <sl-textarea bind:this={commentText}></sl-textarea>
+                      <div on:click={()=> {
+                          addComment(cardId, commentText.value)
+                          commenting=false
+                        }
+                      }>
+                        <Fa icon={faPlus} />
+                      </div>
+                    {/if}
+                    {#each comments as comment}
+                      <div class="comment">
+                        <AvatarIcon size={20} avatar={$avatars[comment.agent]} key={decodeHashFromBase64(comment.agent)}/>
+                        <span class="comment-text">{@html Marked.parse(comment.text)}</span>
+                      </div>
+                    {/each}
+                  </div>
                 </div>
         {/each}
           {#if dragTarget == columnId && dragOrder == $state.grouping[columnId].length}
@@ -493,6 +531,8 @@
     line-height: 16px;
     color: #000000;
     border-radius: 3px;
+    display:flex;
+    flex-direction:column;
   }
   .card-content {
     overflow-y: auto;
@@ -504,6 +544,13 @@
     align-items: center;
     justify-content: space-around;
     margin-top: 5px;
+  }
+  .comment {
+    display:flex;
+    flex-direction: row;
+  }
+  .comment-text {
+    margin-left: 10px;
   }
   .avatar-name {
     border-radius: 5px;
