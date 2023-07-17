@@ -7,14 +7,14 @@
   import SortSelector from "./SortSelector.svelte";
   import { Marked, Renderer } from "@ts-stack/markdown";
   import { v1 as uuidv1 } from "uuid";
-  import { type Card, Group, UngroupedId, type CardProps, type BoardState } from "./board";
+  import { type Card, Group, UngroupedId, type CardProps, type BoardState, type Comment } from "./board";
   import EditBoardDialog from "./EditBoardDialog.svelte";
   import AvatarIcon from "./AvatarIcon.svelte";
   import { decodeHashFromBase64 } from "@holochain/client";
   import { cloneDeep, isEqual } from "lodash";
   import sanitize from "sanitize-filename";
   import Fa from "svelte-fa";
-  import { faArchive, faArrowRight, faClose, faCog, faComments, faFileExport, faPlus, faXmark } from "@fortawesome/free-solid-svg-icons";
+  import { faArchive, faArrowRight, faClose, faCog, faComments, faEdit, faFileExport, faPlus, faTrash, faXmark } from "@fortawesome/free-solid-svg-icons";
   import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
 
 
@@ -132,7 +132,7 @@
   };
 
   const addComment = (id: uuidv1, text: string) => {
-    const comment = {
+    const comment:Comment = {
       id: uuidv1(),
       text,
       agent: tsStore.myAgentPubKey(),
@@ -141,7 +141,12 @@
 
     dispatch("requestChange", [{ type: "add-card-comment", id, comment}]);
   }
-
+  const updateComment = (id: uuidv1, commentId:uuidv1, text: string) => {
+    dispatch("requestChange", [{ type: "update-card-comment", id, commentId, text}]);
+  }
+  const deleteComment = (id: uuidv1, commentId:uuidv1) => {
+    dispatch("requestChange", [{ type: "delete-card-comment", id, commentId}]);
+  }
 
   const updateCard = (_groupId: uuidv1, props:CardProps) => {
       const card = items.find((card) => card.id === editingCardId);
@@ -275,8 +280,24 @@
     }
   }
 
-let commenting= false
-let commentText
+  let commentText
+  let commenting= ""
+  let commentingCardId = ""
+  let commentDialog 
+  const newComment = (cardId:uuidv1)=> {
+    commentingCardId = cardId
+    commentDialog.label="New Comment"
+    commentText.value = ""
+    commenting="new"
+    commentDialog.show()
+  }
+  const editComment = (cardId:uuidv1, comment: Comment) => {
+    commentingCardId=cardId
+    commentDialog.label="Edit Comment"
+    commenting=comment.id
+    commentText.value = comment.text
+    commentDialog.show()
+  }
 </script>
 <div class="board">
     <EditBoardDialog bind:this={editBoardDialog}></EditBoardDialog>
@@ -340,6 +361,28 @@ let commentText
           <div class="column-item column-title">
             <div>{columnId === UngroupedId ? "Archived" : columns[columnId].name}</div>
           </div>
+
+          <sl-dialog bind:this={commentDialog}>
+            <sl-textarea bind:this={commentText}></sl-textarea>
+            <div style="display:flex;justify-content:flex-end;margin-top:5px;">
+              <sl-button style="padding: 0 5px;" size="small"  text on:click={()=> {
+                commentDialog.hide()
+              }}>
+                  Cancel
+              </sl-button>
+              <sl-button style="padding: 0 5px;" size="small" variant="primary" text on:click={()=> {
+                if (commenting=="new")
+                  addComment(commentingCardId, commentText.value)
+                else {
+                  updateComment(commentingCardId, commenting, commentText.value)
+                }
+                commentDialog.hide()
+              }}>
+                  Save
+              </sl-button>
+            </div>
+          </sl-dialog>
+
           <div class="cards">
           {#each sorted($state.grouping[columnId], sortCards) as { id:cardId, comments, labels, props }, i}
                 {#if 
@@ -357,8 +400,6 @@ let commentText
                   draggable={dragOn}
                   on:dragstart={handleDragStart}
                   on:dragend={handleDragEnd}
-
-
       
                   style:background-color={props && props.category ?  $state.categoryDefs.find(c=>c.type == props.category).color : "white"}
                   >
@@ -383,25 +424,38 @@ let commentText
                     {/each}
                   {/if}
                   <div class="comments">
-                    <div on:click={
-                      ()=>commenting=!commenting
-                    }><Fa icon={faComments} /></div>
-                    {#if commenting}
-                      <sl-textarea bind:this={commentText}></sl-textarea>
-                      <div on:click={()=> {
-                          addComment(cardId, commentText.value)
-                          commenting=false
-                        }
-                      }>
-                        <Fa icon={faPlus} />
+                    <sl-button 
+                      style="padding: 0 5px;" size="small" text on:click={()=>newComment(cardId)}>
+                      <div style="display: flex;">
+                        <div style="margin-left:5px"><Fa icon={faComments} /> <Fa icon={faPlus}/></div>
                       </div>
-                    {/if}
-                    {#each comments as comment}
-                      <div class="comment">
-                        <AvatarIcon size={20} avatar={$avatars[comment.agent]} key={decodeHashFromBase64(comment.agent)}/>
-                        <span class="comment-text">{@html Marked.parse(comment.text)}</span>
-                      </div>
-                    {/each}
+                    </sl-button>
+
+                    <div class="comment-list">
+                      {#each comments as comment}
+                        <div class="comment">
+                          <div class="comment-header">
+                            <div class="comment-avatar"><AvatarIcon size={20} avatar={$avatars[comment.agent]} key={decodeHashFromBase64(comment.agent)}/></div>
+                            {tsStore.timeAgo.format(new Date(comment.timestamp))}
+                            {#if comment.agent==tsStore.myAgentPubKey()}
+                            <div class="comment-controls">
+                              <div class="comment-button"
+                                on:click={()=>editComment(cardId, comment)}
+                                >
+                                <Fa icon={faEdit}/>
+                              </div>
+                              <div class="comment-button"
+                                on:click={()=>deleteComment(cardId, comment.id)}
+                                >
+                                <Fa icon={faTrash}/>
+                              </div>
+                            </div>
+                            {/if}
+                          </div>
+                          <span class="comment-text">{@html Marked.parse(comment.text)}</span>
+                        </div>
+                      {/each}
+                    </div>
                   </div>
                 </div>
         {/each}
@@ -545,12 +599,51 @@ let commentText
     justify-content: space-around;
     margin-top: 5px;
   }
+  .comments {
+    margin-top: 5px;
+    padding-top: 5px;
+    border-top: 1px solid;
+  }
   .comment {
     display:flex;
-    flex-direction: row;
+    flex-direction: column;
+    margin-top: 5px;
+    padding-top: 5px;
+    border-top: 1px solid lightgray;
   }
+  .comment-header {
+    display:flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .comment-avatar {
+    margin-right:5px;
+  }
+  .comment-button {
+    cursor: pointer;
+    border-radius: 50%;
+    padding:2px;
+    width:20px;
+    display: flex;
+    justify-content: center;
+  }
+  .comment-button:hover {
+    background-color: rgb(240, 249, 2244);
+    border: solid 1px rgb(149, 219, 252);
+    color:  rgb(3, 105, 161);
+  }
+  
   .comment-text {
     margin-left: 10px;
+  }
+  .comment-list {
+    max-height:200px;
+    overflow-x:auto;
+  }
+  .comment-controls {
+    display:flex;
+    justify-self: flex-end;
   }
   .avatar-name {
     border-radius: 5px;

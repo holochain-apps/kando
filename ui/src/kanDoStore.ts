@@ -12,6 +12,11 @@ import { CommitTypeBoard } from './board';
 import { BoardList, CommitTypeBoardList } from './boardList';
 import { decode } from '@msgpack/msgpack';
 import {toPromise} from '@holochain-open-dev/stores'
+import TimeAgo from "javascript-time-ago"
+import en from 'javascript-time-ago/locale/en'
+
+
+TimeAgo.addDefaultLocale(en)
 
 const ZOME_NAME = 'syn'
 
@@ -31,6 +36,7 @@ export class KanDoService {
 
 
 export class KanDoStore {
+    timeAgo = new TimeAgo('en-US')
     service: KanDoService;
     boardList: BoardList;
     createdBoards: Array<EntryHash> = []

@@ -2,6 +2,7 @@ import type { RootStore, SynGrammar, WorkspaceStore } from "@holochain-syn/core"
 import { get } from "svelte/store";
 import { v1 as uuidv1 } from "uuid";
 import { type AgentPubKey, type EntryHash, type EntryHashB64, encodeHashToBase64, type AgentPubKeyB64, type Timestamp } from "@holochain/client";
+import { cloneDeep } from "lodash";
 
 export class LabelDef {
     type: uuidv1
@@ -29,7 +30,7 @@ export type Comment = {
   id: uuidv1;
   agent: AgentPubKeyB64,
   text: string,
-  time: Timestamp
+  timestamp: Timestamp
 }
 
 export type Card = {
@@ -114,6 +115,17 @@ export interface BoardState {
         type: "add-card-comment";
         id: uuidv1;
         comment: Comment;
+      }
+    | {
+        type: "update-card-comment";
+        id: uuidv1;
+        commentId: uuidv1;
+        text: string;
+      }
+    | {
+        type: "delete-card-comment";
+        id: uuidv1;
+        commentId: uuidv1;
       }
     | {
         type: "delete-card";
@@ -266,7 +278,36 @@ export interface BoardState {
         case "add-card-comment":
           state.cards.forEach((card, i) => {
             if (card.id === delta.id) {
-              state.cards[i].comments.push(delta.comment);
+              state.cards[i].comments.unshift(delta.comment);
+            }
+          });
+          break;
+        case "update-card-comment":
+          state.cards.forEach((card, i) => {
+            if (card.id === delta.id) {
+              const comments = state.cards[i].comments
+              const index = comments.findIndex((comment) => comment.id === delta.commentId)
+              if (index >= 0) {
+                console.log("FOUND")
+                const comment = {
+                  id:state.cards[i].comments[index].id,
+                  agent:state.cards[i].comments[index].agent,
+                  text: delta.text,
+                  timestamp: new Date().getTime()
+                }
+                state.cards[i].comments.splice(index,1)
+                state.cards[i].comments.unshift(comment);
+              }
+          }});
+          break;
+        case "delete-card-comment":
+          state.cards.forEach((card, i) => {
+            if (card.id === delta.id) {
+              const comments = state.cards[i].comments
+              const index = comments.findIndex((comment) => comment.id === delta.commentId)
+              if (index>=0) {
+                state.cards[i].comments.splice(index,1)
+              }
             }
           });
           break;
