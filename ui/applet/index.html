@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en-GB">
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta charset="utf-8" />
     <style>
       body {
         background: #fafafa;
@@ -18,6 +18,8 @@
     />
   </head>
   <body>
+    <script type="module" src="../src/applet.ts"></script>
+
     <script type="module">
       import "@shoelace-style/shoelace/dist/themes/light.css";
       import { AppAgentWebsocket } from "@holochain/client";
@@ -32,7 +34,7 @@
       import { ProfilesZomeMock } from "@holochain-open-dev/profiles/dist/mocks.js";
       import { weServicesMock } from "@lightningrodlabs/we-applet/dist/mocks.js";
 
-      import Applet from "/src/applet.ts";
+      import Applet from "../src/applet.ts";
 
       async function setupAppletMain() {
         const appWs = await AppAgentWebsocket.connect(``, "");
@@ -43,7 +45,9 @@
         render(
           html`
             <profiles-context .store=${store}>
+              <profile-prompt>
                 <div id="content" style="display: flex; flex: 1"></div>
+              </profile-prompt>
             </profiles-context>
           `,
           document.body
