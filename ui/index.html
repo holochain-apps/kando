@@ -35,7 +35,7 @@
       import Applet from "/src/applet.ts";
 
       async function setupAppletMain() {
-        const appWs = await AppAgentWebsocket.connect(``, "");
+        const appWs = await AppAgentWebsocket.connect(new URL(''), "");
 
         const client = new ProfilesClient(new ProfilesZomeMock(), "kando");
         const store = new ProfilesStore(client);
@@ -60,7 +60,7 @@
       }
 
       async function setupCrossAppletMain() {
-        const appWs = await AppAgentWebsocket.connect(``, "");
+        const appWs = await AppAgentWebsocket.connect(new URL(''), "");
 
         const client = new ProfilesClient(appWs, "kando");
         const store = new ProfilesStore(client);
