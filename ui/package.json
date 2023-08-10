@@ -12,11 +12,11 @@
     "package:we": "rm -f dist.zip && npm run build:we && cd dist && bestzip ../dist.zip *"
   },
   "dependencies": {
-    "@holochain-open-dev/elements": "^0.5.0",
-    "@holochain-open-dev/profiles": "^0.14.0",
-    "@holochain-open-dev/stores": "^0.5.0",
-    "@holochain-open-dev/utils": "^0.14.0",
-    "@holochain-syn/core": "^0.5.0",
+    "@holochain-open-dev/elements": "^0.7.0",
+    "@holochain-open-dev/profiles": "^0.16.0",
+    "@holochain-open-dev/stores": "^0.6.0",
+    "@holochain-open-dev/utils": "^0.15.0",
+    "@holochain-syn/core": "^0.5.1",
     "@holochain/client": "^0.16",
     "@mdi/js": "^7.1.96",
     "@ts-stack/markdown": "^1.4.0",

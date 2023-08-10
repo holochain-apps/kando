@@ -29,6 +29,10 @@
 
 </script>
 <sl-dialog bind:this={dialog} label="New Board"
+    on:sl-initial-focus={(e)=>{
+        boardEditor.initialFocus()
+        e.preventDefault()
+    }}
     on:sl-request-close={(event)=>{
         if (event.detail.source === 'overlay') {
         event.preventDefault();    

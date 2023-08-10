@@ -4,13 +4,28 @@
     import type { KanDoStore } from "./kanDoStore";
     import type { EntryHashB64 } from '@holochain/client';
     import NewBoardDialog from './NewBoardDialog.svelte';
-  import { faArchive, faChevronDown, faFileImport, faSquarePlus } from '@fortawesome/free-solid-svg-icons';
-  import Fa from 'svelte-fa';
-  import '@shoelace-style/shoelace/dist/components/select/select.js';
-  import '@shoelace-style/shoelace/dist/components/option/option.js';
+    import { faArchive, faChevronDown, faFileImport, faSearch, faSquarePlus } from '@fortawesome/free-solid-svg-icons';
+    import Fa from 'svelte-fa';
+    import '@shoelace-style/shoelace/dist/components/select/select.js';
+    import '@shoelace-style/shoelace/dist/components/option/option.js';
+    import '@shoelace-style/shoelace/dist/components/input/input.js';
+    import '@shoelace-style/shoelace/dist/components/icon/icon.js';
+    import '@shoelace-style/shoelace/dist/components/menu/menu.js';
+    import '@shoelace-style/shoelace/dist/components/menu-item/menu-item.js';
+    import '@shoelace-style/shoelace/dist/components/menu-label/menu-label.js';
+    import type { v1 as uuidv1 } from "uuid";
+    import type { BoardRecord } from './boardList';
+    import { get } from 'svelte/store';
+  import { mdiCalendarSearch } from '@mdi/js';
 
-
+    type FoundCard = {
+        board: BoardRecord,
+        card: uuidv1,
+        title: string,
+    }
     let newBoardDialog
+    let foundCards: Array<FoundCard> = []
+    let foundBoards: Array<BoardRecord> = []
 
     const { getStore } :any = getContext('tsStore');
 
@@ -40,6 +55,32 @@
     const unarchiveBoard = (hash: EntryHashB64) => () => {
         store.boardList.unarchiveBoard(hash)
     }
+    const doSearch = (text:string) => {
+        foundBoards = []
+        foundCards = []
+        if (text == "") return
+        const searchText = text.toLocaleLowerCase()
+        $boardList.boards.forEach(b=> {
+            if (b.name.toLocaleLowerCase().includes(searchText)) foundBoards.push(b)
+            const board = store.boardList.getReadableBoardState(b.hash)
+            const boardState = get(board)
+            boardState.cards.forEach((c)=>{
+                if (c.props.title.toLocaleLowerCase().includes(searchText) || c.props.description.toLocaleLowerCase().includes(searchText)) {
+                    foundCards.push({
+                        board: b,
+                        card: c.id,
+                        title: c.props.title,
+                    })
+                }
+            })
+        })
+    }
+    const clearSearch = () => {
+        searchInput.value = ""
+        foundBoards = []
+        foundCards = []
+    }
+    let searchInput
 </script>
 
 <div class="board-menu">
@@ -75,6 +116,62 @@
     </List>
 </Menu>
 {/if}
+<div style="position:relative; margin-left:10px;">
+    <sl-input
+        bind:this={searchInput}
+        placeholder="Search"
+        pill
+        on:sl-input={(e)=>doSearch(e.target.value)}
+    >
+    <span slot="prefix"style="margin-left:10px;"><Fa icon={faSearch}></Fa></span>
+    </sl-input>
+    {#if foundBoards.length>0 || foundCards.length>0}
+    <sl-menu class="search-results"
+    on:sl-select={(e)=>{console.log("E",e.detail.item)}}
+    >
+        {#if foundCards.length>0}
+            <sl-menu-label>Cards</sl-menu-label>
+            {#each foundCards as found}
+                <sl-menu-item
+                    on:click={(e)=>{
+                        console.log("foun", found.board.hash, $activeHash)
+
+                        if (found.board.hash != $activeHash) {
+                            selectBoard(found.board.hash)
+                        }
+                        clearSearch()
+
+                    }}
+                >
+                <div style="margin-left:10px;display:flex;flex-direction: column;">
+                    <span>{found.title}</span>
+                    <span style="font-size:70%;color:gray;line-heigth:50%;">Board: {found.board.name}</span>
+                </div>
+                </sl-menu-item>
+            {/each}
+        {/if}
+        {#if foundBoards.length>0}
+            {#if foundCards.length> 0}<sl-divider></sl-divider>{/if}
+            <sl-menu-label>Boards</sl-menu-label>
+            {#each foundBoards as found}
+                <sl-menu-item
+                    on:click={(e)=>{
+                        console.log("foun", found.hash, $activeHash)
+                        if (found.hash != $activeHash) {
+                            selectBoard(found.hash)
+                        }
+                        clearSearch()
+                    }}
+                >
+                <div style="margin-left:10px;">
+                    {found.name}
+                </div>
+                </sl-menu-item>
+            {/each}
+        {/if}
+    </sl-menu>
+    {/if}
+</div>
 
 <NewBoardDialog bind:this={newBoardDialog}></NewBoardDialog>
 
@@ -85,5 +182,9 @@
     flex: 0 0 auto;
     align-items: center;
   }
-
+  .search-results {
+    position: absolute;
+    z-index: 10;
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, .15);
+    }
 </style>

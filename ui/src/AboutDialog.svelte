@@ -1,16 +1,9 @@
 <script lang="ts">
     import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
-
-    const handleKeydown = (e) => {
-        if (e.key === "Escape") {
-            dialog.hide()
-        }
-    }
     let dialog
     export const open = ()=>{dialog.show()}
 </script>
 
-<svelte:window on:keydown={handleKeydown}/>
 
 <sl-dialog label="KanDo!: UI v0.4.3 for DNA v0.3.x" bind:this={dialog} width={600} >
     <div class="about">

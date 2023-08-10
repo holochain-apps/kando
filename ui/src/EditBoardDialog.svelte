@@ -7,7 +7,7 @@
     import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
     import '@shoelace-style/shoelace/dist/components/button/button.js';
     import type SlDialog from '@shoelace-style/shoelace/dist/components/dialog/dialog';
-  import type { Board, BoardProps, BoardState, CategoryDef, Group, LabelDef } from './board';
+    import type { Board, BoardProps, BoardState, CategoryDef, Group, LabelDef } from './board';
 
     let boardHash:EntryHashB64|undefined = undefined
 
@@ -83,6 +83,12 @@
     let boardEditor
 </script>
 <sl-dialog persistent bind:this={dialog} label="Edit Board" 
+on:sl-initial-focus={(e)=>{
+    boardEditor.initialFocus()
+    e.preventDefault()
+
+  }}
+
 on:sl-request-close={(event)=>{
     if (event.detail.source === 'overlay') {
     event.preventDefault();    

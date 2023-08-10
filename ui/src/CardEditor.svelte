@@ -56,9 +56,6 @@
   }
 
   let inputElement
-  onMount(() => {
-    //  inputElement.focus()
-  })
 
   const calcSelectedLabels = (labels:Array<string>) => {
     selectedLabels = labels.filter(l=>labelTypes.findIndex(lt=>lt.type==l) >= 0).map(l=> {
@@ -97,15 +94,6 @@
   let selectedAvatars:Array<AgentPubKeyB64> = []
   let selectedLabels = []
 
-  const handleKeydown = (e) => {
-    if (e.key === "Enter" && e.ctrlKey) {
-      handleSave(columnId, props)
-    }
-    if (e.key === "Escape") {
-      close()
-      cancelEdit()
-    }
-  }
   const getCategory = () : CategoryDef | undefined => {
     return categories.find(c=>c.type == props.category)
   }
@@ -116,8 +104,16 @@
 
 let labelSelect
 </script>
-<sl-dialog bind:this={dialog} label={title}>
-<div class='card-editor' on:keydown={handleKeydown}>
+<sl-dialog bind:this={dialog} label={title}
+  on:sl-initial-focus={(e)=>{
+    e.preventDefault()
+    inputElement.focus()
+  }}
+  on:sl-request-close={(event)=>{
+    if (event.detail.source === 'overlay') {
+      event.preventDefault();    
+    }}}>
+<div class='card-editor' >
 
   <div class="card-elements">
     <sl-input label="Title" class='textarea' value={props.title} bind:this={inputElement}

@@ -12,7 +12,7 @@
     import { cloneDeep } from "lodash";
 
     import type { KanDoStore } from './kanDoStore';
-  import type { EntryHashB64 } from '@holochain/client';
+    import type { EntryHashB64 } from '@holochain/client';
 
     const { getStore } :any = getContext('tsStore');
 
@@ -35,6 +35,12 @@
       groups = [new Group("Backlog"), new Group("Prioritized"), new Group("Doing"), new Group("Done")]
       labelDefs = []
       categoryDefs = []
+      nameInput.focus()
+
+    }
+
+    export const initialFocus = () => {
+      nameInput.focus()
     }
 
     export const  edit = async (hash: EntryHashB64)=> {
@@ -56,6 +62,7 @@
       } else {
           console.log("board not found:", boardHash)
       }
+
     }
 
     const addLabelDef = () => {
@@ -85,27 +92,6 @@
     onMount( async () => {
     })
 
-    const handleKeydown = (e) => {
-      if (e.key === "Escape") {
-        cancelEdit()
-      } else if (e.key === "Enter" && e.ctrlKey) {
-        handleSave(text, groups, labelDefs, props)
-      } else  if (e.key === 'Tab') {
-        // trap focus
-        const tabbable = Array.from(document.querySelectorAll('input'))
-
-        let index = tabbable.findIndex((elem)=>elem == document.activeElement)
-  
-        if (index === -1 && e.shiftKey) index = 0;
-
-        index += tabbable.length + (e.shiftKey ? -1 : 1);
-        index %= tabbable.length;
-
-        tabbable[index].focus();
-        e.preventDefault();
-      }
-    }
-
     const onDropGroups = ({ detail: { from, to } }: CustomEvent<DropEvent>) => {
       if (!to || from === to || from.dropZoneID !== "groups") {
         return;
@@ -133,7 +119,6 @@
    let hex
 </script>
 
-<svelte:window on:keydown={handleKeydown}/>
   <div class='board-editor'>
     <div class="edit-title">
       <div class="title-text">Title:</div> <sl-input class='textarea' maxlength="60" bind:this={nameInput}  on:input={e=>text= e.target.value}></sl-input>
