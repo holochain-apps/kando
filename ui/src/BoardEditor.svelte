@@ -35,6 +35,7 @@
       groups = [new Group("Backlog"), new Group("Prioritized"), new Group("Doing"), new Group("Done")]
       labelDefs = []
       categoryDefs = []
+      nameInput.value = ""
       nameInput.focus()
 
     }
