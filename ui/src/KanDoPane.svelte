@@ -1,6 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher, getContext } from "svelte";
   import CardEditor from "./CardEditor.svelte";
+  import CardDetails from "./CardDetails.svelte";
   import EmojiIcon from "./icons/EmojiIcon.svelte";
   import { sortBy } from "lodash/fp";
   import type { KanDoStore } from "./kanDoStore";
@@ -14,7 +15,7 @@
   import { cloneDeep, isEqual } from "lodash";
   import sanitize from "sanitize-filename";
   import Fa from "svelte-fa";
-  import { faArchive, faArrowRight, faClose, faCog, faComments, faEdit, faFileExport, faPlus, faTrash, faXmark } from "@fortawesome/free-solid-svg-icons";
+  import { faArchive, faArrowRight, faClose, faCog, faComments, faEdit, faFileExport, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
   import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
 
 
@@ -73,7 +74,9 @@
   let creatingInColumn: uuidv1 | undefined = undefined;
   let createCardDialog
   let editCardDialog
+  let cardDetailsDialog
   let editingCardId: uuidv1
+  let cardDetailsId: uuidv1
 
   let columns:{ [key:string]: Group } = {}
   let cardsMap:{ [key:string]:Card } ={}
@@ -119,6 +122,12 @@
   const editCard = (id: uuidv1, props:Object) => () => {
     editingCardId = id;
     editCardDialog.edit(id, props)
+  };
+
+  const cardDetails = (id: uuidv1) => {
+
+    cardDetailsId = id;
+    cardDetailsDialog.open(id)
   };
 
   const addCard = (column: uuidv1, props: CardProps) => {
@@ -332,7 +341,7 @@
     handleSave={createCard} {cancelEdit} avatars={avatars} labelTypes={$state.labelDefs} categories={$state.categoryDefs} />
   <CardEditor
     bind:this={editCardDialog}
-    title="Edit Card"
+    title="Details"
     handleSave={updateCard}
     handleDelete={deleteCard}
     handleArchive={() => {
@@ -344,7 +353,10 @@
     labelTypes={$state.labelDefs}
     categories={$state.categoryDefs}
   />
-
+  <CardDetails
+    bind:this={cardDetailsDialog}
+    avatars={avatars}
+  />
 
     <div class="columns">
       {#each sortedColumns() as [columnId, cardIds], i}
@@ -404,9 +416,17 @@
                   style:background-color={props && props.category ?  $state.categoryDefs.find(c=>c.type == props.category).color : "white"}
                   >
                   <div class="card-content"
-                    on:click={editCard(cardId, props)} 
+                    on:click={(e)=>{e.stopPropagation(); cardDetails(cardId)}}
                   >
-                    <h3>{props.title}</h3>
+                    <div style="display:flex;justify-content:space-between">
+                      <h3>{props.title}</h3>
+                      <div class="comment-button"
+                        on:click={(e)=>{e.stopPropagation(); editCard(cardId,props)()}}
+                        >
+                        <Fa icon={faEdit}/>
+                      </div>
+
+                    </div>
                     {@html Marked.parse(props.description)}
                   </div>
                   <div class="labels">
@@ -423,40 +443,10 @@
                       <AvatarIcon size={20} avatar={$avatars[agent]} key={decodeHashFromBase64(agent)}/>
                     {/each}
                   {/if}
-                  <div class="comments">
-                    <sl-button 
-                      style="padding: 0 5px;" size="small" text on:click={()=>newComment(cardId)}>
-                      <div style="display: flex;">
-                        <div style="margin-left:5px"><Fa icon={faComments} /> <Fa icon={faPlus}/></div>
-                      </div>
-                    </sl-button>
-
-                    <div class="comment-list">
-                      {#each comments as comment}
-                        <div class="comment">
-                          <div class="comment-header">
-                            <div class="comment-avatar"><AvatarIcon size={20} avatar={$avatars[comment.agent]} key={decodeHashFromBase64(comment.agent)}/></div>
-                            {tsStore.timeAgo.format(new Date(comment.timestamp))}
-                            {#if comment.agent==tsStore.myAgentPubKey()}
-                            <div class="comment-controls">
-                              <div class="comment-button"
-                                on:click={()=>editComment(cardId, comment)}
-                                >
-                                <Fa icon={faEdit}/>
-                              </div>
-                              <div class="comment-button"
-                                on:click={()=>deleteComment(cardId, comment.id)}
-                                >
-                                <Fa icon={faTrash}/>
-                              </div>
-                            </div>
-                            {/if}
-                          </div>
-                          <span class="comment-text">{@html Marked.parse(comment.text)}</span>
-                        </div>
-                      {/each}
-                    </div>
-                  </div>
+                  {#if comments.length>0}
+                    <div class="comment-count"><Fa icon={faComments} />: {comments.length}</div>
+                  {/if}
+                  
                 </div>
         {/each}
           {#if dragTarget == columnId && dragOrder == $state.grouping[columnId].length}
