@@ -63,6 +63,7 @@
   let tsStore: KanDoStore = getStore();
 
   $: activeHash = tsStore.boardList.activeBoardHash;
+  $: activeCard = tsStore.boardList.activeCard;
   $: state = tsStore.boardList.getReadableBoardState($activeHash);
   $: items = $state ? $state.cards : undefined;
   $: sortCards = sortOption
@@ -70,13 +71,25 @@
     : (items) => items;
 
   $: avatars = tsStore.boardList.avatars()
+  
+  $: openCard = (cardId) => {
+    if (cardId) {
+      console.log("OPENNING")
+      if (cardDetailsDialog) cardDetailsDialog.open(cardId)
+    } else {
+      console.log("CLOSING CARD")
+      if (cardDetailsDialog) cardDetailsDialog.reset()
+    }
+    return cardId
+  }
+
+  $: cardDetailsId = openCard($activeCard)
 
   let creatingInColumn: uuidv1 | undefined = undefined;
   let createCardDialog
   let editCardDialog
   let cardDetailsDialog
   let editingCardId: uuidv1
-  let cardDetailsId: uuidv1
 
   let columns:{ [key:string]: Group } = {}
   let cardsMap:{ [key:string]:Card } ={}
@@ -126,8 +139,8 @@
 
   const cardDetails = (id: uuidv1) => {
 
-    cardDetailsId = id;
-    cardDetailsDialog.open(id)
+    tsStore.boardList.setActiveCard(id)
+    //cardDetailsDialog.open(id)
   };
 
   const addCard = (column: uuidv1, props: CardProps) => {

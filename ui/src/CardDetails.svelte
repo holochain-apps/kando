@@ -94,10 +94,14 @@
     return categories.find(c=>c.type == p.category)
   }
 
-  export const close = ()=>{
+  export const reset = ()=>{
     dialog.hide()
     editingTitle = false
     editingDescription = false
+  }
+
+  const close = ()=> {
+    store.boardList.setActiveCard(undefined)
   }
 
   const handleArchive = () => {
@@ -119,8 +123,9 @@
           requestChanges(changes);
         }
       }
-      if (doClose)
+      if (doClose) {
         close()
+      }
   };
     
   const requestChanges = (changes) => {
@@ -181,10 +186,7 @@
 <sl-dialog bind:this={dialog}
   style="--width:700px"
   no-header
-  on:sl-initial-focus={(e)=>{
-    e.preventDefault()
-    inputElement.focus()
-  }}
+ 
   on:sl-request-close={(event)=>{
     if (event.detail.source === 'overlay') {
       event.preventDefault();    

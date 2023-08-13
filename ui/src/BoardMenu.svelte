@@ -16,7 +16,6 @@
     import type { v1 as uuidv1 } from "uuid";
     import type { BoardRecord } from './boardList';
     import { get } from 'svelte/store';
-  import { mdiCalendarSearch } from '@mdi/js';
 
     type FoundCard = {
         board: BoardRecord,
@@ -77,8 +76,20 @@
     }
     const clearSearch = () => {
         searchInput.value = ""
+        clearSearchResults()
+    }
+    const clearSearchResults = () => {
         foundBoards = []
         foundCards = []
+    }
+
+    const getCardGroup = (cardId: uuidv1) : string => {
+        const [gId, cId] = Object.entries($state.grouping).find(([gId, cId])=>cId==cardId)
+        const g = ($state.groups.find((g)=>g.id == gId))
+        if (g) {
+            return g.name
+        }
+        return "Archived"
     }
     let searchInput
 </script>
@@ -122,29 +133,29 @@
         placeholder="Search"
         pill
         on:sl-input={(e)=>doSearch(e.target.value)}
+        on:sl-blur={(e)=>clearSearchResults()}
+        on:sl-focus={(e)=>doSearch(e.target.value)}
     >
     <span slot="prefix"style="margin-left:10px;"><Fa icon={faSearch}></Fa></span>
     </sl-input>
     {#if foundBoards.length>0 || foundCards.length>0}
     <sl-menu class="search-results"
-    on:sl-select={(e)=>{console.log("E",e.detail.item)}}
     >
         {#if foundCards.length>0}
             <sl-menu-label>Cards</sl-menu-label>
             {#each foundCards as found}
                 <sl-menu-item
                     on:click={(e)=>{
-                        console.log("foun", found.board.hash, $activeHash)
-
                         if (found.board.hash != $activeHash) {
                             selectBoard(found.board.hash)
                         }
+                        store.boardList.setActiveCard(found.card)
                         clearSearch()
 
                     }}
                 >
                 <div style="margin-left:10px;display:flex;flex-direction: column;">
-                    <span>{found.title}</span>
+                    <span>{found.title} in {getCardGroup(found.card)}</span>
                     <span style="font-size:70%;color:gray;line-heigth:50%;">Board: {found.board.name}</span>
                 </div>
                 </sl-menu-item>
@@ -164,7 +175,7 @@
                     }}
                 >
                 <div style="margin-left:10px;">
-                    {found.name}
+                    {found.name} 
                 </div>
                 </sl-menu-item>
             {/each}

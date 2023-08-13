@@ -139,6 +139,7 @@ export class BoardList {
     public workspace: WorkspaceStore<BoardListGrammar>
     public boards: Dictionary<Board>
     activeBoardHash: Writable<EntryHashB64| undefined> = writable(undefined)
+    activeCard: Writable<string| undefined> = writable(undefined)
 
     constructor(public rootStore: RootStore<BoardListGrammar>, public boardsRootStore: RootStore<BoardGrammar>) {
         this.boards = {}
@@ -232,6 +233,10 @@ export class BoardList {
             board = this.boards[hash] = new Board(await this.boardsRootStore.joinWorkspace(workspaceHash));
         }
         return board
+    }
+
+    async setActiveCard(cardId: string | undefined) {
+        this.activeCard.update((n) => {return cardId} )
     }
 
     async setActiveBoard(hash: EntryHashB64 | undefined) {
