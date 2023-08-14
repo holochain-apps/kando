@@ -170,7 +170,7 @@ export class BoardList {
         const me = new BoardList(rootStore, boardsRootStore);
         console.log("BoardList", me)
         const workspaces = await toPromise(rootStore.allWorkspaces);
-        console.log("Workspaxces", workspaces)
+        console.log("Workspaces", workspaces)
 
         // if there is no workspace then we have a problem!!
         for (let i=0;i<workspaces.length;i+=1) {

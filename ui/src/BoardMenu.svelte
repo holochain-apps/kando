@@ -57,6 +57,7 @@
     const doSearch = (text:string) => {
         foundBoards = []
         foundCards = []
+        showSearchResults = true
         if (text == "") return
         const searchText = text.toLocaleLowerCase()
         $boardList.boards.forEach(b=> {
@@ -76,11 +77,7 @@
     }
     const clearSearch = () => {
         searchInput.value = ""
-        clearSearchResults()
-    }
-    const clearSearchResults = () => {
-        foundBoards = []
-        foundCards = []
+        showSearchResults = false
     }
 
     const getCardGroup = (cardId: uuidv1) : string => {
@@ -92,6 +89,8 @@
         return "Archived"
     }
     let searchInput
+    let showSearchResults = false
+
 </script>
 
 <div class="board-menu">
@@ -133,25 +132,24 @@
         placeholder="Search"
         pill
         on:sl-input={(e)=>doSearch(e.target.value)}
-        on:sl-blur={(e)=>clearSearchResults()}
+        on:sl-blur={(e)=>showSearchResults=false}
         on:sl-focus={(e)=>doSearch(e.target.value)}
     >
     <span slot="prefix"style="margin-left:10px;"><Fa icon={faSearch}></Fa></span>
     </sl-input>
-    {#if foundBoards.length>0 || foundCards.length>0}
+    {#if showSearchResults && (foundBoards.length>0 || foundCards.length>0)}
     <sl-menu class="search-results"
     >
         {#if foundCards.length>0}
             <sl-menu-label>Cards</sl-menu-label>
             {#each foundCards as found}
                 <sl-menu-item
-                    on:click={(e)=>{
+                    on:mousedown={(e)=>{
                         if (found.board.hash != $activeHash) {
                             selectBoard(found.board.hash)
                         }
                         store.boardList.setActiveCard(found.card)
                         clearSearch()
-
                     }}
                 >
                 <div style="margin-left:10px;display:flex;flex-direction: column;">
@@ -166,8 +164,7 @@
             <sl-menu-label>Boards</sl-menu-label>
             {#each foundBoards as found}
                 <sl-menu-item
-                    on:click={(e)=>{
-                        console.log("foun", found.hash, $activeHash)
+                    on:mousedown={(e)=>{
                         if (found.hash != $activeHash) {
                             selectBoard(found.hash)
                         }

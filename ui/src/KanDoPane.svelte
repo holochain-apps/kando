@@ -74,10 +74,8 @@
   
   $: openCard = (cardId) => {
     if (cardId) {
-      console.log("OPENNING")
       if (cardDetailsDialog) cardDetailsDialog.open(cardId)
     } else {
-      console.log("CLOSING CARD")
       if (cardDetailsDialog) cardDetailsDialog.reset()
     }
     return cardId
@@ -99,7 +97,7 @@
       columns = {}
       $state.groups.forEach(g => columns[g.id] = cloneDeep(g))
       cardsMap = {} 
-      items.forEach(s => cardsMap[s.id] = cloneDeep(s))
+      items.forEach(c => cardsMap[c.id] = cloneDeep(c))
     }
   }
 
@@ -176,7 +174,6 @@
         console.error("Failed to find item with id", editingCardId);
       } else {
         let changes = []
-        console.log("card.props", card.props, "props", props)
         if (!isEqual(card.props, props)) {
           changes.push({ type: "update-card-props", id: card.id, props: cloneDeep(props)})
         }
