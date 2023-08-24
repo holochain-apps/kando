@@ -8,7 +8,7 @@
   
   export let profilesStore: ProfilesStore|undefined
 
-  const { getStore } :any = getContext('tsStore');
+  const { getStore } :any = getContext('kdStore');
   const store:KanDoStore = getStore();
   $: participants = store.boardList.participants()
   $: activeFolk = $participants.active

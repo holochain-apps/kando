@@ -12,7 +12,7 @@
     import Fa from 'svelte-fa'
     import { faUserGroup } from '@fortawesome/free-solid-svg-icons';
 
-    const { getStore } :any = getContext('tsStore');
+    const { getStore } :any = getContext('kdStore');
     const store:KanDoStore = getStore();
     const myAgentPubKey = store.myAgentPubKey()
     $: avatars = store.boardList.avatars()

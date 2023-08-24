@@ -14,7 +14,7 @@
     import type { KanDoStore } from './kanDoStore';
     import type { EntryHashB64 } from '@holochain/client';
 
-    const { getStore } :any = getContext('tsStore');
+    const { getStore } :any = getContext('kdStore');
 
     const store:KanDoStore = getStore();
 

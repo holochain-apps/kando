@@ -26,7 +26,7 @@
     let foundCards: Array<FoundCard> = []
     let foundBoards: Array<BoardRecord> = []
 
-    const { getStore } :any = getContext('tsStore');
+    const { getStore } :any = getContext('kdStore');
 
     const store:KanDoStore = getStore();
     $: boardList = store.boardList.stateStore()

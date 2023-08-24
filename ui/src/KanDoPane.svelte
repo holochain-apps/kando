@@ -59,18 +59,18 @@
     sortOption = newSortOption;
   }
 
-  const { getStore } :any = getContext("tsStore");
-  let tsStore: KanDoStore = getStore();
+  const { getStore } :any = getContext("kdStore");
+  let kdStore: KanDoStore = getStore();
 
-  $: activeHash = tsStore.boardList.activeBoardHash;
-  $: activeCard = tsStore.boardList.activeCard;
-  $: state = tsStore.boardList.getReadableBoardState($activeHash);
+  $: activeHash = kdStore.boardList.activeBoardHash;
+  $: activeCard = kdStore.boardList.activeCard;
+  $: state = kdStore.boardList.getReadableBoardState($activeHash);
   $: items = $state ? $state.cards : undefined;
   $: sortCards = sortOption
     ? sortBy((card: Card) => countLabels(card.props, sortOption) * -1)
     : (items) => items;
 
-  $: avatars = tsStore.boardList.avatars()
+  $: avatars = kdStore.boardList.avatars()
   
   $: openCard = (cardId) => {
     if (cardId) {
@@ -137,7 +137,7 @@
 
   const cardDetails = (id: uuidv1) => {
 
-    tsStore.boardList.setActiveCard(id)
+    kdStore.boardList.setActiveCard(id)
     //cardDetailsDialog.open(id)
   };
 
@@ -155,7 +155,7 @@
     const comment:Comment = {
       id: uuidv1(),
       text,
-      agent: tsStore.myAgentPubKey(),
+      agent: kdStore.myAgentPubKey(),
       timestamp: new Date().getTime()
     }
 
@@ -197,7 +197,7 @@
   };
 
   const closeBoard = () => {
-    tsStore.boardList.closeActiveBoard();
+    kdStore.boardList.closeActiveBoard();
   };
   let editBoardDialog
   let dragOn = true

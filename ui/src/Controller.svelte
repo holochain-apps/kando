@@ -12,12 +12,12 @@
     export let roleName = ""
   
     let synStore: SynStore;
-    let tsStore: KanDoStore;
+    let kdStore: KanDoStore;
     
     export let client : AppAgentClient
     export let profilesStore : ProfilesStore|undefined = undefined
 
-    $: activeBoardHash = tsStore && tsStore.boardList ? tsStore.boardList.activeBoardHash : undefined
+    $: activeBoardHash = kdStore && kdStore.boardList ? kdStore.boardList.activeBoardHash : undefined
 
     initialize()
 
@@ -25,26 +25,26 @@
       getStore: () => synStore,
     });
   
-    setContext('tsStore', {
-      getStore: () => tsStore,
+    setContext('kdStore', {
+      getStore: () => kdStore,
     });
     const DEFAULT_KD_BG_IMG = "https://images.unsplash.com/photo-1557682250-33bd709cbe85"
     //const DEFAULT_KD_BG_IMG = "https://img.freepik.com/free-photo/studio-background-concept-abstract-empty-light-gradient-purple-studio-room-background-product-plain-studio-background_1258-54461.jpg"
     const NO_BOARD_IMG = "https://holochain.org/img/big_logo.png"
-    $: boardList = tsStore? tsStore.boardList.stateStore() : undefined
+    $: boardList = kdStore? kdStore.boardList.stateStore() : undefined
     $: archivedBoards = boardList ? $boardList.boards.filter((board)=>board.status === "archived") : []
     $: activeBoards = boardList ? $boardList.boards.filter((board)=>board.status !== "archived") : []
-    $: boardState = tsStore ? tsStore.boardList.getReadableBoardState($activeBoardHash) :  undefined
+    $: boardState = kdStore ? kdStore.boardList.getReadableBoardState($activeBoardHash) :  undefined
     $: bgUrl = boardState ?  ($boardState.props && $boardState.props.bgUrl) ? $boardState.props.bgUrl : DEFAULT_KD_BG_IMG : NO_BOARD_IMG
     $: bgImage = `background-image: url("`+ bgUrl+`");`
-    $: myAgentPubKey = tsStore ? tsStore.myAgentPubKey() : undefined
+    $: myAgentPubKey = kdStore ? kdStore.myAgentPubKey() : undefined
 
     async function initialize() : Promise<void> {
       const store = createStore()
       synStore = store.synStore;
       try {
         await store.loadBoards()
-        tsStore = store
+        kdStore = store
       } catch (e) {
         console.log("Error loading boards:", e)
       }
@@ -66,7 +66,7 @@
     <div class="flex-scrollable-container">
     <div class='app' style={bgImage}>
 
-    {#if tsStore}
+    {#if kdStore}
       <Toolbar profilesStore={profilesStore}/>
       {#if ($boardList.avatars[myAgentPubKey] && $boardList.avatars[myAgentPubKey].name) || profilesStore}
         {#if boardList && $boardList.boards.length == 0}
@@ -95,9 +95,9 @@
               <div class="my-boards">
                 {#each $boardList.agentBoards[myAgentPubKey] as myBoard}
                   <div class="my-board"
-                    on:click={()=>tsStore.boardList.setActiveBoard(myBoard)}
+                    on:click={()=>kdStore.boardList.setActiveBoard(myBoard)}
                     >
-                    {get(tsStore.boardList.getReadableBoardState(myBoard)).name}
+                    {get(kdStore.boardList.getReadableBoardState(myBoard)).name}
                   </div>
                 {/each}
               </div>
@@ -106,7 +106,7 @@
         {/if}
       {/if}
       {#if $activeBoardHash !== undefined}
-        <KanDoPane on:requestChange={(event) => {tsStore.boardList.requestBoardChanges($activeBoardHash,event.detail)}}/>
+        <KanDoPane on:requestChange={(event) => {kdStore.boardList.requestBoardChanges($activeBoardHash,event.detail)}}/>
       {/if}
     {:else}
       <div class="loading"><div class="loader"></div></div>

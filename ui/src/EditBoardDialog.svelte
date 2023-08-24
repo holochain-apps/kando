@@ -22,7 +22,7 @@
         dialog.show()
     }
 
-    const { getStore } :any = getContext('tsStore');
+    const { getStore } :any = getContext('kdStore');
 
     const store:KanDoStore = getStore();
 

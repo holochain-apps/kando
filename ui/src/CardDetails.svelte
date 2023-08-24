@@ -31,7 +31,7 @@
     smartypants: false
   });
   
-  const { getStore } :any = getContext("tsStore");
+  const { getStore } :any = getContext("kdStore");
   let store: KanDoStore = getStore();
   $: activeBoardHash = store.boardList.activeBoardHash;
   $: state = store.boardList.getReadableBoardState($activeBoardHash);

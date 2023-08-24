@@ -13,11 +13,11 @@
       setSortOption(option)
     }
   }
-  const { getStore } :any = getContext("tsStore");
-  let tsStore: KanDoStore = getStore();
+  const { getStore } :any = getContext("kdStore");
+  let kdStore: KanDoStore = getStore();
 
-  $: activeHash = tsStore.boardList.activeBoardHash;
-  $: state = tsStore.boardList.getReadableBoardState($activeHash);
+  $: activeHash = kdStore.boardList.activeBoardHash;
+  $: state = kdStore.boardList.getReadableBoardState($activeHash);
 
 </script>
 
