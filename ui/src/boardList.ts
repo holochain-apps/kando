@@ -153,6 +153,7 @@ export class BoardList {
             'main',
             rootStore.root.entryHash
            );
+           console.log("workspace hash in create", workspaceHash)
         me.workspace = await rootStore.joinWorkspace(workspaceHash)
         return me
     }

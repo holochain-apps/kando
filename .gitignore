@@ -11,3 +11,6 @@
 .hc
 .running
 *.code-workspace
+
+holo-dev-server
+lair-fallback

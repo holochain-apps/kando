@@ -4,13 +4,24 @@
   import Folk from "./Folk.svelte";
   import AboutDialog from "./AboutDialog.svelte";
   import type { ProfilesStore } from "@holochain-open-dev/profiles";
-  import { faBug } from "@fortawesome/free-solid-svg-icons";
+  import { faArrowUpFromBracket, faBug } from "@fortawesome/free-solid-svg-icons";
   import Fa from "svelte-fa";
-
+  import IS_HOLO from "./App.svelte"
+  import { getContext } from "svelte";
+  import type { KanDoStore } from "./kanDoStore";
   export let profilesStore: ProfilesStore|undefined
+  import type WebSdk from '@holo-host/web-sdk'
 
   let aboutDialog
   $:bugColor = "color: #5536f9"
+  const { getStore } :any = getContext("kdStore");
+  let kdStore: KanDoStore = getStore();
+
+  const holoLogout = async () => {
+    await (kdStore.client as WebSdk).signOut();
+    (kdStore.client as WebSdk).signIn({ cancellable: false })
+  }
+
 </script>
 
   <AboutDialog bind:this={aboutDialog} />
@@ -24,6 +35,9 @@
     <a href="https://github.com/holochain-apps/kando/issues" title="Report a problem in our GitHub repo" target="_blank">
       <div class="nav-button"><Fa icon={faBug} size=2x style={bugColor} /></div>
     </a>
+    {#if IS_HOLO}
+      <div title="Logout" on:click={() => holoLogout()} class="nav-button"><Fa icon={faArrowUpFromBracket} size=2x  /></div>
+    {/if}
   </div>
 </div>
 

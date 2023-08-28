@@ -18,6 +18,7 @@
     "@holochain-open-dev/utils": "^0.15.0",
     "@holochain-syn/core": "^0.5.1",
     "@holochain/client": "^0.16",
+    "@holo-host/web-sdk": "",
     "@mdi/js": "^7.1.96",
     "@ts-stack/markdown": "^1.4.0",
     "lodash": "^4.17.21",
