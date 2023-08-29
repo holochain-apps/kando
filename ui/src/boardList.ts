@@ -1,5 +1,4 @@
 import { RootStore, type Commit, type SynGrammar, type SynStore, type Workspace, type WorkspaceStore } from "@holochain-syn/core";
-import type { Dictionary } from "@holochain-open-dev/core-types";
 import { Board, CommitTypeBoard, UngroupedId } from "./board";
 import type { EntryHashMap, EntryRecord } from "@holochain-open-dev/utils";
 import { derived, get, writable, type Readable, type Writable } from "svelte/store";
@@ -21,9 +20,9 @@ export interface Avatar {
 }
 
 export interface BoardListState {
-    avatars: Dictionary<Avatar>;
+    avatars: { [key:string]:Avatar};
     boards: BoardRecord[];
-    agentBoards: Dictionary<Array<EntryHashB64>>;
+    agentBoards: { [key:string]:Array<EntryHashB64>};
 }
 
 
@@ -137,7 +136,7 @@ export const boardListGrammar: BoardListGrammar = {
 
 export class BoardList {
     public workspace: WorkspaceStore<BoardListGrammar>
-    public boards: Dictionary<Board>
+    public boards: { [key:string]: Board}
     activeBoardHash: Writable<EntryHashB64| undefined> = writable(undefined)
     activeCard: Writable<string| undefined> = writable(undefined)
 
