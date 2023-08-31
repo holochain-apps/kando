@@ -4,19 +4,12 @@
     import type { KanDoStore } from "./kanDoStore";
     import type { EntryHashB64 } from '@holochain/client';
     import NewBoardDialog from './NewBoardDialog.svelte';
-    import { faArchive, faChevronDown, faFileImport, faSearch, faSquarePlus } from '@fortawesome/free-solid-svg-icons';
+    import { faArchive, faChevronDown, faFileImport, faSquarePlus } from '@fortawesome/free-solid-svg-icons';
     import Fa from 'svelte-fa';
-    import '@shoelace-style/shoelace/dist/components/select/select.js';
-    import '@shoelace-style/shoelace/dist/components/option/option.js';
-    import '@shoelace-style/shoelace/dist/components/input/input.js';
-    import '@shoelace-style/shoelace/dist/components/icon/icon.js';
-    import '@shoelace-style/shoelace/dist/components/menu/menu.js';
-    import '@shoelace-style/shoelace/dist/components/menu-item/menu-item.js';
-    import '@shoelace-style/shoelace/dist/components/menu-label/menu-label.js';
-    import type { v1 as uuidv1 } from "uuid";
-    import type { BoardRecord } from './boardList';
+    import { slide } from 'svelte/transition';
+    import AboutDialog from "./AboutDialog.svelte";
+    import KDLogoIcon from "./icons/KDLogoIcon.svelte";
 
-  
     let newBoardDialog
 
     const { getStore } :any = getContext('kdStore');
@@ -47,50 +40,70 @@
     const unarchiveBoard = (hash: EntryHashB64) => () => {
         store.boardList.unarchiveBoard(hash)
     }
+    let aboutDialog
 
 </script>
-
-<div class="board-menu">
-<input style="display:none" type="file" accept=".json" on:change={(e)=>onFileSelected(e)} bind:this={fileinput} >
-<div class="nav-button" on:click={()=>newBoardDialog.open()} style="margin-left:10px" title="New Board"><Fa icon={faSquarePlus} size=2x /></div>
-<div class="nav-button" on:click={()=>{fileinput.click();}} title="Import Board"><Fa icon={faFileImport} size=2x/></div>
-{#if activeBoards}
-<sl-select
-    placeholder="Select Board"
-    on:sl-change={(e)=>{selectBoard(e.target.value)}}
->
-    {#each $boardList.boards as board }
-        {#if board.status !== "archived" }
-            <sl-option value={board.hash}>{board.name}</sl-option>
-        {/if}
-    {/each}
-</sl-select>
-{/if}
-{#if archivedBoards}
-<Menu>
-    <div slot="activator">
-        <sl-button style="margin-left:10px" title="Archived Boards">
-            <Fa icon={faArchive}></Fa>
-            <Fa icon={faChevronDown}></Fa>
-        </sl-button>
+<div class="board-menu" >
+    <input style="display:none" type="file" accept=".json" on:change={(e)=>onFileSelected(e)} bind:this={fileinput} >
+    <div style="display:flex;flex-direction: row;">
+    <div class="nav-button" on:click={()=>newBoardDialog.open()} style="margin-left:10px;font-size:14px" title="New Board">New Board <Fa icon={faSquarePlus} size=2x /></div>
+    <div class="nav-button" on:click={()=>{fileinput.click();}}  style="margin-left:10px;font-size:14px" title="Import Board">Import Board <Fa icon={faFileImport} size=2x/></div>
     </div>
-    <List>
+    {#if activeBoards}
+        <h3>Active Boards</h3>
         {#each $boardList.boards as board }
-            {#if board.status === "archived" }
-                <ListItem dense={true} on:click={unarchiveBoard(board.hash)}>{board.name}</ListItem>
+            {#if board.status !== "archived" }
+                <div on:click={()=>selectBoard(board.hash)}
+                class="board" id={board.hash}>{board.name}</div>
             {/if}
         {/each}
-    </List>
-</Menu>
-{/if}
+    {/if}
+    {#if archivedBoards}
+        <h3>Archived Boards</h3>
 
-<NewBoardDialog bind:this={newBoardDialog}></NewBoardDialog>
+        <div>
+            <sl-button style="margin-left:10px" title="Archived Boards">
+                <Fa icon={faArchive}></Fa>
+                <Fa icon={faChevronDown}></Fa>
+            </sl-button>
+        </div>
+            {#each $boardList.boards as board }
+                {#if board.status === "archived" }
+                <div class="board" id={board.hash} on:click={unarchiveBoard(board.hash)}>{board.name}</div>
+
+                {/if}
+            {/each}
+    {/if}
+
+    <div style="justify-self: flex-end" class="logo" title="About KanDo!" on:click={()=>aboutDialog.open()}><KDLogoIcon /></div>
+
+    <AboutDialog bind:this={aboutDialog} />
+
+    <NewBoardDialog bind:this={newBoardDialog}></NewBoardDialog>
 
 </div>
+
 <style>
   .board-menu {
+    height: 100%;
+    background-color: aliceblue;
+    min-width: 300px;
     display: flex;
+    flex-direction: column;
+
     flex: 0 0 auto;
-    align-items: center;
+    align-items: flex-start;
+  }
+  .board {
+    width: 100%;
+    margin: 5px;
+    border: 1px solid;
+    background-color: antiquewhite;
+  }
+  .logo {
+    height: 20px;
+    margin-right: 10px;
+    display: contents;
+    cursor: pointer;
   }
 </style>

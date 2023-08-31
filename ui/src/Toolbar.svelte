@@ -1,24 +1,29 @@
 <script lang="ts">
-  import KDLogoIcon from "./icons/KDLogoIcon.svelte";
-  import BoardMenu from "./BoardMenu.svelte";
   import Folk from "./Folk.svelte";
-  import AboutDialog from "./AboutDialog.svelte";
   import type { ProfilesStore } from "@holochain-open-dev/profiles";
-  import { faBug } from "@fortawesome/free-solid-svg-icons";
+  import { faBug, faBars, faClose} from "@fortawesome/free-solid-svg-icons";
   import Fa from "svelte-fa";
   import Search from './Search.svelte';
+  import { createEventDispatcher } from "svelte";
 
   export let profilesStore: ProfilesStore|undefined
+  const dispatch = createEventDispatcher()
 
-  let aboutDialog
   $:bugColor = "color: #5536f9"
+
+  let showBoardMenu = false
+
 </script>
 
-  <AboutDialog bind:this={aboutDialog} />
 <div class='toolbar'>
   <div class="left-items">
-    <div class="logo" title="About KanDo!" on:click={()=>aboutDialog.open()}><KDLogoIcon /></div>
-    <BoardMenu ></BoardMenu>
+    {#if showBoardMenu}
+      <span style="display:flex;align-items:center;cursor:pointer" on:click={()=>{dispatch("hideBoardMenu"); showBoardMenu=false}}>Close Menu <div class="nav-button"  title="Hide Board Menu"><Fa icon={faClose} size=2x /></div></span>
+
+    {:else}
+      <div class="nav-button" on:click={()=>{dispatch("showBoardMenu", undefined); showBoardMenu=true}}  title="Show Board Menu"><Fa icon={faBars} size=2x /></div>
+    {/if}
+
     <Search></Search>
   </div>
   <div class="right-items">
@@ -48,16 +53,7 @@
     padding-top: 16px;
     padding-bottom: 16px;
   }
-  .logo {
-    height: 40px;
-    margin-right: 10px;
-    display: contents;
-    cursor: pointer;
-  }
-  .logo-text {
-    padding-bottom: 5px;
-    margin-left: 15px;
-  }
+
   .right-items {
     display: flex;
     flex: 0 0 auto;

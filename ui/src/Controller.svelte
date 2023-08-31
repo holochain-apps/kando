@@ -6,8 +6,10 @@
     import type { AppAgentClient } from '@holochain/client';
     import type { SynStore } from '@holochain-syn/store';
     import type { ProfilesStore } from "@holochain-open-dev/profiles";
-  import Fa from 'svelte-fa';
-  import { faCog, faFileImport, faSquarePlus } from '@fortawesome/free-solid-svg-icons';
+    import Fa from 'svelte-fa';
+    import { faCog, faFileImport, faSquarePlus } from '@fortawesome/free-solid-svg-icons';
+    import BoardMenu from "./BoardMenu.svelte";
+    import { slide } from 'svelte/transition';
 
     export let roleName = ""
   
@@ -56,7 +58,7 @@
       );
       return store
     }
-  
+    let menuVisible = false
   </script>
   
   <svelte:head>
@@ -67,7 +69,22 @@
     <div class='app' style={bgImage}>
 
     {#if kdStore}
-      <Toolbar profilesStore={profilesStore}/>
+    <div >
+
+    <div class="header">
+      <Toolbar 
+        on:showBoardMenu={(e)=> {menuVisible = true}} 
+        on:hideBoardMenu={(e)=> {menuVisible = false}} 
+        profilesStore={profilesStore}/>
+    </div>
+
+    <div class="workspace" style="display:flex">
+
+    {#if menuVisible}
+      <div class="board-menu" transition:slide={{ axis: 'x', duration: 400 }} >
+        <BoardMenu></BoardMenu>
+      </div>
+    {/if}
       {#if ($boardList.avatars[myAgentPubKey] && $boardList.avatars[myAgentPubKey].name) || profilesStore}
         {#if boardList && $boardList.boards.length == 0}
           <div class="welcome-text">
@@ -108,6 +125,8 @@
       {#if $activeBoardHash !== undefined}
         <KanDoPane on:requestChange={(event) => {kdStore.boardList.requestBoardChanges($activeBoardHash,event.detail)}}/>
       {/if}
+      </div>
+      </div>
     {:else}
       <div class="loading"><div class="loader"></div></div>
     {/if}
@@ -187,6 +206,10 @@
     max-height: 100%;
     overflow-y: auto;
   }
+  .hidden {
+    display: none
+  }
+
   /* .my-boards {
     display: flex;
   }
