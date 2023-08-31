@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { createEventDispatcher, getContext } from "svelte";
+  import { createEventDispatcher, getContext, onMount } from "svelte";
   import CardEditor from "./CardEditor.svelte";
   import CardDetails from "./CardDetails.svelte";
   import EmojiIcon from "./icons/EmojiIcon.svelte";
@@ -17,6 +17,7 @@
   import Fa from "svelte-fa";
   import { faArchive, faArrowRight, faClose, faCog, faComments, faEdit, faFileExport, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
   import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
+  import { hash } from "@holochain-open-dev/utils";
 
 
   const download = (filename: string, text: string) => {
@@ -81,6 +82,7 @@
     return cardId
   }
 
+
   $: cardDetailsId = openCard($activeCard)
 
   let creatingInColumn: uuidv1 | undefined = undefined;
@@ -92,6 +94,7 @@
   let columns:{ [key:string]: Group } = {}
   let cardsMap:{ [key:string]:Card } ={}
   $: unused = groupCards(items);
+
   const groupCards = (items) => {
     if ($state) {
       columns = {}
@@ -100,6 +103,14 @@
       items.forEach(c => cardsMap[c.id] = cloneDeep(c))
     }
   }
+
+  // this is a way to get the add column to show up if there are 
+  // no groups (besides the archive group)
+  // TODO figure out to to get it to focus
+  $: hashChanged = (_hash) => {
+    addingColumn = $state.groups.length == 1
+  }
+  $: x = hashChanged($activeHash)
 
   let showArchived = false
 
@@ -318,8 +329,10 @@
     commentDialog.show()
   }
 
-  let addingColumn = false
+  $: addingColumn = false
   let newColumnName = ""
+  let columnNameElem 
+
 </script>
 <div class="board">
     <EditBoardDialog bind:this={editBoardDialog}></EditBoardDialog>
@@ -478,20 +491,17 @@
         </div>
         </div>
       {/each}
-      {#if !addingColumn}
-        <div class="add-column"
-          on:click={()=>addingColumn = true}
+        <div class:hidden={addingColumn} class="add-column"
+          on:click={()=>{addingColumn = true;columnNameElem.focus()}}
         >Add Column +</div>
-      {:else}
       <div class="add-column"
-        
-        on:click={()=>addingColumn = true}
+        class:hidden={!addingColumn}
+        on:click={()=>{addingColumn = true; }}
       >
-        <sl-input  on:sl-input={e=>newColumnName = e.target.value}></sl-input>
-        <sl-button disabled={newColumnName.length==0} style="padding: 0 5px;" size="small" text on:click={async ()=>{
+        <sl-input bind:this={columnNameElem} placeholder="column name"  on:sl-input={e=>newColumnName = e.target.value} on:sl-blur={()=>addingColumn=false}></sl-input>
+        <sl-button disabled={newColumnName.length==0} style="padding: 0 5px;" size="small" text on:mousedown={async ()=>{
           const newGroups = cloneDeep($state.groups)
           newGroups.push(new Group(newColumnName))
-          console.log("NEWGROUPS", newGroups)
           newColumnName = ""
           addingColumn = false
           await kdStore.boardList.requestBoardChanges($activeHash, [
@@ -507,7 +517,6 @@
           </div>
         </sl-button>
       </div>
-  {/if}
     </div>
   {/if}
 </div>
@@ -714,5 +723,8 @@
     padding: 0 3px;
     padding-bottom: 2px;
     margin-right: 4px;
+  }
+  .hidden {
+    display: none;
   }
 </style>

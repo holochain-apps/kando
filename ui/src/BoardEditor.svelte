@@ -32,12 +32,11 @@
     export const reset = () => {
       text = ''
       props = {bgUrl: ""}
-      groups = [new Group("Backlog"), new Group("Prioritized"), new Group("Doing"), new Group("Done")]
+      groups = [] // new Group("Backlog"), new Group("Prioritized"), new Group("Doing"), new Group("Done")
       labelDefs = []
       categoryDefs = []
       nameInput.value = ""
       nameInput.focus()
-
     }
 
     export const initialFocus = () => {
@@ -124,6 +123,7 @@
     <div class="edit-title">
       <div class="title-text">Title:</div> <sl-input class='textarea' maxlength="60" bind:this={nameInput}  on:input={e=>text= e.target.value}></sl-input>
     </div>
+    {#if boardHash}
     <div class="edit-groups unselectable">
       <div class="title-text">Columns:
         <sl-button circle size="small" on:click={() => addGroup()}>
@@ -250,7 +250,7 @@
     <div class="edit-title">
       <div class="title-text">Background Image:</div> <sl-input class='textarea' maxlength="255" value={props.bgUrl} on:input={e=>props.bgUrl = e.target.value} />
     </div>
-
+    {/if}
     <div class='controls'>
       {#if handleDelete}
         <sl-button on:click={handleDelete}>
