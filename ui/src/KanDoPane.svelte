@@ -492,7 +492,7 @@
         </div>
       {/each}
         <div class:hidden={addingColumn} class="add-column"
-          on:click={()=>{addingColumn = true;columnNameElem.focus()}}
+          on:click={()=>{newColumnName = ""; addingColumn = true;columnNameElem.value=""; columnNameElem.focus()}}
         >Add Column +</div>
       <div class="add-column"
         class:hidden={!addingColumn}
