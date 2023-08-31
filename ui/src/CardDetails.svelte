@@ -6,6 +6,7 @@
   import '@shoelace-style/shoelace/dist/components/option/option.js';
   import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
   import '@shoelace-style/shoelace/dist/components/input/input.js';
+  import '@shoelace-style/shoelace/dist/components/drawer/drawer.js';
   import type { AgentPubKeyB64 } from "@holochain/client/lib/types";
   import { cloneDeep, isEqual } from "lodash";
   import { v1 as uuidv1 } from "uuid";
@@ -183,7 +184,7 @@
   let editDesc
 
 </script>
-<sl-dialog bind:this={dialog}
+<sl-drawer bind:this={dialog}
   style="--width:700px"
   no-header
  
@@ -380,7 +381,7 @@
     </sl-button>
   </div>
 </div>
-</sl-dialog>
+</sl-drawer>
 <style>
   .card-editor {
     display: flex;
