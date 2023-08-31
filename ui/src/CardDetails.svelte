@@ -11,7 +11,7 @@
   import { cloneDeep, isEqual } from "lodash";
   import { v1 as uuidv1 } from "uuid";
   import { getContext } from 'svelte';
-  import type { KanDoStore } from './kanDoStore';
+  import { KanDoStore } from './kanDoStore';
   import AvatarIcon from './AvatarIcon.svelte';
   import { decodeHashFromBase64 } from '@holochain/client';
   import { faEdit, faTrash, faComments, faPlus, faClose } from '@fortawesome/free-solid-svg-icons';
@@ -207,13 +207,13 @@
           
         </div>
       {/if}
-      <div class="comment-button"
+      <div class="details-button"
         on:click={(e)=>{close()}}
         >
         <Fa icon={faClose}/>
       </div>
     </div>
-
+    <div>Board: {store.getCardGroupName(cardId,$state)}</div>
     <h4>Description</h4>
 
     {#if editingDescription}
@@ -345,12 +345,12 @@
             {store.timeAgo.format(new Date(comment.timestamp))}
             {#if comment.agent==store.myAgentPubKey()}
             <div class="comment-controls">
-              <div class="comment-button"
+              <div class="details-button"
                 on:click={()=>editComment(cardId, comment)}
                 >
                 <Fa icon={faEdit}/>
               </div>
-              <div class="comment-button"
+              <div class="details-button"
                 on:click={()=>deleteComment(cardId, comment.id)}
                 >
                 <Fa icon={faTrash}/>
@@ -433,7 +433,7 @@
   .comment-avatar {
     margin-right:5px;
   }
-  .comment-button {
+  .details-button {
     cursor: pointer;
     border-radius: 50%;
     padding:2px;
@@ -441,7 +441,7 @@
     display: flex;
     justify-content: center;
   }
-  .comment-button:hover {
+  .details-button:hover {
     background-color: rgb(240, 249, 2244);
     border: solid 1px rgb(149, 219, 252);
     color:  rgb(3, 105, 161);

@@ -8,12 +8,13 @@ import {
   } from '@holochain/client';
 import { RecordBag } from '@holochain-open-dev/utils';
 import { SynStore,  SynClient, type Commit } from '@holochain-syn/core';
-import { CommitTypeBoard } from './board';
+import { CommitTypeBoard, type BoardState } from './board';
 import { BoardList, CommitTypeBoardList } from './boardList';
 import { decode } from '@msgpack/msgpack';
 import {toPromise} from '@holochain-open-dev/stores'
 import TimeAgo from "javascript-time-ago"
 import en from 'javascript-time-ago/locale/en'
+import type { v1 as uuidv1 } from "uuid";
 
 
 TimeAgo.addDefaultLocale(en)
@@ -130,4 +131,14 @@ export class KanDoStore {
             console.log("Error Fetching Roots:", e)
         }
     }
+
+    getCardGroupName(cardId: uuidv1, state: BoardState) : string  {
+        const [gId, cId] = Object.entries(state.grouping).find(([gId, cId])=>cId==cardId)
+        const g = (state.groups.find((g)=>g.id == gId))
+        if (g) {
+            return g.name
+        }
+        return "Archived"
+    }
+
 }

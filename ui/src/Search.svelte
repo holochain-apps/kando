@@ -1,6 +1,6 @@
 <script lang="ts">
     import { getContext } from "svelte";
-    import type { KanDoStore } from "./kanDoStore";
+    import { KanDoStore } from "./kanDoStore";
     import type { EntryHashB64 } from '@holochain/client';
     import {faSearch } from '@fortawesome/free-solid-svg-icons';
     import Fa from 'svelte-fa';
@@ -61,14 +61,6 @@
         showSearchResults = false
     }
 
-    const getCardGroup = (cardId: uuidv1) : string => {
-        const [gId, cId] = Object.entries($state.grouping).find(([gId, cId])=>cId==cardId)
-        const g = ($state.groups.find((g)=>g.id == gId))
-        if (g) {
-            return g.name
-        }
-        return "Archived"
-    }
     let searchInput
     let showSearchResults = false
 
@@ -103,7 +95,7 @@
                     }}
                 >
                 <div style="margin-left:10px;display:flex;flex-direction: column;">
-                    <span>{found.title} in {getCardGroup(found.card)}</span>
+                    <span>{found.title} in {store.getCardGroupName(found.card, $state)}</span>
                     <span style="font-size:70%;color:gray;line-heigth:50%;">Board: {found.board.name}</span>
                 </div>
                 </sl-menu-item>
