@@ -6,6 +6,7 @@
   import type { ProfilesStore } from "@holochain-open-dev/profiles";
   import { faBug } from "@fortawesome/free-solid-svg-icons";
   import Fa from "svelte-fa";
+  import Search from './Search.svelte';
 
   export let profilesStore: ProfilesStore|undefined
 
@@ -18,6 +19,7 @@
   <div class="left-items">
     <div class="logo" title="About KanDo!" on:click={()=>aboutDialog.open()}><KDLogoIcon /></div>
     <BoardMenu ></BoardMenu>
+    <Search></Search>
   </div>
   <div class="right-items">
     <Folk profilesStore={profilesStore}></Folk>
