@@ -75,7 +75,7 @@
             {/each}
     {/if}
 
-    <div style="justify-self: flex-end" class="logo" title="About KanDo!" on:click={()=>aboutDialog.open()}><KDLogoIcon /></div>
+    <div class="logo" title="About KanDo!" on:click={()=>aboutDialog.open()}><KDLogoIcon /></div>
 
     <AboutDialog bind:this={aboutDialog} />
 
