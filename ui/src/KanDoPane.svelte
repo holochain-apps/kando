@@ -317,6 +317,9 @@
     commentText.value = comment.text
     commentDialog.show()
   }
+
+  let addingColumn = false
+  let newColumnName = ""
 </script>
 <div class="board">
     <EditBoardDialog bind:this={editBoardDialog}></EditBoardDialog>
@@ -475,10 +478,52 @@
         </div>
         </div>
       {/each}
+      {#if !addingColumn}
+        <div class="add-column"
+          on:click={()=>addingColumn = true}
+        >Add Column +</div>
+      {:else}
+      <div class="add-column"
+        
+        on:click={()=>addingColumn = true}
+      >
+        <sl-input  on:sl-input={e=>newColumnName = e.target.value}></sl-input>
+        <sl-button disabled={newColumnName.length==0} style="padding: 0 5px;" size="small" text on:click={async ()=>{
+          const newGroups = cloneDeep($state.groups)
+          newGroups.push(new Group(newColumnName))
+          console.log("NEWGROUPS", newGroups)
+          newColumnName = ""
+          addingColumn = false
+          await kdStore.boardList.requestBoardChanges($activeHash, [
+            {
+              type: "set-groups",
+              groups: newGroups
+            }
+          ])          
+        }}>
+          <div style="display: flex;">
+            New
+            <div style="margin-left:5px"><Fa icon={faPlus}/></div>
+          </div>
+        </sl-button>
+      </div>
+  {/if}
     </div>
   {/if}
 </div>
 <style>
+  .add-column {
+    cursor: pointer;
+    display: flex;
+    background-color: #eeeeeecc;
+    width: 300px;
+    margin-top: 10px;
+    margin-left: 5px;
+    border-radius: 3px;
+    min-width: 130px;
+    height: 50px;
+    padding: 10px;
+  }
   .board {
     display: flex;
     flex-direction: column;
