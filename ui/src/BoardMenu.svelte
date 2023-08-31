@@ -46,7 +46,7 @@
 <div class="board-menu" >
     <input style="display:none" type="file" accept=".json" on:change={(e)=>onFileSelected(e)} bind:this={fileinput} >
     <div style="display:flex;flex-direction: row;">
-    <div class="nav-button" on:click={()=>newBoardDialog.open()} style="margin-left:10px;font-size:14px" title="New Board">New Board <Fa icon={faSquarePlus} size=2x /></div>
+    <div class="new-board" on:click={()=>newBoardDialog.open()} style="margin-left:10px;font-size:14px" title="New Board">New Board <Fa icon={faSquarePlus} size=2x /></div>
     <div class="nav-button" on:click={()=>{fileinput.click();}}  style="margin-left:10px;font-size:14px" title="Import Board">Import Board <Fa icon={faFileImport} size=2x/></div>
     </div>
     {#if activeBoards}
@@ -85,17 +85,32 @@
 
 <style>
   .board-menu {
-    height: 100%;
+    height: calc(100vh - 50px);
+    overflow: auto;
     background-color: aliceblue;
-    min-width: 300px;
+    min-width: 320px;
     display: flex;
     flex-direction: column;
-
+    background: linear-gradient(94.53deg, #164B9A 12.76%, #5B47D6 99.41%);
     flex: 0 0 auto;
     align-items: flex-start;
+    padding: 15px;
   }
+
+.new-board {
+    box-sizing: border-box;
+    position: absolute;
+    width: 290px;
+    height: 50px;
+    background: #243076;
+    border: 1px solid #4A559D;
+    border-radius: 5px;
+}
+
   .board {
-    width: 100%;
+    width: 290px;
+    border-radius: 5px;
+    padding: 10px;
     margin: 5px;
     border: 1px solid;
     background-color: antiquewhite;

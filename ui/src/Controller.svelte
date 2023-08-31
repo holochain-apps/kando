@@ -66,7 +66,7 @@
   </svelte:head>
   <div class="flex-scrollable-parent">
     <div class="flex-scrollable-container">
-    <div class='app' style={bgImage}>
+    <div class='app'>
 
     {#if kdStore}
     <div >
@@ -137,7 +137,7 @@
   .app {
     margin: 0;
     padding-bottom: 10px;
-    background-image: var(--bg-img, url(""));
+    background: linear-gradient(180deg, #fafafa 0%, #DEDECF 80%);
     background-size: cover;
     display: flex;
     flex-direction: column;

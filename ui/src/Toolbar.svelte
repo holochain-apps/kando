@@ -44,14 +44,12 @@
     background-color: #ddd;
   }
   .toolbar {
-    display: flex;
+    background: linear-gradient(90.1deg, #143C77 4.43%, #261492 99.36%);
     align-items: center;
     justify-content: space-between;
-    background-color: #eeeeee;
-    padding-left: 15px;
-    padding-right: 10px;
-    padding-top: 16px;
-    padding-bottom: 16px;
+    color: #fff;
+    height: 50px;
+    display: flex;
   }
 
   .right-items {
