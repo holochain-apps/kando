@@ -71,6 +71,7 @@
   const { getStore } :any = getContext("kdStore");
   let kdStore: KanDoStore = getStore();
 
+  $: uiProps = kdStore.uiProps
   $: activeHash = kdStore.boardList.activeBoardHash;
   $: activeCard = kdStore.boardList.activeCard;
   $: state = kdStore.boardList.getReadableBoardState($activeHash);
@@ -119,8 +120,6 @@
     addingColumn = $state.groups.length == 1
   }
   $: x = hashChanged($activeHash)
-
-  let showArchived = false
 
   const sorted = (itemIds, sortFn)=> {
     var items = itemIds.map((id)=>cardsMap[id])
@@ -307,7 +306,7 @@
   }
 
   $: sortedColumns = () => {
-    if (showArchived) {
+    if ($uiProps.showArchived) {
       // make sure the ungrouped group is at the end.
       let cols = $state.groups.map((group)=> [group.id, $state.grouping[group.id]])
       const idx = cols.findIndex(([id,_]) => id == UngroupedId)
@@ -352,11 +351,7 @@
       <div class="sortby">
         Sort: <SortSelector {setSortOption} {sortOption} />
       </div>
-      <div class="archived">
-        <sl-button circle on:click={()=>showArchived=!showArchived} title={showArchived ? "Hide Archived Cards" : "Show Archived Cards"}>
-          <Fa icon={showArchived ? faArchive: faArchive} />
-        </sl-button>
-      </div>
+
       <sl-button circle on:click={()=> editBoardDialog.open(cloneDeep($activeHash))} title="Settings">
         <Fa icon={faCog} size="1x"/>
       </sl-button>

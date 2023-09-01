@@ -11,7 +11,7 @@ import { SynStore,  SynClient, type Commit } from '@holochain-syn/core';
 import { CommitTypeBoard, type BoardState } from './board';
 import { BoardList, CommitTypeBoardList } from './boardList';
 import { decode } from '@msgpack/msgpack';
-import {toPromise} from '@holochain-open-dev/stores'
+import {toPromise, writable, type Writable} from '@holochain-open-dev/stores'
 import TimeAgo from "javascript-time-ago"
 import en from 'javascript-time-ago/locale/en'
 import type { v1 as uuidv1 } from "uuid";
@@ -35,6 +35,9 @@ export class KanDoService {
     }
 }
 
+export interface UIProps {
+    showArchived: boolean
+  }
 
 export class KanDoStore {
     timeAgo = new TimeAgo('en-US')
@@ -44,6 +47,17 @@ export class KanDoStore {
     updating = false
     synStore: SynStore;
     client: AppAgentClient;
+    uiProps: Writable<UIProps> = writable({
+        showArchived: false,
+    })
+
+    setUIprops(props:{}) {
+        this.uiProps.update((n) => {
+            Object.keys(props).forEach(key=>n[key] = props[key])
+            return n
+        })
+    }
+
     myAgentPubKey(): AgentPubKeyB64 {
         return encodeHashToBase64(this.client.myPubKey);
     }

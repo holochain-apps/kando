@@ -26,7 +26,10 @@
 
     const store:KanDoStore = getStore();
 
-    const updateBoard = async ( name: string, groups: Group[], labelDefs: LabelDef[],  categoryDefs: CategoryDef[], props: BoardProps) => {
+    const updateBoard = async ( name: string, groups: Group[], labelDefs: LabelDef[],  categoryDefs: CategoryDef[], props: BoardProps, showArchived: boolean) => {
+        console.log("ARCH", showArchived)
+        store.setUIprops({showArchived})
+
         // ignore board type we don't update that.
         const board: Board | undefined = await store.boardList.getBoard(boardHash)
         if (board) {

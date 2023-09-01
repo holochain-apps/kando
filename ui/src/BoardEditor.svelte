@@ -7,12 +7,14 @@
     import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
     import '@shoelace-style/shoelace/dist/components/button/button.js';
     import '@shoelace-style/shoelace/dist/components/input/input.js';
+    import '@shoelace-style/shoelace/dist/components/checkbox/checkbox.js';
     import Fa from 'svelte-fa'
     import { faPlus, faGripVertical, faTrash} from '@fortawesome/free-solid-svg-icons';
     import { cloneDeep } from "lodash";
 
     import type { KanDoStore } from './kanDoStore';
     import type { EntryHashB64 } from '@holochain/client';
+  import { get } from 'svelte/store';
 
     const { getStore } :any = getContext('kdStore');
 
@@ -117,6 +119,7 @@
    let emojiDialog,colorDialog
    let showColorPicker :number|undefined = undefined
    let hex
+   let showArchived
 </script>
 
   <div class='board-editor'>
@@ -250,6 +253,9 @@
     <div class="edit-title">
       <div class="title-text">Background Image:</div> <sl-input class='textarea' maxlength="255" value={props.bgUrl} on:input={e=>props.bgUrl = e.target.value} />
     </div>
+    <div>
+      <sl-checkbox bind:this={showArchived} checked={get(store.uiProps).showArchived}>Show Archived Cards</sl-checkbox>
+    </div>
     {/if}
     <div class='controls'>
       {#if handleDelete}
@@ -260,7 +266,7 @@
       <sl-button on:click={cancelEdit} style="margin-left:10px">
         Cancel
       </sl-button>
-      <sl-button style="margin-left:10px" on:click={() => handleSave(text, groups, labelDefs, categoryDefs, props)} variant="primary">
+      <sl-button style="margin-left:10px" on:click={() => handleSave(text, groups, labelDefs, categoryDefs, props, showArchived.checked)} variant="primary">
         Save
       </sl-button>
     </div>
