@@ -18,7 +18,15 @@
   import { faArchive, faArrowRight, faClose, faCog, faComments, faEdit, faFileExport, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
   import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
   import { hash } from "@holochain-open-dev/utils";
+  import ClickEdit from "./ClickEdit.svelte";
+  import { onVisible } from "./util";
 
+  onMount(async () => {
+        onVisible(columnNameElem,()=>{
+          columnNameElem.focus()
+          columnNameElem.select()
+        })
+	});
 
   const download = (filename: string, text: string) => {
     var element = document.createElement('a');
@@ -397,7 +405,27 @@
           on:dragover={handleDragOver}
           >
           <div class="column-item column-title">
-            <div>{columnId === UngroupedId ? "Archived" : columns[columnId].name}</div>
+            <div style="width:100%">
+            {#if columnId === UngroupedId}
+              Archived
+            {:else}
+            <ClickEdit
+              text={columns[columnId].name} 
+              handleSave={(text)=>{
+                const newGroups = cloneDeep($state.groups)
+                const idx = newGroups.findIndex(g=>g.id==columnId)
+                if (idx >= 0) {
+                  newGroups[idx].name = text
+                  kdStore.boardList.requestBoardChanges($activeHash, [
+                    {
+                      type: "set-groups",
+                      groups: newGroups
+                    }
+                  ])
+                }
+              }}></ClickEdit>
+            {/if}
+            </div>
           </div>
 
           <sl-dialog bind:this={commentDialog}>

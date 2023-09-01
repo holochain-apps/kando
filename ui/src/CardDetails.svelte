@@ -11,7 +11,7 @@
   import { cloneDeep, isEqual } from "lodash";
   import { v1 as uuidv1 } from "uuid";
   import { getContext } from 'svelte';
-  import { KanDoStore } from './kanDoStore';
+  import type { KanDoStore } from './kanDoStore';
   import AvatarIcon from './AvatarIcon.svelte';
   import { decodeHashFromBase64 } from '@holochain/client';
   import { faEdit, faTrash, faComments, faPlus, faClose } from '@fortawesome/free-solid-svg-icons';
@@ -19,6 +19,7 @@
 
   import { Marked, Renderer } from "@ts-stack/markdown";
   import Fa from 'svelte-fa';
+  import ClickEdit from './ClickEdit.svelte';
 
   Marked.setOptions
   ({
@@ -196,17 +197,15 @@
 
   <div class="card-elements">
     <div style="display:flex;justify-content:space-between">
-      {#if editingTitle}
-        <sl-input class='textarea' value={props.title} bind:this={inputElement}
-          on:sl-input={e=>props.title = e.target.value}
-          on:sl-blur={()=>{handleSave(props); editingTitle=false}}
-          ></sl-input>
-      {:else}
-        <div style="display:flex;justify-content:space-between">
-          <h3 on:click={(e)=>{editingTitle = true}}>{props.title}</h3>
-          
-        </div>
-      {/if}
+      <div style="width:100%">
+      <ClickEdit
+        text={props.title} 
+        handleSave={(text)=>{
+          props.title = text
+          handleSave(props)
+        }}></ClickEdit>
+      </div>
+   
       <div class="details-button"
         on:click={(e)=>{close()}}
         >

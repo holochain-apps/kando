@@ -1,12 +1,10 @@
 <script lang="ts">
-    import { Menu, List, ListItem } from 'svelte-materialify';
     import { getContext } from "svelte";
     import type { KanDoStore } from "./kanDoStore";
     import type { EntryHashB64 } from '@holochain/client';
     import NewBoardDialog from './NewBoardDialog.svelte';
     import { faArchive, faChevronDown, faFileImport, faSquarePlus } from '@fortawesome/free-solid-svg-icons';
     import Fa from 'svelte-fa';
-    import { slide } from 'svelte/transition';
     import AboutDialog from "./AboutDialog.svelte";
     import KDLogoIcon from "./icons/KDLogoIcon.svelte";
 
@@ -61,12 +59,6 @@
     {#if archivedBoards}
         <h3>Archived Boards</h3>
 
-        <div>
-            <sl-button style="margin-left:10px" title="Archived Boards">
-                <Fa icon={faArchive}></Fa>
-                <Fa icon={faChevronDown}></Fa>
-            </sl-button>
-        </div>
             {#each $boardList.boards as board }
                 {#if board.status === "archived" }
                 <div class="board" id={board.hash} on:click={unarchiveBoard(board.hash)}>{board.name}</div>
