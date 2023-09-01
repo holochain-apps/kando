@@ -14,15 +14,16 @@
 
     import type { KanDoStore } from './kanDoStore';
     import type { EntryHashB64 } from '@holochain/client';
-    import { get } from 'svelte/store';
 
     const { getStore } :any = getContext('kdStore');
 
     const store:KanDoStore = getStore();
+    $: uiProps = store.uiProps
 
     export let handleSave
     export let handleDelete = undefined
     export let cancelEdit
+
 
     let boardHash:EntryHashB64|undefined = undefined
     let text = ''
@@ -254,7 +255,7 @@
       <div class="title-text">Background Image:</div> <sl-input class='textarea' maxlength="255" value={props.bgUrl} on:input={e=>props.bgUrl = e.target.value} />
     </div>
     <div>
-      <sl-checkbox bind:this={showArchived} checked={get(store.uiProps).showArchived}>Show Archived Cards</sl-checkbox>
+      <sl-checkbox bind:this={showArchived} checked={$uiProps.showArchived[boardHash]}>Show Archived Cards</sl-checkbox>
     </div>
     {/if}
     <div class='controls'>

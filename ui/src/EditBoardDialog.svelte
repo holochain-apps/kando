@@ -8,6 +8,7 @@
     import '@shoelace-style/shoelace/dist/components/button/button.js';
     import type SlDialog from '@shoelace-style/shoelace/dist/components/dialog/dialog';
     import type { Board, BoardProps, BoardState, CategoryDef, Group, LabelDef } from './board';
+  import { get } from 'svelte/store';
 
     let boardHash:EntryHashB64|undefined = undefined
 
@@ -27,7 +28,9 @@
     const store:KanDoStore = getStore();
 
     const updateBoard = async ( name: string, groups: Group[], labelDefs: LabelDef[],  categoryDefs: CategoryDef[], props: BoardProps, showArchived: boolean) => {
-        store.setUIprops({showArchived})
+        const sa:{[key: string]: boolean} = get(store.uiProps).showArchived
+        sa[boardHash] = showArchived
+        store.setUIprops({showArchived:sa})
 
         // ignore board type we don't update that.
         const board: Board | undefined = await store.boardList.getBoard(boardHash)

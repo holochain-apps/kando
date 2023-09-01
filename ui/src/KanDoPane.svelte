@@ -304,7 +304,7 @@
   }
 
   $: sortedColumns = () => {
-    if ($uiProps.showArchived) {
+    if ($uiProps.showArchived[$activeHash]) {
       // make sure the ungrouped group is at the end.
       let cols = $state.groups.map((group)=> [group.id, $state.grouping[group.id]])
       const idx = cols.findIndex(([id,_]) => id == UngroupedId)
