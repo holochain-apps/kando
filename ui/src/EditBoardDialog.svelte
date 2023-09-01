@@ -27,7 +27,6 @@
     const store:KanDoStore = getStore();
 
     const updateBoard = async ( name: string, groups: Group[], labelDefs: LabelDef[],  categoryDefs: CategoryDef[], props: BoardProps, showArchived: boolean) => {
-        console.log("ARCH", showArchived)
         store.setUIprops({showArchived})
 
         // ignore board type we don't update that.

@@ -266,7 +266,7 @@
       <sl-button on:click={cancelEdit} style="margin-left:10px">
         Cancel
       </sl-button>
-      <sl-button style="margin-left:10px" on:click={() => handleSave(text, groups, labelDefs, categoryDefs, props, showArchived.checked)} variant="primary">
+      <sl-button style="margin-left:10px" on:click={() => handleSave(text, groups, labelDefs, categoryDefs, props, showArchived? showArchived.checked:false)} variant="primary">
         Save
       </sl-button>
     </div>

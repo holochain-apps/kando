@@ -14,7 +14,7 @@
   import type { KanDoStore } from './kanDoStore';
   import AvatarIcon from './AvatarIcon.svelte';
   import { decodeHashFromBase64 } from '@holochain/client';
-  import { faEdit, faTrash, faComments, faPlus, faClose } from '@fortawesome/free-solid-svg-icons';
+  import { faEdit, faTrash, faComments, faPlus, faClose, faPaperPlane, faCancel } from '@fortawesome/free-solid-svg-icons';
   import type { Comment } from "./board";
 
   import { Marked, Renderer } from "@ts-stack/markdown";
@@ -184,6 +184,9 @@
   let editingDescription = false
   let editDesc
 
+  let commentingFocused = false
+  let commentElement
+
 </script>
 <sl-drawer bind:this={dialog}
   style="--width:700px"
@@ -326,40 +329,56 @@
   </sl-dialog>
 
   <div class="comments">
-    <h4>Comments</h4>
+    <h4>{card ? card.comments.length:""} Comments</h4>
 
-    <sl-button 
-      style="padding: 0 5px;" size="small" text on:click={()=>newComment(cardId)}>
-      <div style="display: flex;">
-        <div style="margin-left:5px"><Fa icon={faComments} /> <Fa icon={faPlus}/></div>
-      </div>
-    </sl-button>
+    <div class="add-comment">
+      <sl-input bind:this={commentElement} placeholder="Add a comment"
+        on:sl-focus={()=>commentingFocused = true}
+        on:sl-blur={()=>commentingFocused = false}
+      >
+      </sl-input>
+      {#if commentingFocused}
+        <sl-button on:mousedown={()=>{
+          addComment(cardId, commentElement.value)
+          commentElement.value = ""
+        }}>
+            <Fa icon={faPaperPlane}/>
+        </sl-button>
+        <sl-button on:mousedown={()=>{
+          commentingFocused = false
+          commentElement.value = ""
+        }}>
+            <Fa icon={faCancel}/>
+        </sl-button>
+      {/if}
+
+    </div>
 
     <div class="comment-list">
       {#if card}
-      {#each card.comments as comment}
-        <div class="comment">
-          <div class="comment-header">
-            <div class="comment-avatar"><AvatarIcon size={20} avatar={$avatars[comment.agent]} key={decodeHashFromBase64(comment.agent)}/></div>
-            {store.timeAgo.format(new Date(comment.timestamp))}
-            {#if comment.agent==store.myAgentPubKey()}
-            <div class="comment-controls">
-              <div class="details-button"
-                on:click={()=>editComment(cardId, comment)}
-                >
-                <Fa icon={faEdit}/>
+        {#each card.comments as comment}
+          <div class="comment">
+            <div class="comment-header">
+              <div class="comment-avatar"><AvatarIcon size={20} avatar={$avatars[comment.agent]} key={decodeHashFromBase64(comment.agent)}/></div>
+              {store.timeAgo.format(new Date(comment.timestamp))}
+              {#if comment.agent==store.myAgentPubKey()}
+              <div class="comment-controls">
+                <div class="details-button"
+                  on:click={()=>editComment(cardId, comment)}
+                  >
+                  <Fa icon={faEdit}/>
+                </div>
+                <div class="details-button"
+                  on:click={()=>deleteComment(cardId, comment.id)}
+                  >
+                  <Fa icon={faTrash}/>
+                </div>
               </div>
-              <div class="details-button"
-                on:click={()=>deleteComment(cardId, comment.id)}
-                >
-                <Fa icon={faTrash}/>
-              </div>
+              {/if}
             </div>
-            {/if}
+            <span class="comment-text">{@html Marked.parse(comment.text)}</span>
           </div>
-          <span class="comment-text">{@html Marked.parse(comment.text)}</span>
-        </div>
-      {/each}
+        {/each}
       {/if}
     </div>
   </div>
@@ -382,6 +401,14 @@
 </div>
 </sl-drawer>
 <style>
+  .add-comment {
+    position: absolute;
+    padding: 20px;
+    background-color: #eee;
+    bottom: 0px;
+    margin-left: -20px;
+    width: 100%;
+  }
   .card-editor {
     display: flex;
     flex-basis: 270px;
