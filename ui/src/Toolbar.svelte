@@ -51,6 +51,7 @@
 <style>
   .logo {
     height: 20px;
+    margin-left: 10px;
     margin-right: 10px;
     display: contents;
     cursor: pointer;
