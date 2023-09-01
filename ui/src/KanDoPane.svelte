@@ -343,7 +343,7 @@
     <EditBoardDialog bind:this={editBoardDialog}></EditBoardDialog>
   <div class="top-bar">
     <div class="left-items">
-      <h5>{$state.name}</h5>
+      <h5 class="board-name">{$state.name}</h5>
     </div>
     <div class="right-items">
       <div class="filter-by">
@@ -477,6 +477,7 @@
                     </div>
                     {@html Marked.parse(props.description)}
                   </div>
+                  {#if $state.labelDefs.isLabeled}
                   <div class="labels">
                     {#each $state.labelDefs as {type, emoji, toolTip}}
                       {#if isLabeled(props, type)}
@@ -486,6 +487,7 @@
                       {/if}
                     {/each}
                   </div>
+                  {/if}
                   {#if props && props.agents && props.agents.length > 0}
                     {#each props.agents as agent}
                       <AvatarIcon size={20} avatar={$avatars[agent]} key={decodeHashFromBase64(agent)}/>
@@ -501,61 +503,48 @@
           {#if dragTarget == columnId && dragOrder == $state.grouping[columnId].length}
             <div> <Fa icon={faArrowRight} />  </div>
           {/if}
-
-          </div>
-          <div class="column-item column-footer">
-            <sl-button style="padding: 0 5px;" size="small" text on:click={newCard(columnId)}>
-              <div style="display: flex;">
-                Add Card
-                <div style="margin-left:5px"><Fa icon={faPlus}/></div>
-              </div>
-            </sl-button>
+              <div class="add-card" on:click={newCard(columnId)}><Fa icon={faPlus}/> <span>Add Card</span></div>
           </div>
         </div>
         </div>
       {/each}
-        <div class:hidden={addingColumn} class="add-column"
-          on:click={()=>{newColumnName = ""; addingColumn = true;columnNameElem.value=""; columnNameElem.focus()}}
-        >Add Column +</div>
-      <div class="add-column"
-        class:hidden={!addingColumn}
-        on:click={()=>{addingColumn = true; }}
-      >
-        <sl-input bind:this={columnNameElem} placeholder="column name"  on:sl-input={e=>newColumnName = e.target.value} on:sl-blur={()=>addingColumn=false}></sl-input>
-        <sl-button disabled={newColumnName.length==0} style="padding: 0 5px;" size="small" text on:mousedown={async ()=>{
-          const newGroups = cloneDeep($state.groups)
-          newGroups.push(new Group(newColumnName))
-          newColumnName = ""
-          addingColumn = false
-          await kdStore.boardList.requestBoardChanges($activeHash, [
-            {
-              type: "set-groups",
-              groups: newGroups
-            }
-          ])          
-        }}>
-          <div style="display: flex;">
-            New
-            <div style="margin-left:5px"><Fa icon={faPlus}/></div>
+        <div  class:hidden={addingColumn} class="column-wrap">
+          <div class="column">
+            <div class="add-column column-item"
+              on:click={()=>{newColumnName = ""; addingColumn = true;columnNameElem.value=""; columnNameElem.focus()}}
+            >Add Column +</div>
           </div>
-        </sl-button>
+        </div>
+        <div class:hidden={!addingColumn} class="column-wrap">
+          <div class="column">
+            <div class="add-column"
+              on:click={()=>{addingColumn = true; }}
+            >
+              <sl-input bind:this={columnNameElem} placeholder="column name"  on:sl-input={e=>newColumnName = e.target.value} on:sl-blur={()=>addingColumn=false}></sl-input>
+              <sl-button disabled={newColumnName.length==0} style="padding: 0 5px;" size="small" text on:mousedown={async ()=>{
+                const newGroups = cloneDeep($state.groups)
+                newGroups.push(new Group(newColumnName))
+                newColumnName = ""
+                addingColumn = false
+                await kdStore.boardList.requestBoardChanges($activeHash, [
+                  {
+                    type: "set-groups",
+                    groups: newGroups
+                  }
+                ])          
+              }}>
+                <div style="display: flex;">
+                  New
+                  <div style="margin-left:5px"><Fa icon={faPlus}/></div>
+                </div>
+              </sl-button>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
   {/if}
 </div>
 <style>
-  .add-column {
-    cursor: pointer;
-    display: flex;
-    background-color: #eeeeeecc;
-    width: 300px;
-    margin-top: 10px;
-    margin-left: 5px;
-    border-radius: 3px;
-    min-width: 130px;
-    height: 50px;
-    padding: 10px;
-  }
   .board {
     display: flex;
     flex-direction: column;
@@ -588,6 +577,9 @@
     display: flex;
     align-items: center;
   }
+  .board-name {
+    font-size: 16px;
+  }
   .right-items {
     display: flex;
     align-items: center;
@@ -617,7 +609,7 @@
     flex: 0 1 auto;
   }
 
-  .column-title {
+  .column-title, .add-column {
     font-weight: bold;
     font-size: 16px;
     padding: 10px;
@@ -639,15 +631,16 @@
     flex-direction: column;
   }
   .column {
+    margin-right: 10px;
     display: flex;
     flex-direction: column;
     width: 300px;
-    margin-left: 5px;
+    margin-left: 10px;
     border-radius: 3px;
     min-width: 130px;
     min-height: 0;
     max-height: calc(100vh - 100px);
-    overflow: auto;
+    overflow: visible;
   }
   .first-column {
     margin-left: 0px !important;
@@ -655,9 +648,24 @@
   .cards {
     display: flex;
     flex-direction: column;
-    overflow-y: auto;
+    overflow-y: scroll;
+    width: calc (100% + 8px);
+    margin-top: 5px;
     min-height: 38px;
+    --webkit-scrollbar-color: blue transparent;
   }
+  .cards::-webkit-scrollbar {
+    width: 5px;
+  background-color: transparent; /* or add it to the track */
+}
+
+  .cards::-webkit-scrollbar-thumb {
+      background: #000;
+      border-radius: 5px;
+      background: rgba(20,60,119,.2);
+      opacity: 0.2;
+  }
+
   .glowing {
     outline: none;
     border-color: #9ecaed;
@@ -670,17 +678,30 @@
   .first-card {
     margin-top: 10px !important;
   }
-  .card {
+  .card, .add-card {
     background-color: white;
     margin: 0px 10px 10px 10px;
     padding: 5px;
-    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+    box-shadow: 0px 4px 4px rgba(35, 32, 74, 0.15);
     font-size: 12px;
     line-height: 16px;
-    color: #000000;
-    border-radius: 3px;
+    color: #23204A;
+    border-radius: 5px;
     display:flex;
     flex-direction:column;
+    padding: 10px;
+  }
+
+  .card:hover .action-button {
+    opacity: 1;
+  }
+
+  .card:hover {
+    cursor: pointer;
+  }
+
+  .add-card {
+    display: flex;
   }
   .card-content {
     overflow-y: auto;
@@ -700,6 +721,8 @@
     padding:2px;
     width:20px;
     display: flex;
+    opacity: 0;
+    transition: opacity .25s ease;
     justify-content: center;
   }
   .action-button:hover {

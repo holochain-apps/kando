@@ -62,7 +62,6 @@
     .not-editing {
         width: 100%;
         font-weight: bold;
-        font-size: 110%;
     }
     .hidden {
         display: none;

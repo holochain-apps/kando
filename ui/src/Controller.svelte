@@ -106,7 +106,7 @@
   .app {
     margin: 0;
     padding-bottom: 10px;
-    background: linear-gradient(180deg, #fafafa 0%, #DEDECF 80%);
+    background: linear-gradient(180deg, #FFFFFF 0%, #CFD9E2 100%);
     background-size: cover;
     display: flex;
     flex-direction: column;

@@ -1,3 +1,6 @@
+/* Black: #23204A or rgba(35,32,74,1); */
+
+
 html, body {
 	position: relative;
 	width: 100%;
@@ -5,7 +8,7 @@ html, body {
 }
 
 body {
-	color: #333;
+	color: #23204A;
 	margin: 0;
 	padding: 8px;
 	box-sizing: border-box;
