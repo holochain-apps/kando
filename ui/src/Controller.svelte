@@ -40,6 +40,7 @@
     $: bgUrl = boardState ?  ($boardState.props && $boardState.props.bgUrl) ? $boardState.props.bgUrl : DEFAULT_KD_BG_IMG : NO_BOARD_IMG
     $: bgImage = `background-image: url("`+ bgUrl+`");`
     $: myAgentPubKey = kdStore ? kdStore.myAgentPubKey() : undefined
+    $: uiProps = kdStore ? kdStore.uiProps : undefined
 
     async function initialize() : Promise<void> {
       const store = createStore()
@@ -73,55 +74,23 @@
 
     <div class="header">
       <Toolbar 
-        on:showBoardMenu={(e)=> {menuVisible = true}} 
-        on:hideBoardMenu={(e)=> {menuVisible = false}} 
         profilesStore={profilesStore}/>
     </div>
 
     <div class="workspace" style="display:flex">
 
-    {#if menuVisible}
-      <div class="board-menu" transition:slide={{ axis: 'x', duration: 400 }} >
-        <BoardMenu></BoardMenu>
-      </div>
-    {/if}
-      {#if ($boardList.avatars[myAgentPubKey] && $boardList.avatars[myAgentPubKey].name) || profilesStore}
-        {#if boardList && $boardList.boards.length == 0}
-          <div class="welcome-text">
-            <h2>Welcome!</h2>
-              <p>KanDo offers real-time collaborative Kanban boards for task and project management. </p>
-              <p>
-                Click on the <Fa style="width:20px; color:black; " icon={faSquarePlus}></Fa> above to create your first board.
-                You can add columns for your board, customize voting categories and settings, and more in the board creation window.
-              </p>
-            <p>You can always edit these settings with the <Fa style="width:20px; color:black; " icon={faCog}></Fa> button in the upper right when you have a board selected. </p>
-          </div>
-        {/if}
-        {#if boardList && $boardList.boards.length > 0 && $activeBoardHash === undefined}
-          <div class="welcome-text">
-            <!-- {#if !$boardList.agentBoards[myAgentPubKey]} -->
-              <p>Active Boards: {activeBoards.length}, Archived Boards: {archivedBoards.length}</p>
-                <p>
-                  Select a board from the dropdown above, or add a new one with the  <Fa style="width:20px; color:black; " icon={faSquarePlus}></Fa> button.
-                  You can add columns for your board, customize voting categories and settings, and more in the board creation window.
-                </p>
-              <p>You can always edit these settings with the <Fa style="width:20px; color:black; " icon={faCog}></Fa> button in the upper right when you have a board selected. </p>
-              <p>Any boards that you have archived will appear under the <Fa style="width:20px; color:black; " icon={faFileImport}></Fa> button, and you can un-archive them by selecting them from the list.</p>
-            <!-- {:else}
-              <h4> My Boards</h4>
-              <div class="my-boards">
-                {#each $boardList.agentBoards[myAgentPubKey] as myBoard}
-                  <div class="my-board"
-                    on:click={()=>kdStore.boardList.setActiveBoard(myBoard)}
-                    >
-                    {get(kdStore.boardList.getReadableBoardState(myBoard)).name}
-                  </div>
-                {/each}
-              </div>
-            {/if} -->
-          </div>
-        {/if}
+    {#if $uiProps.showMenu}
+      {#if boardList && $boardList.boards.length > 0 && $activeBoardHash === undefined}
+        <div class="board-menu" >
+          <BoardMenu wide={true}></BoardMenu>
+        </div>
+      {:else}
+        <div class="board-menu" transition:slide={{ axis: 'x', duration: 400 }} >
+          <BoardMenu wide={false}></BoardMenu>
+        </div>
       {/if}
+    {/if}
+      
       {#if $activeBoardHash !== undefined}
         <KanDoPane on:requestChange={(event) => {kdStore.boardList.requestBoardChanges($activeBoardHash,event.detail)}}/>
       {/if}
@@ -154,16 +123,7 @@
       max-width: none;
     }
   }
-  .welcome-text {
-    border-radius: 5px;
-    border: 1px solid #222;
-    margin: auto;
-    margin-top: 50px;
-    max-width: 650px;
-    padding: 26px;
-    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
-    background-color: white;
-  }
+
   .loading {
     text-align: center;
     padding-top: 100px;
@@ -206,9 +166,7 @@
     max-height: 100%;
     overflow-y: auto;
   }
-  .hidden {
-    display: none
-  }
+
 
   /* .my-boards {
     display: flex;

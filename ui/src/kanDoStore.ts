@@ -36,7 +36,8 @@ export class KanDoService {
 }
 
 export interface UIProps {
-    showArchived: boolean
+    showArchived: boolean,
+    showMenu: boolean,
   }
 
 export class KanDoStore {
@@ -49,6 +50,7 @@ export class KanDoStore {
     client: AppAgentClient;
     uiProps: Writable<UIProps> = writable({
         showArchived: false,
+        showMenu: true,
     })
 
     setUIprops(props:{}) {

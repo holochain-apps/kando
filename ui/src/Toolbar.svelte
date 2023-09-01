@@ -4,29 +4,43 @@
   import { faBug, faBars, faClose} from "@fortawesome/free-solid-svg-icons";
   import Fa from "svelte-fa";
   import Search from './Search.svelte';
-  import { createEventDispatcher } from "svelte";
+  import { getContext } from "svelte";
+  import AboutDialog from "./AboutDialog.svelte";
+  import KDLogoIcon from "./icons/KDLogoIcon.svelte";
+  import type { KanDoStore } from "./kanDoStore";
+
+  const { getStore } :any = getContext("kdStore");
+  let store: KanDoStore = getStore();
+
+  $: uiProps = store.uiProps
+  $: activeHash = store.boardList.activeBoardHash;
 
   export let profilesStore: ProfilesStore|undefined
-  const dispatch = createEventDispatcher()
 
   $:bugColor = "color: #5536f9"
 
-  let showBoardMenu = false
+  let aboutDialog
 
 </script>
+<AboutDialog bind:this={aboutDialog} />
 
 <div class='toolbar'>
-  <div class="left-items">
-    {#if showBoardMenu}
-      <span style="display:flex;align-items:center;cursor:pointer" on:click={()=>{dispatch("hideBoardMenu"); showBoardMenu=false}}>Close Menu <div class="nav-button"  title="Hide Board Menu"><Fa icon={faClose} size=2x /></div></span>
+  <div class="items">
+    <div class="logo" title="About KanDo!" on:click={()=>aboutDialog.open()}><KDLogoIcon /></div>
 
-    {:else}
-      <div class="nav-button" on:click={()=>{dispatch("showBoardMenu", undefined); showBoardMenu=true}}  title="Show Board Menu"><Fa icon={faBars} size=2x /></div>
+
+    {#if $activeHash}
+      {#if $uiProps.showMenu}
+        <span style="display:flex;align-items:center;cursor:pointer" on:click={()=>{store.setUIprops({showMenu:false})}}>Close Menu <div class="nav-button"  title="Hide Board Menu"><Fa icon={faClose} size=2x /></div></span>
+
+      {:else}
+        <div class="nav-button" on:click={()=>{store.setUIprops({showMenu:true})}}  title="Show Board Menu"><Fa icon={faBars} size=2x /></div>
+      {/if}
     {/if}
-
-    <Search></Search>
+    
   </div>
-  <div class="right-items">
+  <div class="items"><Search></Search></div>
+  <div class="items">
     <Folk profilesStore={profilesStore}></Folk>
     <a href="https://github.com/holochain-apps/kando/issues" title="Report a problem in our GitHub repo" target="_blank">
       <div class="nav-button"><Fa icon={faBug} size=2x style={bugColor} /></div>
@@ -35,6 +49,12 @@
 </div>
 
 <style>
+  .logo {
+    height: 20px;
+    margin-right: 10px;
+    display: contents;
+    cursor: pointer;
+  }
   .bug-link {
     padding: 8px 8px;
     display: flex;
@@ -52,14 +72,10 @@
     display: flex;
   }
 
-  .right-items {
+  .items {
     display: flex;
     flex: 0 0 auto;
     align-items: center;
   }
-  .left-items {
-    display: flex;
-    flex: 0 0 auto;
-    align-items: center;
-  }
+  
 </style>

@@ -213,6 +213,7 @@
 
   const closeBoard = () => {
     kdStore.boardList.closeActiveBoard();
+    kdStore.setUIprops({showMenu:true})
   };
   let editBoardDialog
   let dragOn = true
