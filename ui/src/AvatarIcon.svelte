@@ -20,7 +20,7 @@
       {#if key}
       <holo-identicon hash={key} size={size}/>
       {:else}
-      <Icon path={mdiAccount} size={`${size}px`} />
+      <Icon color="#fff" path={mdiAccount} size={`${size}px`} />
       {/if}
     {:else}
       <img src={avatar.url} />

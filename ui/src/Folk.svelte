@@ -46,7 +46,7 @@
 
 </script>
 <div class="nav-button" on:click={()=>{participantsDialog.open()}}  title="Show Participants">
-    <Fa icon={faUserGroup} size=2x/>{$participants.active.length }</div>
+    <Fa color="#fff" icon={faUserGroup} size=2x/>{$participants.active.length }</div>
 {#if !profilesStore}
 <div class="nav-button" on:click={editAvatar} title={myName ? myName:"Edit Avatar"}>
     <AvatarIcon size={30} avatar={myAvatar} border={false}></AvatarIcon></div>

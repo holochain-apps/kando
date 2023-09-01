@@ -109,15 +109,19 @@
     padding: 15px;
   }
 
-.new-board {
-    box-sizing: border-box;
-    position: relative;
-    width: 290px;
-    height: 50px;
-    background: #243076;
-    border: 1px solid #4A559D;
-    border-radius: 5px;
-}
+  .wide {
+    width: 100vw;
+  }
+
+    .new-board {
+        box-sizing: border-box;
+        position: relative;
+        width: 290px;
+        height: 50px;
+        background: #243076;
+        border: 1px solid #4A559D;
+        border-radius: 5px;
+    }
 
   .board {
     width: 290px;
@@ -125,7 +129,11 @@
     padding: 10px;
     margin: 5px;
     border: 1px solid;
-    background-color: antiquewhite;
+    background-color: #fff;
+  }
+
+  .board:hover {
+    cursor: pointer;
   }
 
 </style>

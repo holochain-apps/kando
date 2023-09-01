@@ -650,7 +650,7 @@
     flex-direction: column;
     overflow-y: scroll;
     width: calc (100% + 8px);
-    margin-top: 5px;
+    margin-top: 10px;
     min-height: 38px;
     --webkit-scrollbar-color: blue transparent;
   }
@@ -675,13 +675,10 @@
     transform: rotate(3deg);
     box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.5) !important;
   }
-  .first-card {
-    margin-top: 10px !important;
-  }
+
   .card, .add-card {
     background-color: white;
     margin: 0px 10px 10px 10px;
-    padding: 5px;
     box-shadow: 0px 4px 4px rgba(35, 32, 74, 0.15);
     font-size: 12px;
     line-height: 16px;
@@ -690,19 +687,24 @@
     display:flex;
     flex-direction:column;
     padding: 10px;
+    transition: all .25s ease;
   }
 
   .card:hover .action-button {
     opacity: 1;
   }
 
-  .card:hover {
+  .card:hover, .add-card:hover {
     cursor: pointer;
+    box-shadow: 0px 4px 4px rgba(35, 32, 74, 0.25);
+    padding: 12px;
+    margin: -2px 8px 8px 8px;
   }
 
   .add-card {
     display: flex;
   }
+
   .card-content {
     overflow-y: auto;
     max-height: 200px;

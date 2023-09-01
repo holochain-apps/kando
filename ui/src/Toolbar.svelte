@@ -34,7 +34,7 @@
         <span style="display:flex;align-items:center;cursor:pointer" on:click={()=>{store.setUIprops({showMenu:false})}}>Close Menu <div class="nav-button"  title="Hide Board Menu"><Fa icon={faClose} size=2x /></div></span>
 
       {:else}
-        <div class="nav-button" on:click={()=>{store.setUIprops({showMenu:true})}}  title="Show Board Menu"><Fa icon={faBars} size=2x /></div>
+        <div class="nav-button" on:click={()=>{store.setUIprops({showMenu:true})}}  title="Show Board Menu"><Fa color="#fff" icon={faBars} size=2x /></div>
       {/if}
     {/if}
     
@@ -43,7 +43,7 @@
   <div class="items">
     <Folk profilesStore={profilesStore}></Folk>
     <a href="https://github.com/holochain-apps/kando/issues" title="Report a problem in our GitHub repo" target="_blank">
-      <div class="nav-button"><Fa icon={faBug} size=2x style={bugColor} /></div>
+      <div class="nav-button"><Fa color="#fff" icon={faBug} size=2x style={bugColor} /></div>
     </a>
   </div>
 </div>
