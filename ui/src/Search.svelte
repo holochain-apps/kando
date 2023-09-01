@@ -31,7 +31,7 @@
     $: state = store.boardList.getReadableBoardState($activeHash);
 
     const selectBoard = (hash: EntryHashB64) => {
-        store.boardList.setActiveBoard(hash)
+        store.setActiveBoard(hash)
     }
 
 

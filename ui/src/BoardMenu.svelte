@@ -13,6 +13,7 @@
     const { getStore } :any = getContext('kdStore');
 
     const store:KanDoStore = getStore();
+    $: uiProps = store.uiProps
     $: boardList = store.boardList.stateStore()
     $: activeHash = store.boardList.activeBoardHash;
     $: state = store.boardList.getReadableBoardState($activeHash);
@@ -23,7 +24,7 @@
         if (!$activeHash && wide) {
             store.setUIprops({showMenu:false})
         }
-        store.boardList.setActiveBoard(hash)
+        store.setActiveBoard(hash)
     }
 
     let fileinput;
@@ -50,6 +51,16 @@
     <div class="new-board" on:click={()=>newBoardDialog.open()} style="margin-left:10px;font-size:14px" title="New Board">New Board <Fa icon={faSquarePlus} size=2x /></div>
     <div class="nav-button" on:click={()=>{fileinput.click();}}  style="margin-left:10px;font-size:14px" title="Import Board">Import Board <Fa icon={faFileImport} size=2x/></div>
     </div>
+    {#if $uiProps.recent.length > 0}
+        <h3>Recent Boards</h3>
+        <div class="boards-section">
+            {#each $uiProps.recent as boardHash }
+                <div on:click={()=>selectBoard(boardHash)}
+                    class="board" id={boardHash}>{$boardList.boards.find(b=>b.hash==boardHash).name}
+                </div>
+            {/each}
+        </div>
+    {/if}
     {#if activeBoards}
         <h3>Active Boards</h3>
         <div class="boards-section">

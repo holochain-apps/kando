@@ -5,16 +5,18 @@ import {
     type AppAgentCallZomeRequest,
     type RoleName,
     encodeHashToBase64,
+    type EntryHashB64,
   } from '@holochain/client';
 import { RecordBag } from '@holochain-open-dev/utils';
 import { SynStore,  SynClient, type Commit } from '@holochain-syn/core';
 import { CommitTypeBoard, type BoardState } from './board';
 import { BoardList, CommitTypeBoardList } from './boardList';
 import { decode } from '@msgpack/msgpack';
-import {toPromise, writable, type Writable} from '@holochain-open-dev/stores'
+import {toPromise} from '@holochain-open-dev/stores'
 import TimeAgo from "javascript-time-ago"
 import en from 'javascript-time-ago/locale/en'
 import type { v1 as uuidv1 } from "uuid";
+import { get, writable, type Writable } from "svelte/store";
 
 
 TimeAgo.addDefaultLocale(en)
@@ -38,6 +40,7 @@ export class KanDoService {
 export interface UIProps {
     showArchived: {[key: string]: boolean},
     showMenu: boolean,
+    recent: Array<EntryHashB64>
   }
 
 export class KanDoStore {
@@ -51,6 +54,7 @@ export class KanDoStore {
     uiProps: Writable<UIProps> = writable({
         showArchived: {},
         showMenu: true,
+        recent: []
     })
 
     setUIprops(props:{}) {
@@ -58,6 +62,18 @@ export class KanDoStore {
             Object.keys(props).forEach(key=>n[key] = props[key])
             return n
         })
+    }
+
+    setActiveBoard(hash:EntryHashB64) {
+        const recent = get(this.uiProps).recent
+        const idx = recent.findIndex(h=>h===hash)
+        if (idx >=0) {
+            recent.splice(idx,1)
+        }
+        recent.unshift(hash)
+        recent.splice(6);
+        this.setUIprops({recent})
+        this.boardList.setActiveBoard(hash)
     }
 
     myAgentPubKey(): AgentPubKeyB64 {
