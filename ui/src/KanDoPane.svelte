@@ -3,9 +3,9 @@
   import CardEditor from "./CardEditor.svelte";
   import CardDetails from "./CardDetails.svelte";
   import EmojiIcon from "./icons/EmojiIcon.svelte";
-  import { sortBy } from "lodash/fp";
+  //import { sortBy } from "lodash/fp";
   import type { KanDoStore } from "./kanDoStore";
-  import SortSelector from "./SortSelector.svelte";
+  import LabelSelector from "./LabelSelector.svelte";
   import { Marked, Renderer } from "@ts-stack/markdown";
   import { v1 as uuidv1 } from "uuid";
   import { type Card, Group, UngroupedId, type CardProps, type BoardState, type Comment } from "./board";
@@ -15,9 +15,8 @@
   import { cloneDeep, isEqual } from "lodash";
   import sanitize from "sanitize-filename";
   import Fa from "svelte-fa";
-  import { faArchive, faArrowRight, faClose, faCog, faComments, faEdit, faFileExport, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
+  import { faArrowRight, faClose, faCog, faComments, faEdit, faFileExport, faPlus } from "@fortawesome/free-solid-svg-icons";
   import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
-  import { hash } from "@holochain-open-dev/utils";
   import ClickEdit from "./ClickEdit.svelte";
   import { onVisible } from "./util";
 
@@ -62,10 +61,10 @@
     smartypants: false
   });
 
-  $: sortOption = null;
+  $: filterOption = null;
 
-  function setSortOption(newSortOption) {
-    sortOption = newSortOption;
+  function setFilterOption(newOption) {
+    filterOption = newOption;
   }
 
   const { getStore } :any = getContext("kdStore");
@@ -76,9 +75,7 @@
   $: activeCard = kdStore.boardList.activeCard;
   $: state = kdStore.boardList.getReadableBoardState($activeHash);
   $: items = $state ? $state.cards : undefined;
-  $: sortCards = sortOption
-    ? sortBy((card: Card) => countLabels(card.props, sortOption) * -1)
-    : (items) => items;
+  $: sortCards = (items) => items // no sort algorithm for now
 
   $: avatars = kdStore.boardList.avatars()
   
@@ -123,9 +120,9 @@
 
   const sorted = (itemIds, sortFn)=> {
     var items = itemIds.map((id)=>cardsMap[id])
-    if (sortOption) {
-      items = sortFn(items) 
-    }
+    // if (sortOption) {
+    //   items = sortFn(items) 
+    // }
     return items
   }
 
@@ -348,8 +345,8 @@
       <h5>{$state.name}</h5>
     </div>
     <div class="right-items">
-      <div class="sortby">
-        Sort: <SortSelector {setSortOption} {sortOption} />
+      <div class="filter-by">
+        Filter by: <LabelSelector setOption={setFilterOption} option={filterOption} />
       </div>
 
       <sl-button circle on:click={()=> editBoardDialog.open(cloneDeep($activeHash))} title="Settings">
@@ -445,7 +442,8 @@
           </sl-dialog>
 
           <div class="cards">
-          {#each sorted($state.grouping[columnId], sortCards) as { id:cardId, comments, labels, props }, i}
+          {#each sorted($state.grouping[columnId], sortCards) as { id:cardId, comments, props }, i}
+            {#if !filterOption || (props.labels.includes(filterOption))}
                 {#if 
                   dragTarget == columnId && 
                   cardId!=draggedItemId && 
@@ -469,7 +467,7 @@
                   >
                     <div style="display:flex;justify-content:space-between">
                       <h3>{props.title}</h3>
-                      <div class="comment-button"
+                      <div class="action-button"
                         on:click={(e)=>{e.stopPropagation(); editCard(cardId,props)()}}
                         >
                         <Fa icon={faEdit}/>
@@ -497,7 +495,8 @@
                   {/if}
                   
                 </div>
-        {/each}
+            {/if}
+          {/each}
           {#if dragTarget == columnId && dragOrder == $state.grouping[columnId].length}
             <div> <Fa icon={faArrowRight} />  </div>
           {/if}
@@ -592,7 +591,7 @@
     display: flex;
     align-items: center;
   }
-  .sortby {
+  .filter-by {
     border-right: 1px solid lightgray;
     display: flex;
     align-items: center;
@@ -693,28 +692,8 @@
     justify-content: space-around;
     margin-top: 5px;
   }
-  .comments {
-    margin-top: 5px;
-    padding-top: 5px;
-    border-top: 1px solid;
-  }
-  .comment {
-    display:flex;
-    flex-direction: column;
-    margin-top: 5px;
-    padding-top: 5px;
-    border-top: 1px solid lightgray;
-  }
-  .comment-header {
-    display:flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .comment-avatar {
-    margin-right:5px;
-  }
-  .comment-button {
+  
+  .action-button {
     cursor: pointer;
     border-radius: 50%;
     padding:2px;
@@ -722,30 +701,10 @@
     display: flex;
     justify-content: center;
   }
-  .comment-button:hover {
+  .action-button:hover {
     background-color: rgb(240, 249, 2244);
     border: solid 1px rgb(149, 219, 252);
     color:  rgb(3, 105, 161);
-  }
-  
-  .comment-text {
-    margin-left: 10px;
-  }
-  .comment-list {
-    max-height:200px;
-    overflow-x:auto;
-  }
-  .comment-controls {
-    display:flex;
-    justify-self: flex-end;
-  }
-  .avatar-name {
-    border-radius: 5px;
-    background-color: rgb(13, 145, 147);
-    color: white;
-    padding: 0 3px;
-    padding-bottom: 2px;
-    margin-right: 4px;
   }
   .hidden {
     display: none;

@@ -14,7 +14,7 @@
 
     import type { KanDoStore } from './kanDoStore';
     import type { EntryHashB64 } from '@holochain/client';
-  import { get } from 'svelte/store';
+    import { get } from 'svelte/store';
 
     const { getStore } :any = getContext('kdStore');
 
