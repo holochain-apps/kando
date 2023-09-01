@@ -111,7 +111,7 @@
 
 .new-board {
     box-sizing: border-box;
-    position: absolute;
+    position: relative;
     width: 290px;
     height: 50px;
     background: #243076;
