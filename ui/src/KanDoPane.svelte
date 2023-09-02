@@ -708,6 +708,7 @@
     flex-direction:column;
     padding: 10px;
     transition: all .25s ease;
+    height: 0;
     height: auto;
   }
 
@@ -723,10 +724,9 @@
     position: relative;
     z-index: 100;
 
-    /* delete this example */
-    height: calc(100vh - 125px);
-    max-height: calc(100vh - 125px);
-
+    /* uncomment to see this example of card growing dramatically */
+    /* height: calc(100vh - 125px);
+    max-height: calc(100vh - 125px); */
   }
 
   .add-card {
