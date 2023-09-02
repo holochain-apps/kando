@@ -48,11 +48,11 @@
     class:wide={wide} >
     <input style="display:none" type="file" accept=".json" on:change={(e)=>onFileSelected(e)} bind:this={fileinput} >
     <div style="display:flex;flex-direction: row;">
-    <div class="new-board" on:click={()=>newBoardDialog.open()} style="margin-left:10px;font-size:14px" title="New Board">New Board <Fa icon={faSquarePlus} size=2x /></div>
-    <div class="nav-button" on:click={()=>{fileinput.click();}}  style="margin-left:10px;font-size:14px" title="Import Board">Import Board <Fa icon={faFileImport} size=2x/></div>
+    <div class="new-board" on:click={()=>newBoardDialog.open()} style="margin-left:10px;font-size:14px" title="New Board"><Fa icon={faSquarePlus} size=2x style="margin-left: 15px;"/><span>New Board</span></div>
+    <div class="new-board" on:click={()=>{fileinput.click();}}  style="margin-left:10px;font-size:14px" title="Import Board"><Fa icon={faFileImport} size=2x style="margin-left: 15px;"/><span>Import Board </span></div>
     </div>
     {#if $uiProps.recent.length > 0}
-        <h3>Recent Boards</h3>
+        <h3 class="type-header">Recent Boards</h3>
         <div class="boards-section">
             {#each $uiProps.recent as boardHash }
                 <div on:click={()=>selectBoard(boardHash)}
@@ -62,7 +62,7 @@
         </div>
     {/if}
     {#if activeBoards}
-        <h3>Active Boards</h3>
+        <h3 class="type-header">Active Boards</h3>
         <div class="boards-section">
             {#each $boardList.boards as board }
                 {#if board.status !== "archived" }
@@ -73,7 +73,7 @@
         </div>
     {/if}
     {#if archivedBoards}
-        <h3>Archived Boards</h3>
+        <h3 class="type-header">Archived Boards</h3>
         <div class="boards-section">
             {#each $boardList.boards as board }
                 {#if board.status === "archived" }
@@ -89,29 +89,39 @@
 </div>
 
 <style>
-  .wide {
-    width: 100%;
-  }
-  .boards-section {
-    display: flex;
-    flex-wrap: wrap;
-  }
-  .board-menu {
-    height: calc(100vh - 50px);
-    overflow: auto;
-    background-color: aliceblue;
-    min-width: 320px;
-    display: flex;
-    flex-direction: column;
-    background: linear-gradient(94.53deg, #164B9A 12.76%, #5B47D6 99.41%);
-    flex: 0 0 auto;
-    align-items: flex-start;
-    padding: 15px;
-  }
+    .wide {
+        width: 100%;
+    }
+    .boards-section {
+        display: flex;
+        flex-wrap: wrap;
+    }
+    .board-menu {
+        height: calc(100vh - 50px);
+        overflow: auto;
+        background-color: aliceblue;
+        min-width: 320px;
+        display: flex;
+        flex-direction: column;
+        background: linear-gradient(94.53deg, #164B9A 12.76%, #5B47D6 99.41%);
+        flex: 0 0 auto;
+        align-items: flex-start;
+        padding: 15px;
+    }
 
-  .wide {
-    width: 100vw;
-  }
+    .wide {
+        width: 100vw;
+    }
+
+    .type-header {
+        font-size: 12px;
+        font-weight: normal;
+        color: #fff;
+        opacity: .6;
+        margin-top: 20px;
+        margin-bottom: 10px;
+        margin-left: 5px;
+    }
 
     .new-board {
         box-sizing: border-box;
@@ -120,20 +130,29 @@
         height: 50px;
         background: #243076;
         border: 1px solid #4A559D;
+        color: #fff;
+        display: flex;
+        align-items: center;
         border-radius: 5px;
     }
 
-  .board {
-    width: 290px;
-    border-radius: 5px;
-    padding: 10px;
-    margin: 5px;
-    border: 1px solid;
-    background-color: #fff;
-  }
+    .new-board span {
+        color: #fff;
+        display: block;
+        padding: 0 15px;
+    }
 
-  .board:hover {
-    cursor: pointer;
-  }
+    .board {
+        width: 290px;
+        border-radius: 5px;
+        padding: 10px;
+        margin: 5px;
+        border: 1px solid;
+        background-color: #fff;
+    }
+
+    .board:hover {
+        cursor: pointer;
+    }
 
 </style>

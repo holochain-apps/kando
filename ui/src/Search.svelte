@@ -125,14 +125,18 @@
 
 </div>
 <style>
-  .search {
+.search {
     display: flex;
     flex: 0 0 auto;
     align-items: center;
-  }
-  .search-results {
+}
+.search-results {
     position: absolute;
     z-index: 10;
     box-shadow: 0px 0px 20px rgba(0, 0, 0, .15);
-    }
+}
+sl-input::part(base) {
+    background-color: rgba(36, 45, 120, 1.0);
+    border: 1px solid rgba(71, 76, 154, 1.0);
+}
 </style>

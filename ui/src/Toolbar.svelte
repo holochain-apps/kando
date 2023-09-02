@@ -31,7 +31,7 @@
 
     {#if $activeHash}
       {#if $uiProps.showMenu}
-        <span style="display:flex;align-items:center;cursor:pointer" on:click={()=>{store.setUIprops({showMenu:false})}}>Close Menu <div class="nav-button"  title="Hide Board Menu"><Fa icon={faClose} size=2x /></div></span>
+        <span style="display:flex;align-items:center;cursor:pointer" on:click={()=>{store.setUIprops({showMenu:false})}}><div class="close"  title="Hide Board Menu"><Fa icon={faClose} size=2x /></div></span>
 
       {:else}
         <div class="nav-button" on:click={()=>{store.setUIprops({showMenu:true})}}  title="Show Board Menu"><Fa color="#fff" icon={faBars} size=2x /></div>
@@ -71,6 +71,10 @@
     color: #fff;
     height: 50px;
     display: flex;
+  }
+
+  .close {
+    color: #fff;
   }
 
   .items {

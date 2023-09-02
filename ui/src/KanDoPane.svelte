@@ -467,7 +467,7 @@
                     on:click={(e)=>{e.stopPropagation(); cardDetails(cardId)}}
                   >
                     <div style="display:flex;justify-content:space-between">
-                      <h3>{props.title}</h3>
+                      <h3 class="card-title">{props.title}</h3>
                       <div class="action-button"
                         on:click={(e)=>{e.stopPropagation(); editCard(cardId,props)()}}
                         >
@@ -475,7 +475,7 @@
                       </div>
 
                     </div>
-                    {@html Marked.parse(props.description)}
+                    <div class="card-description">{@html Marked.parse(props.description)}</div>
                   </div>
                   {#if $state.labelDefs.isLabeled}
                   <div class="labels">
@@ -503,7 +503,7 @@
           {#if dragTarget == columnId && dragOrder == $state.grouping[columnId].length}
             <div> <Fa icon={faArrowRight} />  </div>
           {/if}
-              <div class="add-card" on:click={newCard(columnId)}><Fa icon={faPlus}/> <span>Add Card</span></div>
+              <div class="add-card" on:click={newCard(columnId)}><span class="add-icon">+</span><span>Add Card</span></div>
           </div>
         </div>
         </div>
@@ -595,13 +595,14 @@
   }
 
   .bottom-fade {
-    background: linear-gradient(180deg, rgba(168, 182, 201, 0) 0%, #A8B6C9 69.78%, rgba(168, 182, 201, 0) 69.79%);
+    background: linear-gradient(180deg, rgba(168, 182, 201, 0) 0%, #A8B6C9 100%);
     position: fixed;
-    opacity: .5;
+    opacity: .7;
     bottom: 0;
     z-index: 100;
     width: 100%;
-    height: 30px;
+    height: 20px;
+    bottom: 10px;
   }
  
   .columns {
@@ -732,6 +733,20 @@
 
   .add-card {
     display: flex;
+    flex-direction: row;
+    font-size: 14px;
+    opacity: .7;
+  }
+
+  .add-card:hover {
+    opacity: 1;
+  }
+
+  .add-icon {
+    font-size: 24px;
+    opacity: .6;
+    font-weight: bold;
+    margin-right: 5px;
   }
 
   .card-content {
@@ -739,6 +754,18 @@
     max-height: 200px;
     padding: 0 5px;
   }
+
+  .card-title {
+    font-size: 14px;
+  }
+
+  .card-description {
+    font-size: 12px;
+    opacity: .8;
+    line-height: 16px;
+    padding-top: 3px;
+  }
+
   .labels {
     display: flex;
     align-items: center;
