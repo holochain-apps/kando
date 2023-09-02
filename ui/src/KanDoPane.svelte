@@ -460,6 +460,7 @@
                   draggable={dragOn}
                   on:dragstart={handleDragStart}
                   on:dragend={handleDragEnd}
+                  on:click={(e)=>{e.stopPropagation(); cardDetails(cardId)}}
       
                   style:background-color={props && props.category ?  $state.categoryDefs.find(c=>c.type == props.category).color : "white"}
                   >
@@ -597,7 +598,7 @@
   .bottom-fade {
     background: linear-gradient(180deg, rgba(168, 182, 201, 0) 0%, #A8B6C9 100%);
     position: fixed;
-    opacity: .7;
+    opacity: .5 ;
     bottom: 0;
     z-index: 100;
     width: 100%;
