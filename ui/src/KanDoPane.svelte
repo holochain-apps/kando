@@ -543,6 +543,7 @@
         </div>
       </div>
   {/if}
+  <div class="bottom-fade"></div>
 </div>
 <style>
   .board {
@@ -553,8 +554,8 @@
     min-height: 0;
     overflow-x: auto;
     width: 100%;
-    padding-bottom: 10px;
     position: relative;
+    max-height: calc(100vh - 50px);
   }
   .top-bar {
     box-shadow: 0px 10px 15px rgba(0, 0, 0, 0.1);
@@ -592,6 +593,16 @@
     height: 47px;
     padding-right: 10px;
   }
+
+  .bottom-fade {
+    background: linear-gradient(180deg, rgba(168, 182, 201, 0) 0%, #A8B6C9 69.78%, rgba(168, 182, 201, 0) 69.79%);
+    position: fixed;
+    opacity: .5;
+    bottom: 0;
+    z-index: 100;
+    width: 100%;
+    height: 30px;
+  }
  
   .columns {
     display: flex;
@@ -599,7 +610,7 @@
     max-height: 100%;
     background: transparent;
     min-height: 0;
-    padding: 0 15px 15px 15px;
+    padding: 0 15px 0 15px;
   }
 
   .column-item {
@@ -649,21 +660,30 @@
     display: flex;
     flex-direction: column;
     overflow-y: scroll;
-    width: calc (100% + 8px);
+    width: calc(100% + 8px);
+    height: calc(100vh - 150px);
     margin-top: 10px;
-    min-height: 38px;
-    --webkit-scrollbar-color: blue transparent;
   }
   .cards::-webkit-scrollbar {
     width: 5px;
-  background-color: transparent; /* or add it to the track */
-}
+    background-color: transparent;
+  }
+  .board::-webkit-scrollbar {
+    height: 10px;
+    background-color: transparent;
+  }
 
   .cards::-webkit-scrollbar-thumb {
-      background: #000;
+      height: 5px;
       border-radius: 5px;
-      background: rgba(20,60,119,.2);
-      opacity: 0.2;
+      background: rgba(20,60,119,.3);
+      opacity: 1;
+  }
+
+  .board::-webkit-scrollbar-thumb {
+    border-radius: 5px 5px 0 0;
+    background: rgba(20,60,119,.3);
+    /* background: linear-gradient(180deg, rgba(20, 60, 119, 0) 0%, rgba(20,60,119,.6) 100%); */
   }
 
   .glowing {
@@ -688,6 +708,7 @@
     flex-direction:column;
     padding: 10px;
     transition: all .25s ease;
+    height: auto;
   }
 
   .card:hover .action-button {
@@ -696,9 +717,16 @@
 
   .card:hover, .add-card:hover {
     cursor: pointer;
-    box-shadow: 0px 4px 4px rgba(35, 32, 74, 0.25);
-    padding: 12px;
-    margin: -2px 8px 8px 8px;
+    box-shadow: 0px 8px 10px rgba(35, 32, 74, 0.25);
+    padding: 14px;
+    margin: -2px 6px 4px 6px;
+    position: relative;
+    z-index: 100;
+
+    /* delete this example */
+    height: calc(100vh - 125px);
+    max-height: calc(100vh - 125px);
+
   }
 
   .add-card {
