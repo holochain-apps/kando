@@ -632,6 +632,7 @@
     top: 0;
     background-color: #fff;
     box-shadow: 0px 4px 15px rgba(35, 32, 74, 0.15);
+    z-index: 150;
   }
 
   .column-footer {
