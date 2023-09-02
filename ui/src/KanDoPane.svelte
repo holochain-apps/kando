@@ -662,7 +662,8 @@
     overflow-y: scroll;
     width: calc(100% + 8px);
     height: calc(100vh - 150px);
-    margin-top: 10px;
+    margin-top: 0;
+    padding-top: 10px;
   }
   .cards::-webkit-scrollbar {
     width: 5px;
