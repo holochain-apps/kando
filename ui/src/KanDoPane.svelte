@@ -340,10 +340,12 @@
 
 
   const newGroup = async ()=>{
+    if (newColumnName == "") {
+      return
+    }
     const newGroups = cloneDeep($state.groups)
     newGroups.push(new Group(newColumnName))
     newColumnName = ""
-    addingColumn = false
     await kdStore.boardList.requestBoardChanges($activeHash, [
       {
         type: "set-groups",
@@ -537,13 +539,22 @@
             >
               <sl-input 
                 bind:this={columnNameElem} 
-                placeholder="column name"  
+                placeholder="column name" 
+                on:keydown={(e)=> {
+                  if (e.keyCode == 27) {
+                    newColumnName = ""
+                    addingColumn=false
+                  }
+                }}
                 on:sl-input={e=>newColumnName = e.target.value} 
-                on:sl-blur={()=>addingColumn=false}
-                on:sl-change={newGroup}
+                on:sl-blur={()=>{addingColumn=false}}
+                on:sl-change={()=>{newGroup()}}
                 >
               </sl-input>
-              <sl-button disabled={newColumnName.length==0} style="padding: 0 5px;" size="small" text on:mousedown={newGroup}>
+              <sl-button disabled={newColumnName.length==0} style="padding: 0 5px;" size="small" text 
+                on:mousedown={()=>{
+                  addingColumn = false  // sl-change will cause newGroup to be callsed
+              }}>
                 <div style="display: flex;">
                   New
                   <div style="margin-left:5px"><Fa icon={faPlus}/></div>
