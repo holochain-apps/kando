@@ -42,6 +42,10 @@
 </div>
 
 <style>
+  .board-name {
+    font-size: 20px;
+  }
+  
   .bug-link {
     padding: 8px 8px;
     display: flex;
