@@ -345,18 +345,18 @@
     <div class="left-items">
       <h5 class="board-name">{$state.name}</h5>
     </div>
+    <div class="filter-by">
+      <LabelSelector setOption={setFilterOption} option={filterOption} />
+    </div>
     <div class="right-items">
-      <div class="filter-by">
-        Filter by: <LabelSelector setOption={setFilterOption} option={filterOption} />
-      </div>
 
-      <sl-button circle on:click={()=> editBoardDialog.open(cloneDeep($activeHash))} title="Settings">
+      <sl-button class="board-button" on:click={()=> editBoardDialog.open(cloneDeep($activeHash))} title="Settings">
         <Fa icon={faCog} size="1x"/>
       </sl-button>
-      <sl-button circle on:click={() => exportBoard($state)} title="Export">
+      <sl-button  class="board-button" on:click={() => exportBoard($state)} title="Export">
         <Fa icon={faFileExport} />
       </sl-button>
-      <sl-button circle on:click={closeBoard} title="Close">
+      <sl-button  class="board-button" on:click={closeBoard} title="Close">
         <Fa icon={faClose} />
       </sl-button>
     </div>
@@ -586,8 +586,18 @@
     display: flex;
     align-items: center;
   }
+  
+  .board-button {
+    margin-left: 10px;
+  }
+
+  .board-button::part(base) {
+    background: #FFFFFF;
+    border: 1px solid rgba(35, 32, 74, 0.1);
+    box-shadow: 0px 4px 4px rgba(66, 66, 66, 0.1);
+    border-radius: 5px;
+  }
   .filter-by {
-    border-right: 1px solid lightgray;
     display: flex;
     align-items: center;
     margin-right: 8px;
@@ -596,14 +606,14 @@
   }
 
   .bottom-fade {
-    background: linear-gradient(180deg, rgba(168, 182, 201, 0) 0%, #A8B6C9 100%);
     position: fixed;
-    opacity: .5 ;
     bottom: 0;
     z-index: 100;
     width: 100%;
     height: 20px;
     bottom: 10px;
+    background: linear-gradient(180deg, rgba(189, 209, 230, 0) 0%, rgba(102, 138, 174, 0.81) 100%);
+    opacity: 0.4;
   }
  
   .columns {

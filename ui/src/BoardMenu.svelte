@@ -5,7 +5,8 @@
     import NewBoardDialog from './NewBoardDialog.svelte';
     import { faFileImport, faSquarePlus } from '@fortawesome/free-solid-svg-icons';
     import Fa from 'svelte-fa';
-
+    import AboutDialog from "./AboutDialog.svelte";
+    import KDLogoIcon from "./icons/KDLogoIcon.svelte";
     export let wide = false
 
     let newBoardDialog
@@ -43,7 +44,10 @@
         store.boardList.unarchiveBoard(hash)
     }
 
+    let aboutDialog
 </script>
+
+<AboutDialog bind:this={aboutDialog} />
 <div class="board-menu"
     class:wide={wide} >
     <input style="display:none" type="file" accept=".json" on:change={(e)=>onFileSelected(e)} bind:this={fileinput} >
@@ -85,7 +89,8 @@
     {/if}
 
     <NewBoardDialog bind:this={newBoardDialog}></NewBoardDialog>
-
+    <div class="footer">   
+        <div class="logo" title="About KanDo!" on:click={()=>aboutDialog.open()}><KDLogoIcon /></div></div>
 </div>
 
 <style>
@@ -106,6 +111,7 @@
         background: linear-gradient(94.53deg, #164B9A 12.76%, #5B47D6 99.41%);
         flex: 0 0 auto;
         align-items: flex-start;
+        position: relative;
         padding: 15px;
     }
 
@@ -153,6 +159,19 @@
 
     .board:hover {
         cursor: pointer;
+    }
+
+    .footer {
+        position: absolute;
+        bottom: 0;
+        height: 40px;
+        display: flex;
+        align-items: center;
+
+    }
+
+    .logo {
+        height: 16px;
     }
 
 </style>

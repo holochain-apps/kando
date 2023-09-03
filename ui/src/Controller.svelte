@@ -8,6 +8,7 @@
     import type { ProfilesStore } from "@holochain-open-dev/profiles";
     import Fa from 'svelte-fa';
     import { faCog, faFileImport, faSquarePlus } from '@fortawesome/free-solid-svg-icons';
+    import KDLogoIcon from "./icons/KDLogoIcon.svelte";
     import BoardMenu from "./BoardMenu.svelte";
     import { slide } from 'svelte/transition';
 
@@ -67,52 +68,89 @@
   </svelte:head>
   <div class="flex-scrollable-parent">
     <div class="flex-scrollable-container">
-    <div class='app'>
+      <div class='app'>
 
-    {#if kdStore}
-    <div >
+      {#if kdStore}
+      <div class="wrapper">
 
-    <div class="header">
-      <Toolbar 
-        profilesStore={profilesStore}/>
-    </div>
+      <div class="header">
+        <Toolbar 
+          profilesStore={profilesStore}/>
+      </div>
 
-    <div class="workspace" style="display:flex">
+      <div class="workspace" style="display:flex">
 
-    {#if $uiProps.showMenu}
-      {#if boardList && $boardList.boards.length > 0 && $activeBoardHash === undefined}
-        <div class="board-menu" >
-          <BoardMenu wide={true}></BoardMenu>
+      {#if $uiProps.showMenu}
+        {#if boardList && $boardList.boards.length > 0 && $activeBoardHash === undefined}
+          <div class="board-menu" >
+            <BoardMenu wide={true}></BoardMenu>
+          </div>
+        {:else}
+          <div class="board-menu" transition:slide={{ axis: 'x', duration: 400 }} >
+            <BoardMenu wide={false}></BoardMenu>
+          </div>
+        {/if}
+      {/if}
+        
+        {#if $activeBoardHash !== undefined}
+          <KanDoPane on:requestChange={(event) => {kdStore.boardList.requestBoardChanges($activeBoardHash,event.detail)}}/>
+        {/if}
+        </div>
         </div>
       {:else}
-        <div class="board-menu" transition:slide={{ axis: 'x', duration: 400 }} >
-          <BoardMenu wide={false}></BoardMenu>
-        </div>
+        <div class="loading"><div class="loader"></div></div>
       {/if}
-    {/if}
-      
-      {#if $activeBoardHash !== undefined}
-        <KanDoPane on:requestChange={(event) => {kdStore.boardList.requestBoardChanges($activeBoardHash,event.detail)}}/>
-      {/if}
+      <div class="background">
+        <div class="background-overlay"></div>
+        <div class="background-image"></div>
       </div>
-      </div>
-    {:else}
-      <div class="loading"><div class="loader"></div></div>
-    {/if}
+    </div>
   </div>
-
-</div></div>
+</div>
 <style>
   .app {
     margin: 0;
     padding-bottom: 10px;
-    background: linear-gradient(180deg, #FFFFFF 0%, #CFD9E2 100%);
     background-size: cover;
     display: flex;
     flex-direction: column;
     min-height: 0;
+    background-color: #fff;
     height: 100vh;
+    position: relative;
   }
+  .background {
+    position: absolute;
+    z-index: 0;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .background-overlay {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.87) 0%, rgba(148, 179, 205, 0.78) 100%);
+    position: absolute;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+  }
+
+  .background-image {
+    background-image: url(https://images.unsplash.com/photo-1515905922725-e7ff35afafd8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1931&q=80);
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    background-size: cover;
+  }
+
   :global(:root) {
     --resizeable-height: 200px;
     --tab-width: 60px;
@@ -167,6 +205,10 @@
     overflow-y: auto;
   }
 
+  .wrapper {
+    position: relative;
+    z-index: 10;
+  }
 
   /* .my-boards {
     display: flex;

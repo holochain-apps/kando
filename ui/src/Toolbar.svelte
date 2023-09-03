@@ -5,8 +5,6 @@
   import Fa from "svelte-fa";
   import Search from './Search.svelte';
   import { getContext } from "svelte";
-  import AboutDialog from "./AboutDialog.svelte";
-  import KDLogoIcon from "./icons/KDLogoIcon.svelte";
   import type { KanDoStore } from "./kanDoStore";
 
   const { getStore } :any = getContext("kdStore");
@@ -19,22 +17,17 @@
 
   $:bugColor = "color: #5536f9"
 
-  let aboutDialog
 
 </script>
-<AboutDialog bind:this={aboutDialog} />
 
 <div class='toolbar'>
   <div class="items">
-    <div class="logo" title="About KanDo!" on:click={()=>aboutDialog.open()}><KDLogoIcon /></div>
-
-
     {#if $activeHash}
       {#if $uiProps.showMenu}
         <span style="display:flex;align-items:center;cursor:pointer" on:click={()=>{store.setUIprops({showMenu:false})}}><div class="close"  title="Hide Board Menu"><Fa icon={faClose} size=2x /></div></span>
 
       {:else}
-        <div class="nav-button" on:click={()=>{store.setUIprops({showMenu:true})}}  title="Show Board Menu"><Fa color="#fff" icon={faBars} size=2x /></div>
+        <div class="nav-button open" on:click={()=>{store.setUIprops({showMenu:true})}}  title="Show Board Menu"><Fa color="#fff" icon={faBars} size=2x /></div>
       {/if}
     {/if}
     
@@ -49,13 +42,6 @@
 </div>
 
 <style>
-  .logo {
-    height: 20px;
-    margin-left: 10px;
-    margin-right: 10px;
-    display: contents;
-    cursor: pointer;
-  }
   .bug-link {
     padding: 8px 8px;
     display: flex;
@@ -73,8 +59,15 @@
     display: flex;
   }
 
-  .close {
+  .close, .open {
     color: #fff;
+    margin-left: 15px;
+    width: 30px;
+    height: 30px;
+  }
+  
+  .open {
+    margin-left: 10px;
   }
 
   .items {
