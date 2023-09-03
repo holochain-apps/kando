@@ -3,10 +3,11 @@
     import type { KanDoStore } from "./kanDoStore";
     import type { EntryHashB64 } from '@holochain/client';
     import NewBoardDialog from './NewBoardDialog.svelte';
-    import { faFileImport, faSquarePlus } from '@fortawesome/free-solid-svg-icons';
+    import { faSquarePlus } from '@fortawesome/free-solid-svg-icons';
     import Fa from 'svelte-fa';
     import AboutDialog from "./AboutDialog.svelte";
     import KDLogoIcon from "./icons/KDLogoIcon.svelte";
+    import { faCog } from "@fortawesome/free-solid-svg-icons";
     export let wide = false
 
     let newBoardDialog
@@ -28,18 +29,6 @@
         store.setActiveBoard(hash)
     }
 
-    let fileinput;
-	const onFileSelected = (e)=>{
-        let file = e.target.files[0];
-        let reader = new FileReader();
-
-        reader.addEventListener("load", async () => {
-            const b = JSON.parse(reader.result as string)
-            const board = await store.boardList.makeBoard(b)
-            selectBoard(board.hashB64())
-        }, false);
-        reader.readAsText(file);
-    };
     const unarchiveBoard = (hash: EntryHashB64) => () => {
         store.boardList.unarchiveBoard(hash)
         store.setUIprops({showMenu:false})
@@ -51,16 +40,14 @@
 <AboutDialog bind:this={aboutDialog} />
 <div class="board-menu"
     class:wide={wide} >
-    <input style="display:none" type="file" accept=".json" on:change={(e)=>onFileSelected(e)} bind:this={fileinput} >
     <div style="display:flex;flex-direction: row;">
     <div class="new-board" on:click={()=>newBoardDialog.open()} style="margin-left:10px;font-size:14px" title="New Board"><Fa icon={faSquarePlus} size=2x style="margin-left: 15px;"/><span>New Board</span></div>
-    <div class="new-board" on:click={()=>{fileinput.click();}}  style="margin-left:10px;font-size:14px" title="Import Board"><Fa icon={faFileImport} size=2x style="margin-left: 15px;"/><span>Import Board </span></div>
     </div>
     {#if $uiProps.recent.length > 0}
         <h3 class="type-header">Recent Boards</h3>
         <div class="boards-section">
             {#each $uiProps.recent as boardHash }
-                <div 
+                <div class="board"
                     on:click={()=>{
                         selectBoard(boardHash)
                     }}>
@@ -95,8 +82,10 @@
     {/if}
 
     <NewBoardDialog bind:this={newBoardDialog}></NewBoardDialog>
-    <div class="footer">   
-        <div class="logo" title="About KanDo!" on:click={()=>aboutDialog.open()}><KDLogoIcon /></div></div>
+    <div class="footer" on:click={()=>aboutDialog.open()}>   
+        <div class="logo" title="About KanDo!"><KDLogoIcon /></div>
+        <Fa icon={faCog} class="cog" size="1.5x" color="#fff"/>
+    </div>
 </div>
 
 <style>
@@ -111,7 +100,9 @@
         height: calc(100vh - 50px);
         overflow: auto;
         background-color: aliceblue;
-        min-width: 320px;
+        min-width: 330px;
+        width: 330px;
+        max-width: 0;
         display: flex;
         flex-direction: column;
         background: linear-gradient(94.53deg, #164B9A 12.76%, #5B47D6 99.41%);
@@ -119,10 +110,12 @@
         align-items: flex-start;
         position: relative;
         padding: 15px;
+        transition: all .25s ease;
     }
 
     .wide {
         width: 100vw;
+        max-width: 100vw;
     }
 
     .type-header {
@@ -173,11 +166,15 @@
         height: 40px;
         display: flex;
         align-items: center;
+    }
 
+    .footer:hover {
+        cursor: pointer;
     }
 
     .logo {
         height: 16px;
+        margin-right: 5px;
     }
 
 </style>
