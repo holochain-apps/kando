@@ -165,12 +165,19 @@ export class KanDoStore {
     }
 
     getCardGroupName(cardId: uuidv1, state: BoardState) : string  {
-        const [gId, cId] = Object.entries(state.grouping).find(([gId, cId])=>cId==cardId)
-        const g = (state.groups.find((g)=>g.id == gId))
-        if (g) {
-            return g.name
+        console.log("getCardGroupName", cardId, state)
+        const keyValPairs = Object.entries(state.grouping)
+        console.log("GROUPING", keyValPairs)
+        for (const [gId, cardIds] of keyValPairs) {
+            if (cardIds.includes(cardId)) {
+                if (gId=="_") return "Archived"
+                const g = (state.groups.find((g)=>g.id == gId))
+                if (g) {
+                    return g.name
+                }
+            }
         }
-        return "Archived"
+        return "Unknown"
     }
 
 }

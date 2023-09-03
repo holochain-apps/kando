@@ -212,7 +212,7 @@
         <Fa icon={faClose}/>
       </div>
     </div>
-    <div>Board: {store.getCardGroupName(cardId,$state)}</div>
+    <div>Column: {store.getCardGroupName(cardId, $state)}</div>
     <h4>Description</h4>
 
     {#if editingDescription}
