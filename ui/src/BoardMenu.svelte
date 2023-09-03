@@ -63,9 +63,8 @@
                 <div 
                     on:click={()=>{
                         selectBoard(boardHash)
-                    }}
-                <div on:click={()=>selectBoard(boardHash)}
-                    class="board" id={boardHash}>{$boardList.boards.find(b=>b.hash==boardHash).name}
+                    }}>
+                    {$boardList.boards.find(b=>b.hash==boardHash).name}
                 </div>
             {/each}
         </div>
@@ -77,7 +76,8 @@
                 {#if board.status !== "archived" }
                     <div 
                         on:click={()=>selectBoard(board.hash)}
-                        class="board" id={board.hash}>{board.name}
+                        class="board" id={board.hash}>
+                        {board.name}
                     </div>
                 {/if}
             {/each}
