@@ -191,11 +191,8 @@
 <sl-drawer bind:this={dialog}
   style="--width:700px"
   no-header
- 
-  on:sl-request-close={(event)=>{
-    if (event.detail.source === 'overlay') {
-      event.preventDefault();    
-    }}}>
+  on:sl-hide={()=>close()}
+  >
 <div class='card-editor' >
 
   <div class="card-elements">
