@@ -165,9 +165,7 @@ export class KanDoStore {
     }
 
     getCardGroupName(cardId: uuidv1, state: BoardState) : string  {
-        console.log("getCardGroupName", cardId, state)
         const keyValPairs = Object.entries(state.grouping)
-        console.log("GROUPING", keyValPairs)
         for (const [gId, cardIds] of keyValPairs) {
             if (cardIds.includes(cardId)) {
                 if (gId=="_") return "Archived"
