@@ -45,7 +45,7 @@
   .board-name {
     font-size: 20px;
   }
-  
+
   .bug-link {
     padding: 8px 8px;
     display: flex;
@@ -60,6 +60,8 @@
     justify-content: space-between;
     color: #fff;
     height: 50px;
+    position: relative;
+    z-index: 250;
     display: flex;
   }
 
