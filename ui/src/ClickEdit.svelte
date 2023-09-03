@@ -59,8 +59,9 @@
         {/if}
     </div>
     <div class="not-editing" class:hidden={isEditing}
-        on:click={()=>{
-            isEditing = true
+        on:click={(e)=>{
+            e.stopPropagation();
+            isEditing = true;
         }}
     >
         {text}

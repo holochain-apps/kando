@@ -188,13 +188,12 @@
   let commentElement
 
 </script>
-<sl-drawer bind:this={dialog}
+<sl-drawer class="edit-card" bind:this={dialog}
   style="--width:700px"
   no-header
   on:sl-hide={()=>close()}
   >
 <div class='card-editor' >
-
   <div class="card-elements">
     <div style="display:flex;justify-content:space-between">
       <div style="width:100%">
@@ -431,6 +430,22 @@
     padding-left: 7px;
     padding-top: 10px;
   }
+
+  .edit-card::part(base) {
+    height: calc(100vh - 97px);
+    bottom: 0;
+    top: initial;
+    z-index: 150;
+  }
+
+  .edit-card::part(panel) {
+    box-shadow: 0px 10px 15px rgba(0, 0, 0, 0.2);
+  }
+
+  .edit-card::part(overlay) {
+    display: none;
+  }
+
   .details {
     max-height: 300px;
     overflow: auto;

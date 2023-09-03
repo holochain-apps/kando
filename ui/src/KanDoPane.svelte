@@ -354,6 +354,10 @@
     ])          
   }
 
+  const close = ()=> {
+    kdStore.boardList.setActiveCard(undefined)
+  }
+  
 </script>
 <div class="board">
     <EditBoardDialog bind:this={editBoardDialog}></EditBoardDialog>
@@ -401,7 +405,7 @@
     avatars={avatars}
   />
 
-    <div class="columns">
+    <div class="columns"  on:click={(e)=>{close()}}>
       {#each sortedColumns() as [columnId, cardIds], i}
         <div class="column-wrap">
         <div class="column"
@@ -644,6 +648,8 @@
     background: transparent;
     min-height: 0;
     padding: 0 15px 0 15px;
+    position: relative;
+    z-index: 1;
   }
 
   .column-item {
