@@ -6,7 +6,7 @@
   import { encodeHashToBase64, type AgentPubKey } from "@holochain/client";
 
   export let border = false
-  export let style = undefined
+  export let style = "color: #fff;"
   export let avatar: Avatar = undefined
   export let size:number = 24;
   export let key: AgentPubKey|undefined = undefined
@@ -20,7 +20,7 @@
       {#if key}
       <holo-identicon hash={key} size={size}/>
       {:else}
-      <Icon color="#fff" path={mdiAccount} size={`${size}px`} />
+      <Icon path={mdiAccount} size={`${size}px`} />
       {/if}
     {:else}
       <img src={avatar.url} />
@@ -34,6 +34,11 @@
     border-radius: 50%;
     display: flex;
   }
+
+  .account {
+    color: #fff;
+  }
+
   img {
     width: var(--icon-size, 24px);
     height: var(--icon-size, 24px);
