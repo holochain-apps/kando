@@ -32,8 +32,18 @@
 <div class="click-edit">
     <div class="editing" class:hidden={!isEditing}>
         <sl-input placeholder={placeholder} value={text} bind:this={inputElement}
-            on:sl-input={(e)=>text = e.target.value}
+            on:sl-input={(e)=>{
+                text = e.target.value
+            }}
+            on:sl-change={(e)=>{
+                                console.log("Change")
+
+               // handleSave(text)
+                isEditing= false
+            }
+            }
             on:sl-blur={()=>{
+                console.log("BLUR")
                 handleSave(text)
                 isEditing= false
             }}

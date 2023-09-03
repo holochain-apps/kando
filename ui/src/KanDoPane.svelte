@@ -338,6 +338,20 @@
   let newColumnName = ""
   let columnNameElem 
 
+
+  const newGroup = async ()=>{
+    const newGroups = cloneDeep($state.groups)
+    newGroups.push(new Group(newColumnName))
+    newColumnName = ""
+    addingColumn = false
+    await kdStore.boardList.requestBoardChanges($activeHash, [
+      {
+        type: "set-groups",
+        groups: newGroups
+      }
+    ])          
+  }
+
 </script>
 <div class="board">
     <EditBoardDialog bind:this={editBoardDialog}></EditBoardDialog>
@@ -521,19 +535,15 @@
             <div class="add-column"
               on:click={()=>{addingColumn = true; }}
             >
-              <sl-input bind:this={columnNameElem} placeholder="column name"  on:sl-input={e=>newColumnName = e.target.value} on:sl-blur={()=>addingColumn=false}></sl-input>
-              <sl-button disabled={newColumnName.length==0} style="padding: 0 5px;" size="small" text on:mousedown={async ()=>{
-                const newGroups = cloneDeep($state.groups)
-                newGroups.push(new Group(newColumnName))
-                newColumnName = ""
-                addingColumn = false
-                await kdStore.boardList.requestBoardChanges($activeHash, [
-                  {
-                    type: "set-groups",
-                    groups: newGroups
-                  }
-                ])          
-              }}>
+              <sl-input 
+                bind:this={columnNameElem} 
+                placeholder="column name"  
+                on:sl-input={e=>newColumnName = e.target.value} 
+                on:sl-blur={()=>addingColumn=false}
+                on:sl-change={newGroup}
+                >
+              </sl-input>
+              <sl-button disabled={newColumnName.length==0} style="padding: 0 5px;" size="small" text on:mousedown={newGroup}>
                 <div style="display: flex;">
                   New
                   <div style="margin-left:5px"><Fa icon={faPlus}/></div>
