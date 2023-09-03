@@ -492,7 +492,7 @@
                     </div>
                     <div class="card-description">{@html Marked.parse(props.description)}</div>
                   </div>
-                  {#if $state.labelDefs.isLabeled}
+                  {#if $state.labelDefs.length > 0}
                   <div class="labels">
                     {#each $state.labelDefs as {type, emoji, toolTip}}
                       {#if isLabeled(props, type)}
