@@ -42,6 +42,7 @@
     };
     const unarchiveBoard = (hash: EntryHashB64) => () => {
         store.boardList.unarchiveBoard(hash)
+        store.setUIprops({showMenu:false})
     }
 
     let aboutDialog
@@ -59,7 +60,10 @@
         <h3 class="type-header">Recent Boards</h3>
         <div class="boards-section">
             {#each $uiProps.recent as boardHash }
-                <div on:click={()=>selectBoard(board.hash),()=>{store.setUIprops({showMenu:false})}}
+                <div 
+                    on:click={()=>{
+                        selectBoard(boardHash)
+                    }}
                     class="board" id={boardHash}>{$boardList.boards.find(b=>b.hash==boardHash).name}
                 </div>
             {/each}
@@ -70,8 +74,10 @@
         <div class="boards-section">
             {#each $boardList.boards as board }
                 {#if board.status !== "archived" }
-                    <div on:click={()=>selectBoard(board.hash),()=>{store.setUIprops({showMenu:false})}}
-                    class="board" id={board.hash}>{board.name}</div>
+                    <div 
+                        on:click={()=>selectBoard(board.hash)}
+                        class="board" id={board.hash}>{board.name}
+                    </div>
                 {/if}
             {/each}
         </div>
@@ -81,7 +87,7 @@
         <div class="boards-section">
             {#each $boardList.boards as board }
                 {#if board.status === "archived" }
-                <div class="board" id={board.hash} on:click={unarchiveBoard(board.hash),()=>{store.setUIprops({showMenu:false})}}>{board.name}</div>
+                <div class="board" id={board.hash} on:click={unarchiveBoard(board.hash)}>{board.name}</div>
                 {/if}
             {/each}
         </div>
