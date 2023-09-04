@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { Group, LabelDef, type BoardProps, CategoryDef, UngroupedId, Board } from './board';
+    import { Group, LabelDef, type BoardProps, type BoardState, CategoryDef, UngroupedId, Board } from './board';
     import { getContext, onMount } from 'svelte';
   	import DragDropList, { VerticalDropZone, reorder, type DropEvent } from 'svelte-dnd-list';
     import ColorPicker from 'svelte-awesome-color-picker';
@@ -8,10 +8,10 @@
     import '@shoelace-style/shoelace/dist/components/button/button.js';
     import '@shoelace-style/shoelace/dist/components/input/input.js';
     import '@shoelace-style/shoelace/dist/components/checkbox/checkbox.js';
+    import sanitize from "sanitize-filename";
     import Fa from 'svelte-fa'
-    import { faPlus, faGripVertical, faTrash} from '@fortawesome/free-solid-svg-icons';
+    import { faPlus, faGripVertical, faTrash, faFileExport} from '@fortawesome/free-solid-svg-icons';
     import { cloneDeep } from "lodash";
-
     import type { KanDoStore } from './kanDoStore';
     import type { EntryHashB64 } from '@holochain/client';
 
@@ -32,6 +32,30 @@
     let labelDefs: Array<LabelDef> = []
     let categoryDefs: Array<CategoryDef> = []
     let nameInput
+
+
+    $: state = store.boardList.getReadableBoardState(boardHash);
+
+    const exportBoard = (state: BoardState) => {
+        const prefix = "kando"
+        const fileName = sanitize(`${prefix}_export_${state.name}.json`)
+        download(fileName, JSON.stringify(state))
+        alert(`Your board was exported to your Downloads folder as: '${fileName}'`)
+    }
+
+    const download = (filename: string, text: string) => {
+      var element = document.createElement('a');
+      element.setAttribute('href', 'data:text/json;charset=utf-8,' + encodeURIComponent(text));
+      element.setAttribute('download', filename);
+
+      element.style.display = 'none';
+      document.body.appendChild(element);
+
+      element.click();
+
+      document.body.removeChild(element);
+    }
+
     export const reset = () => {
       text = ''
       props = {bgUrl: ""}
@@ -259,15 +283,18 @@
     </div>
     {/if}
     <div class='controls'>
+      <sl-button class="board-control" on:click={() => exportBoard($state)} title="Export">
+        <Fa icon={faFileExport} /> Export
+      </sl-button>
       {#if handleDelete}
-        <sl-button on:click={handleDelete}>
+        <sl-button class="board-control" on:click={handleDelete}>
           Archive
         </sl-button>
       {/if}
-      <sl-button on:click={cancelEdit} style="margin-left:10px">
+      <sl-button on:click={cancelEdit} class="board-control">
         Cancel
       </sl-button>
-      <sl-button style="margin-left:10px" on:click={() => handleSave(text, groups, labelDefs, categoryDefs, props, showArchived? showArchived.checked:false)} variant="primary">
+      <sl-button class="board-control" on:click={() => handleSave(text, groups, labelDefs, categoryDefs, props, showArchived? showArchived.checked:false)} variant="primary">
         Save
       </sl-button>
     </div>
@@ -309,6 +336,11 @@
     flex-direction: row;
     align-items: center;
   }
+
+  .board-control {
+    margin-right: 10px;
+  }
+
   .grip {
     margin-right:10px;
     cursor: pointer;

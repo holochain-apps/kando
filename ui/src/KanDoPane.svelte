@@ -13,9 +13,8 @@
   import AvatarIcon from "./AvatarIcon.svelte";
   import { decodeHashFromBase64 } from "@holochain/client";
   import { cloneDeep, isEqual } from "lodash";
-  import sanitize from "sanitize-filename";
   import Fa from "svelte-fa";
-  import { faArrowRight, faClose, faCog, faComments, faEdit, faFileExport, faPlus } from "@fortawesome/free-solid-svg-icons";
+  import { faArrowRight, faClose, faCog, faComments, faEdit, faPlus } from "@fortawesome/free-solid-svg-icons";
   import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
   import ClickEdit from "./ClickEdit.svelte";
   import { onVisible } from "./util";
@@ -26,26 +25,6 @@
           columnNameElem.select()
         })
 	});
-
-  const download = (filename: string, text: string) => {
-    var element = document.createElement('a');
-    element.setAttribute('href', 'data:text/json;charset=utf-8,' + encodeURIComponent(text));
-    element.setAttribute('download', filename);
-
-    element.style.display = 'none';
-    document.body.appendChild(element);
-
-    element.click();
-
-    document.body.removeChild(element);
-  }
-
-  const exportBoard = (state: BoardState) => {
-        const prefix = "kando"
-        const fileName = sanitize(`${prefix}_export_${state.name}.json`)
-        download(fileName, JSON.stringify(state))
-        alert(`Your board was exported to your Downloads folder as: '${fileName}'`)
-    }
 
   const dispatch = createEventDispatcher()
 
@@ -372,9 +351,6 @@
 
       <sl-button class="board-button" on:click={()=> editBoardDialog.open(cloneDeep($activeHash))} title="Settings">
         <Fa icon={faCog} size="1x"/>
-      </sl-button>
-      <sl-button  class="board-button" on:click={() => exportBoard($state)} title="Export">
-        <Fa icon={faFileExport} />
       </sl-button>
       <sl-button  class="board-button" on:click={closeBoard} title="Close">
         <Fa icon={faClose} />
@@ -718,6 +694,7 @@
     height: calc(100vh - 150px);
     margin-top: 0;
     padding-top: 10px;
+    padding-bottom: 20px;
   }
   .cards::-webkit-scrollbar {
     width: 5px;
@@ -738,7 +715,7 @@
 
   .board::-webkit-scrollbar-thumb {
     border-radius: 5px 5px 0 0;
-    background: rgba(20,60,119,.3);
+    background: rgba(20,60,119,.6);
     /* background: linear-gradient(180deg, rgba(20, 60, 119, 0) 0%, rgba(20,60,119,.6) 100%); */
   }
 
