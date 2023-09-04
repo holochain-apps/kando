@@ -235,16 +235,16 @@
         </div>
         <div class="card-controls">
             {#if handleDelete}
-              <div class="details-button delete-button" tooltip="Delete this card" on:click={()=>handleDelete(cardId)}>
+              <div class="details-button delete-button" title="Delete this card" on:click={()=>handleDelete(cardId)}>
                 <Fa icon={faTrash} style="width: 16px; height: 16px;"/>
               </div>
             {/if}
             {#if handleArchive}
-              <div class="details-button archive-button" tooltip="Archive this card" on:click={()=>{close();handleArchive()}}>
+              <div class="details-button archive-button" title="Archive this card" on:click={()=>{close();handleArchive()}}>
                 <Fa icon={faArchive} style="width: 16px; height: 16px;"/>
               </div>
             {/if}
-          <div class="details-button" tooltip="Close this card" on:click={(e)=>{close()}}>
+          <div class="details-button" title="Close this card" on:click={(e)=>{close()}}>
             <Fa icon={faClose} style="width: 24px; height: 24px;"/>
           </div>
         </div>
@@ -348,6 +348,8 @@
           }}
           on:sl-focus={()=>commentingFocused = true}
           on:sl-blur={()=>{
+                                            console.log("SL_BLUR comm")
+
             commentingFocused = false
             commentElement.value = ""
           }}
