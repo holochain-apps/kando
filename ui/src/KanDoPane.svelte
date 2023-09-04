@@ -609,6 +609,7 @@
   }
   .board-name {
     font-size: 24px;
+    padding-left: 5px;
   }
   .right-items {
     display: flex;
