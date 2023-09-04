@@ -202,7 +202,7 @@
       <div style="display:flex; flex-direction:row;align-items:flex-end">
         <div class="category-selector">
         {#each categories as category }
-          <div tooltip={category.name} class="category-button" on:click={(e)=>{setCategory(category.type)}} style="background-color: {category.color}"></div>
+          <div class:category-selected={props.category == category.type} title={category.name} class="category-button" on:click={(e)=>{setCategory(props.category == category.type ? "" : category.type)}} style="background-color: {category.color}"></div>
         {/each}
         </div>
 
@@ -398,6 +398,9 @@
 </div>
 </sl-drawer>
 <style>
+  .category-selected {
+    border: solid 2px gray;
+  }
   .add-comment {
     position: absolute;
     padding: 20px;
