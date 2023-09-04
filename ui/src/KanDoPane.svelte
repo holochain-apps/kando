@@ -621,10 +621,10 @@
   }
 
   .board-button::part(base) {
-    background: #FFFFFF;
-    border: 1px solid rgba(35, 32, 74, 0.1);
-    box-shadow: 0px 4px 4px rgba(66, 66, 66, 0.1);
-    border-radius: 5px;
+  background: #FFFFFF;
+  border: 1px solid rgba(35, 32, 74, 0.1);
+  box-shadow: 0px 4px 4px rgba(66, 66, 66, 0.1);
+  border-radius: 5px;
   }
 
   .filter-by {
@@ -723,16 +723,17 @@
     width: 5px;
     background-color: transparent;
   }
-  .board::-webkit-scrollbar {
-    height: 10px;
-    background-color: transparent;
-  }
 
   .cards::-webkit-scrollbar-thumb {
       height: 5px;
       border-radius: 5px;
       background: rgba(20,60,119,.3);
       opacity: 1;
+  }
+
+  .board::-webkit-scrollbar {
+    height: 10px;
+    background-color: transparent;
   }
 
   .board::-webkit-scrollbar-thumb {

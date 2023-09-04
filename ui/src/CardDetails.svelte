@@ -195,200 +195,204 @@
   >
 
 <div class='card-editor'>
-  <div class="card-elements">
-    
-    {#if categories.length > 0}
-    <div style="display:flex; flex-direction:row;align-items:flex-end">
-      <div class="category-selector">
-      {#each categories as category }
-        <div tooltip={category.name} class="category-button" on:click={(e)=>{setCategory(category.type)}} style="background-color: {category.color}"></div>
-      {/each}
-      </div>
-
-<!--       
-      <sl-select
-        value={props.category}
-        label="Category"
-        on:sl-change={(e)=>{
-          setCategory(e.target.value)
-        }}
-        >
-        <sl-option value={""}>No Category</sl-option>
+  <div class="card-wrapper">
+    <div class="card-elements">
+      
+      {#if categories.length > 0}
+      <div style="display:flex; flex-direction:row;align-items:flex-end">
+        <div class="category-selector">
         {#each categories as category }
-          <sl-option value={category.type}>{category.name}</sl-option>
+          <div tooltip={category.name} class="category-button" on:click={(e)=>{setCategory(category.type)}} style="background-color: {category.color}"></div>
         {/each}
-      </sl-select> -->
-          
-
-    </div>
-    {/if}
-
-    <div style="display:flex;justify-content:space-between">
-      <div class="card-title">
-      <ClickEdit
-        text={props.title} 
-        handleSave={(text)=>{
-          props.title = text
-          handleSave(props)
-        }}></ClickEdit>
-      </div>
-      <div class="card-controls">
-          {#if handleDelete}
-            <div class="details-button" on:click={()=>handleDelete(cardId)}>
-              <Fa icon={faTrash} style="width: 16px; height: 16px;"/>
-            </div>
-          {/if}
-          {#if handleArchive}
-            <div class="details-button" on:click={()=>{close();handleArchive()}}>
-              <Fa icon={faArchive} style="width: 16px; height: 16px;"/>
-            </div>
-          {/if}
-        <div class="details-button" on:click={(e)=>{close()}}>
-          <Fa icon={faClose} style="width: 24px; height: 24px;"/>
         </div>
+
+  <!--       
+        <sl-select
+          value={props.category}
+          label="Category"
+          on:sl-change={(e)=>{
+            setCategory(e.target.value)
+          }}
+          >
+          <sl-option value={""}>No Category</sl-option>
+          {#each categories as category }
+            <sl-option value={category.type}>{category.name}</sl-option>
+          {/each}
+        </sl-select> -->
+            
+
       </div>
-    </div>
-    <div class="belongs-to">In column <strong>{store.getCardGroupName(cardId, $state)}</strong></div>
-    {#if editingDescription}
-      <sl-textarea rows=10 class='textarea' value={editDesc} 
-        on:sl-input={e=>editDesc = e.target.value}
-        ></sl-textarea>
-        <div style="display:flex;justify-content:flex-end;margin-top:10px">
-          <sl-button size="small" style="margin-left:5px" on:click={()=>cancelEditDescription()}>
-            Cancel
-          </sl-button>
-          <sl-button size="small" style="margin-left:5px" variant="primary" 
-            on:click={()=>{
-              props.description = editDesc
-              handleSave(props)
-              editingDescription=false}}>
-            Save
-          </sl-button>
-        </div>
-    {:else}
-      <div style="display:flex;flex-direction: column">
-        <div class="details" on:click={(e)=>editDescription()}>{@html Marked.parse(props.description)}</div>
-        <div style="display:flex;justify-content:flex-end">
-          <sl-button style="margin-left:5px;margin-top:10px" on:click={()=>editDescription()}>
-            Edit
-          </sl-button>
-        </div>
-      </div>
-    {/if}
-
-
-  </div>
-  {#if labelTypes.length > 0}
-  <div class="multi-select card-section">
-    <div class="detail-label">Labels</div>
-    <sl-select
-      bind:this={labelSelect}
-      on:sl-change={(e)=>{
-        props.labels= labelSelect.value
-        handleSave(props)
-      }}
-      value={selectedLabels.map(l=>l.value)}
-      multiple 
-      >
-      {#each labelOptions as option}
-        <sl-option value={option.value}>{option.label}</sl-option>
-      {/each}
-    </sl-select>
-
-
-  </div>
-  {/if}
-  {#if Object.keys($avatars).length > 0}
-  <div class="multi-select card-section">
-    <div class="detail-label">Assigned to</div>
-    <sl-select
-      value={selectedAvatarsForSelect}
-      on:sl-change={(e)=>{
-        selectedAvatars = e.target.value
-        setAgents()
-      }}
-      multiple 
-      >
-      {#each avatarNames() as avatar}
-      <sl-option value={avatar.value}>{avatar.label}</sl-option>
-      {/each}
-    </sl-select>
-
-  </div>
-  {/if}
-  <sl-dialog bind:this={commentDialog}>
-    <sl-textarea bind:this={commentText}></sl-textarea>
-    <div style="display:flex;justify-content:flex-end;margin-top:5px;">
-      <sl-button style="padding: 0 5px;" size="small"  text on:click={()=> {
-        commentDialog.hide()
-      }}>
-          Cancel
-      </sl-button>
-      <sl-button style="padding: 0 5px;" size="small" variant="primary" text on:click={()=> {
-        if (commenting=="new")
-          addComment(commentingCardId, commentText.value)
-        else {
-          updateComment(commentingCardId, commenting, commentText.value)
-        }
-        commentDialog.hide()
-      }}>
-          Save
-      </sl-button>
-    </div>
-  </sl-dialog>
-
-  <div class="comments card-section">
-    <h4>{card ? card.comments.length:""} Comments</h4>
-
-    <div class="add-comment">
-      <sl-input bind:this={commentElement} placeholder="Add a comment"
-        on:sl-focus={()=>commentingFocused = true}
-        on:sl-blur={()=>commentingFocused = false}
-      >
-      </sl-input>
-      {#if commentingFocused}
-        <sl-button on:mousedown={()=>{
-          addComment(cardId, commentElement.value)
-          commentElement.value = ""
-        }}>
-            <Fa icon={faPaperPlane}/>
-        </sl-button>
-        <sl-button on:mousedown={()=>{
-          commentingFocused = false
-          commentElement.value = ""
-        }}>
-            <Fa icon={faCancel}/>
-        </sl-button>
       {/if}
 
-    </div>
+      <div style="display:flex;justify-content:space-between">
+        <div class="card-title">
+        <ClickEdit
+          text={props.title} 
+          handleSave={(text)=>{
+            props.title = text
+            handleSave(props)
+          }}></ClickEdit>
+        </div>
+        <div class="card-controls">
+            {#if handleDelete}
+              <div class="details-button delete-button" tooltip="Delete this card" on:click={()=>handleDelete(cardId)}>
+                <Fa icon={faTrash} style="width: 16px; height: 16px;"/>
+              </div>
+            {/if}
+            {#if handleArchive}
+              <div class="details-button archive-button" tooltip="Archive this card" on:click={()=>{close();handleArchive()}}>
+                <Fa icon={faArchive} style="width: 16px; height: 16px;"/>
+              </div>
+            {/if}
+          <div class="details-button" tooltip="Close this card" on:click={(e)=>{close()}}>
+            <Fa icon={faClose} style="width: 24px; height: 24px;"/>
+          </div>
+        </div>
+      </div>
+      <div class="belongs-to">In column <strong>{store.getCardGroupName(cardId, $state)}</strong></div>
+      {#if editingDescription}
+        <sl-textarea rows=10 class='textarea' value={editDesc} 
+          on:sl-input={e=>editDesc = e.target.value}
+          ></sl-textarea>
+          <div style="display:flex;justify-content:flex-end;margin-top:10px">
+            <sl-button size="small" style="margin-left:5px" on:click={()=>cancelEditDescription()}>
+              Cancel
+            </sl-button>
+            <sl-button size="small" style="margin-left:5px" variant="primary" 
+              on:click={()=>{
+                props.description = editDesc
+                handleSave(props)
+                editingDescription=false}}>
+              Save
+            </sl-button>
+          </div>
+      {:else}
+        <div style="display:flex;flex-direction: column">
+          <div class="details" on:click={(e)=>editDescription()}>{@html Marked.parse(props.description)}</div>
+          <div style="display:flex;justify-content:flex-end">
+            <sl-button style="margin-left:5px;margin-top:10px" on:click={()=>editDescription()}>
+              Edit
+            </sl-button>
+          </div>
+        </div>
+      {/if}
 
-    <div class="comment-list">
-      {#if card}
-        {#each card.comments as comment}
-          <div class="comment">
-            <div class="comment-header">
-              <div class="comment-avatar"><AvatarIcon size={20} avatar={$avatars[comment.agent]} key={decodeHashFromBase64(comment.agent)}/></div>
-              {store.timeAgo.format(new Date(comment.timestamp))}
-              {#if comment.agent==store.myAgentPubKey()}
-              <div class="comment-controls">
-                <div class="details-button"
-                  on:click={()=>editComment(cardId, comment)}
-                  >
-                  <Fa icon={faEdit}/>
-                </div>
-                <div class="details-button"
-                  on:click={()=>deleteComment(cardId, comment.id)}
-                  >
-                  <Fa icon={faTrash}/>
+
+    </div>
+    {#if labelTypes.length > 0}
+    <div class="multi-select card-section">
+      <div class="detail-label">Labels</div>
+      <sl-select
+        bind:this={labelSelect}
+        on:sl-change={(e)=>{
+          props.labels= labelSelect.value
+          handleSave(props)
+        }}
+        value={selectedLabels.map(l=>l.value)}
+        multiple 
+        >
+        {#each labelOptions as option}
+          <sl-option value={option.value}>{option.label}</sl-option>
+        {/each}
+      </sl-select>
+
+
+    </div>
+    {/if}
+    {#if Object.keys($avatars).length > 0}
+    <div class="multi-select card-section">
+      <div class="detail-label">Assigned to</div>
+      <sl-select
+        value={selectedAvatarsForSelect}
+        on:sl-change={(e)=>{
+          selectedAvatars = e.target.value
+          setAgents()
+        }}
+        multiple 
+        >
+        {#each avatarNames() as avatar}
+        <sl-option value={avatar.value}>{avatar.label}</sl-option>
+        {/each}
+      </sl-select>
+
+    </div>
+    {/if}
+    <sl-dialog bind:this={commentDialog}>
+      <sl-textarea bind:this={commentText}></sl-textarea>
+      <div style="display:flex;justify-content:flex-end;margin-top:5px;">
+        <sl-button style="padding: 0 5px;" size="small"  text on:click={()=> {
+          commentDialog.hide()
+        }}>
+            Cancel
+        </sl-button>
+        <sl-button style="padding: 0 5px;" size="small" variant="primary" text on:click={()=> {
+          if (commenting=="new")
+            addComment(commentingCardId, commentText.value)
+          else {
+            updateComment(commentingCardId, commenting, commentText.value)
+          }
+          commentDialog.hide()
+        }}>
+            Save
+        </sl-button>
+      </div>
+    </sl-dialog>
+
+    <div class="comments card-section">
+      <div class="card-label">Comments <span class="comment-count">{card ? card.comments.length:""}</span></div>
+
+      <div class="add-comment">
+        <sl-input bind:this={commentElement} placeholder="Add a comment"
+          on:sl-focus={()=>commentingFocused = true}
+          on:sl-blur={()=>commentingFocused = false}
+        >
+        </sl-input>
+        {#if commentingFocused}
+          <sl-button on:mousedown={()=>{
+            addComment(cardId, commentElement.value)
+            commentElement.value = ""
+          }}>
+              <Fa icon={faPaperPlane}/>
+          </sl-button>
+          <sl-button on:mousedown={()=>{
+            commentingFocused = false
+            commentElement.value = ""
+          }}>
+              <Fa icon={faCancel}/>
+          </sl-button>
+        {/if}
+
+      </div>
+
+      <div class="comment-list">
+        {#if card}
+          {#each card.comments as comment}
+            <div class="comment">
+              <div class="comment-header">
+                <div class="comment-avatar"><AvatarIcon size={20} avatar={$avatars[comment.agent]} key={decodeHashFromBase64(comment.agent)}/></div>
+                <div class="comment-time-and-controls">
+                  <div class="comment-time">{store.timeAgo.format(new Date(comment.timestamp))}</div>
+                  {#if comment.agent==store.myAgentPubKey()}
+                  <div class="comment-controls">
+                    <div class="comment-control"
+                      on:click={()=>editComment(cardId, comment)}
+                      >
+                      <Fa icon={faEdit} style="width: 12px; height: 12px;"/>
+                    </div>
+                    <div class="comment-control"
+                      on:click={()=>deleteComment(cardId, comment.id)}
+                      >
+                      <Fa icon={faTrash} style="width: 12px; height: 12px;"/>
+                    </div>
+                  </div>
+                  {/if}
                 </div>
               </div>
-              {/if}
+              <span class="comment-text">{@html Marked.parse(comment.text)}</span>
             </div>
-            <span class="comment-text">{@html Marked.parse(comment.text)}</span>
-          </div>
-        {/each}
-      {/if}
+          {/each}
+        {/if}
+      </div>
     </div>
   </div>
 </div>
@@ -397,10 +401,11 @@
   .add-comment {
     position: absolute;
     padding: 20px;
-    background-color: #eee;
+    background-color: rgba(223, 232, 240, 1.0);
     bottom: 0px;
     margin-left: -20px;
     width: 100%;
+    z-index: 100;
   }
   .card-editor {
     display: flex;
@@ -409,6 +414,23 @@
     color: rgba(35, 32, 74, 1.0);
     justify-content: space-between;
     flex-direction: column;
+  }
+
+  .card-wrapper {
+    max-height: calc(100vh - 160px);
+    overflow-x: auto;
+  }
+
+  .card-wrapper::-webkit-scrollbar {
+    width: 5px;
+    background-color: transparent;
+  }
+
+  .card-wrapper::-webkit-scrollbar-thumb {
+      height: 5px;
+      border-radius: 5px;
+      background: rgba(20,60,119,.3);
+      opacity: 1;
   }
   .card-elements {
     display: flex;
@@ -446,6 +468,10 @@
     padding-top: 10px;
   }
 
+  .comment-time-and-controls {
+    display: flex;
+  }
+
   .edit-card::part(base) {
     height: calc(100vh - 97px);
     bottom: 0;
@@ -480,14 +506,43 @@
   .comments {
     margin-top: 5px;
     padding-top: 5px;
-    border-top: 1px solid;
+    background: linear-gradient(180deg, rgba(102, 138, 174, 0.1) 0%, rgba(189, 209, 230, 0) 100%);
   }
+
+  .comments .card-label {
+    opacity: .5;
+    padding-bottom: 15px;
+  }
+
+  .comment-count {
+    min-width: 20px;
+    background-color: rgba(35, 32, 75, 1);
+    height: 20px;
+    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 20px;
+    color: #fff;
+  }
+  
   .comment {
     display:flex;
     flex-direction: column;
-    margin-top: 5px;
-    padding-top: 5px;
-    border-top: 1px solid lightgray;
+    padding-bottom: 15px;
+    margin-bottom: 10px;
+    box-shadow: 0px 4px 4px rgba(35, 32, 74, 0.15);
+    font-size: 12px;
+    background-color: #fff;
+    line-height: 16px;
+    color: #23204A;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    transition: all .25s ease;
+    height: 0;
+    height: auto;
   }
   .comment-header {
     display:flex;
@@ -503,9 +558,19 @@
     border-radius: 50%;
     padding:2px;
     width: 30px;
+    height: 30px;
     display: flex;
     justify-content: center;
     align-items: center;
+  }
+
+  .delete-button, .archive-button {
+    opacity: .4;
+    transition: all .25s ease;
+  }
+
+  .delete-button:hover, .archive-button:hover {
+    opacity: 1;
   }
 
   .card-controls {
@@ -516,7 +581,11 @@
   }
 
   .card-controls .details-button {
-    margin-right: 3px;
+    margin-left: 10px;
+    background: #FFFFFF;
+    border: 1px solid rgba(35, 32, 74, 0.1);
+    box-shadow: 0px 4px 4px rgba(66, 66, 66, 0.1);
+    border-radius: 5px;
   }
 
   .card-section {
@@ -537,14 +606,41 @@
   }
   
   .comment-text {
-    margin-left: 10px;
+    padding: 10px;
   }
   .comment-list {
-    max-height:200px;
-    overflow-x:auto;
+    overflow-x: visible;
   }
   .comment-controls {
-    display:flex;
-    justify-self: flex-end;
+    display: block;
+    text-align: right;
+    width: 100%;
+  }
+
+  .comment-controls .comment-control {
+    font-size: 12px;
+    text-decoration: underline;
+    padding: 5px;
+    display: block;
+    margin-left: 5px;
+    display: inline-block;
+    opacity: .5;
+    transition: all .25s ease;
+    margin-right: -5px;
+  }
+
+  .comment-control:hover {
+    cursor: pointer;
+    font-weight: bold;
+    opacity: 1;
+  }
+
+  .comment-time {
+    font-size: 12px;
+    opacity: .5;
+    min-width: 100px;
+    text-align: right;
+    position: relative;
+    top: 4px;
   }
 </style>
