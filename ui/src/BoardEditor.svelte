@@ -283,9 +283,11 @@
     </div>
     {/if}
     <div class='controls'>
-      <sl-button class="board-control" on:click={() => exportBoard($state)} title="Export">
-        <Fa icon={faFileExport} /> Export
-      </sl-button>
+      {#if boardHash}
+        <sl-button class="board-control" on:click={() => exportBoard($state)} title="Export">
+          <Fa icon={faFileExport} /> Export
+        </sl-button>
+      {/if}
       {#if handleDelete}
         <sl-button class="board-control" on:click={handleDelete}>
           Archive
