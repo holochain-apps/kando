@@ -487,7 +487,7 @@
                   <div class="card-content"
                     on:click={(e)=>{e.stopPropagation(); cardDetails(cardId)}}
                   >
-                    {#if $state.labelDefs.length > 0}
+                    {#if props.labels.length > 0}
                     <div class="labels">
                       {#each $state.labelDefs as {type, emoji, toolTip}}
                         {#if isLabeled(props, type)}
