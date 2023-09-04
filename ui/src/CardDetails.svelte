@@ -506,7 +506,7 @@
     font-size: 16px;
     padding: 15px 0;
   }
-  
+
   .comments {
     margin-top: 5px;
     padding-top: 5px;
@@ -573,7 +573,7 @@
   }
 
   .delete-button, .archive-button {
-    opacity: .4;
+    opacity: .7;
     transition: all .25s ease;
   }
 
@@ -584,6 +584,7 @@
   .card-controls {
     position: absolute;
     top: 15px;
+    z-index: 10;
     right: 15px;
     display: flex;
   }
