@@ -15,12 +15,21 @@
     const { getStore } :any = getContext('kdStore');
 
     const store:KanDoStore = getStore();
+
+
+
     $: uiProps = store.uiProps
     $: boardList = store.boardList.stateStore()
     $: activeHash = store.boardList.activeBoardHash;
     $: state = store.boardList.getReadableBoardState($activeHash);
     $: archivedBoards = $boardList.boards.findIndex((board)=>board.status === "archived") >= 0
     $: activeBoards = $boardList.boards.findIndex((board)=>board.status !== "archived") >= 0
+
+    // const DEFAULT_KD_BG_IMG = "none"
+    // const NO_BOARD_IMG = "none"
+    // $: boardState = store ? store.boardList.getReadableBoardState($activeHash) :  undefined
+    // $: bgUrl = boardState ?  ($boardState.props && $boardState.props.bgUrl) ? $boardState.props.bgUrl : DEFAULT_KD_BG_IMG : NO_BOARD_IMG
+    const bgUrl = "none"
 
     const selectBoard = (hash: EntryHashB64) => {
         if (!$activeHash && wide) {
@@ -51,7 +60,8 @@
                     on:click={()=>{
                         selectBoard(boardHash)
                     }}>
-                    {$boardList.boards.find(b=>b.hash==boardHash).name}
+                    <div class="board-name">{$boardList.boards.find(b=>b.hash==boardHash).name}</div>
+                    <div class="board-bg" style="background-image: url({bgUrl});"></div>
                 </div>
             {/each}
         </div>
@@ -64,7 +74,8 @@
                     <div 
                         on:click={()=>selectBoard(board.hash)}
                         class="board" id={board.hash}>
-                        {board.name}
+                        <div class="board-name">{board.name}</div>
+                        <div class="board-bg" style="background-image: url({bgUrl});"></div>
                     </div>
                 {/if}
             {/each}
@@ -75,7 +86,10 @@
         <div class="boards-section">
             {#each $boardList.boards as board }
                 {#if board.status === "archived" }
-                <div class="board" id={board.hash} on:click={unarchiveBoard(board.hash)}>{board.name}</div>
+                <div class="board" id={board.hash} on:click={unarchiveBoard(board.hash)}>
+                    <div class="board-name">{board.name}</div>
+                    <div class="board-bg" style="background-image: url({bgUrl});"></div>
+                </div>
                 {/if}
             {/each}
         </div>
@@ -154,6 +168,7 @@
         margin: 5px;
         border: 1px solid;
         background-color: #fff;
+        position: relative;
     }
 
     .board:hover {
@@ -175,6 +190,14 @@
     .logo {
         height: 16px;
         margin-right: 5px;
+    }
+
+    .board-bg {
+        position: absolute;
+        z-index: 0;
+        height: 100%;
+        width: 100%;
+        background-size: cover;
     }
 
 </style>

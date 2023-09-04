@@ -137,6 +137,7 @@
     height: 100%;
     top: 0;
     left: 0;
+    opacity: .8;
   }
 
   .background-image {
