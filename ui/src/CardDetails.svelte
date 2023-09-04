@@ -532,7 +532,6 @@
     padding-bottom: 15px;
     margin-bottom: 10px;
     box-shadow: 0px 4px 4px rgba(35, 32, 74, 0.15);
-    font-size: 12px;
     background-color: #fff;
     line-height: 16px;
     color: #23204A;

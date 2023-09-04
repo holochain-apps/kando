@@ -810,13 +810,14 @@
   }
 
   .card-title {
-    font-size: 14px;
+    font-size: 16px;
   }
 
   .card-description {
-    font-size: 12px;
+    font-size: 14px;
     opacity: .8;
-    line-height: 16px;
+    line-height: 18px;
+    padding-top: 3px;
   }
 
   .contributors {
