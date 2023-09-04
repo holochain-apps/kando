@@ -32,9 +32,7 @@
     const bgUrl = "none"
 
     const selectBoard = (hash: EntryHashB64) => {
-        if (!$activeHash && wide) {
-            store.setUIprops({showMenu:false})
-        }
+        store.setUIprops({showMenu:false})
         store.setActiveBoard(hash)
     }
 
@@ -71,7 +69,7 @@
         <div class="boards-section">
             {#each $boardList.boards as board }
                 {#if board.status !== "archived" }
-                    <div 
+                    <div
                         on:click={()=>selectBoard(board.hash)}
                         class="board" id={board.hash}>
                         <div class="board-name">{board.name}</div>
@@ -140,6 +138,11 @@
         margin-top: 20px;
         margin-bottom: 10px;
         margin-left: 5px;
+    }
+
+    .board-name {
+        font-size: 16px;
+        font-weight: bold;
     }
 
     .new-board {

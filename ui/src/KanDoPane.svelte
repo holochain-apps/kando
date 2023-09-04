@@ -381,7 +381,7 @@
     avatars={avatars}
   />
 
-    <div class="columns"  on:click={(e)=>{close()}}>
+    <div class="columns" on:click={(e)=>{close()}}>
       {#each sortedColumns() as [columnId, cardIds], i}
         <div class="column-wrap">
         <div class="column"
