@@ -12,7 +12,10 @@
     export let saveButtonText="Save"
     export let confirmButtons=false
 
+    let origText = ""
+
     onMount(async () => {
+        origText = text
         onVisible(inputElement,()=>{
             inputElement.focus()
             inputElement.select()
@@ -36,18 +39,20 @@
                 text = e.target.value
             }}
             on:sl-change={(e)=>{
-                                console.log("Change")
-
-               // handleSave(text)
                 isEditing= false
             }
             }
             on:sl-blur={()=>{
-                console.log("BLUR")
                 handleSave(text)
                 isEditing= false
             }}
-        >
+            on:keydown={(e)=> {
+                if (e.keyCode == 27) {
+                    text = origText
+                    isEditing= false
+                }
+            }}
+          >
         </sl-input>
         {#if confirmButtons}
             <sl-button on:mousedown={()=>handleSave(text)}>
