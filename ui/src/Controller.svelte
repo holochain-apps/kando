@@ -31,7 +31,7 @@
     setContext('kdStore', {
       getStore: () => kdStore,
     });
-    const DEFAULT_KD_BG_IMG = "https://images.unsplash.com/photo-1557682250-33bd709cbe85"
+    const DEFAULT_KD_BG_IMG = "none"
     //const DEFAULT_KD_BG_IMG = "https://img.freepik.com/free-photo/studio-background-concept-abstract-empty-light-gradient-purple-studio-room-background-product-plain-studio-background_1258-54461.jpg"
     const NO_BOARD_IMG = "https://holochain.org/img/big_logo.png"
     $: boardList = kdStore? kdStore.boardList.stateStore() : undefined
@@ -103,7 +103,7 @@
       <div class="background">
         <div class="background-overlay"></div>
         <div class="background-image"
-              style={`background-image: url("${bgUrl}"`}></div>
+              style={`background-image: url(${bgUrl}`}></div>
       </div>
     </div>
   </div>

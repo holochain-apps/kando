@@ -841,6 +841,7 @@
     border-radius: 5px;
     margin-right: 10px;
     border: 1px solid rgba(235, 235, 238, 1.0);
+    background-color: rgba(255,255,255,.8);
   }
 
   .label-icon {

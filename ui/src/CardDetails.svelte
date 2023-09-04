@@ -14,7 +14,7 @@
   import type { KanDoStore } from './kanDoStore';
   import AvatarIcon from './AvatarIcon.svelte';
   import { decodeHashFromBase64 } from '@holochain/client';
-  import { faEdit, faTrash, faComments, faPlus, faClose, faPaperPlane, faCancel } from '@fortawesome/free-solid-svg-icons';
+  import { faEdit, faTrash, faComments, faPlus, faArchive, faClose, faPaperPlane, faCancel } from '@fortawesome/free-solid-svg-icons';
   import type { Comment } from "./board";
 
   import { Marked, Renderer } from "@ts-stack/markdown";
@@ -193,8 +193,36 @@
   no-header
   on:sl-hide={()=>close()}
   >
-<div class='card-editor' >
+
+<div class='card-editor'>
   <div class="card-elements">
+    
+    {#if categories.length > 0}
+    <div style="display:flex; flex-direction:row;align-items:flex-end">
+      <div class="category-selector">
+      {#each categories as category }
+        <div tooltip={category.name} class="category-button" on:click={(e)=>{setCategory(category.type)}} style="background-color: {category.color}"></div>
+      {/each}
+      </div>
+
+<!--       
+      <sl-select
+        value={props.category}
+        label="Category"
+        on:sl-change={(e)=>{
+          setCategory(e.target.value)
+        }}
+        >
+        <sl-option value={""}>No Category</sl-option>
+        {#each categories as category }
+          <sl-option value={category.type}>{category.name}</sl-option>
+        {/each}
+      </sl-select> -->
+          
+
+    </div>
+    {/if}
+
     <div style="display:flex;justify-content:space-between">
       <div class="card-title">
       <ClickEdit
@@ -204,11 +232,20 @@
           handleSave(props)
         }}></ClickEdit>
       </div>
-   
-      <div class="details-button"
-        on:click={(e)=>{close()}}
-        >
-        <Fa icon={faClose}/>
+      <div class="card-controls">
+          {#if handleDelete}
+            <div class="details-button" on:click={()=>handleDelete(cardId)}>
+              <Fa icon={faTrash} style="width: 16px; height: 16px;"/>
+            </div>
+          {/if}
+          {#if handleArchive}
+            <div class="details-button" on:click={()=>{close();handleArchive()}}>
+              <Fa icon={faArchive} style="width: 16px; height: 16px;"/>
+            </div>
+          {/if}
+        <div class="details-button" on:click={(e)=>{close()}}>
+          <Fa icon={faClose} style="width: 24px; height: 24px;"/>
+        </div>
       </div>
     </div>
     <div class="belongs-to">In column <strong>{store.getCardGroupName(cardId, $state)}</strong></div>
@@ -241,30 +278,9 @@
 
 
   </div>
-  {#if categories.length > 0}
-
-  <div style="display:flex; flex-direction:row;align-items:flex-end">
-    <sl-select
-      value={props.category}
-      label="Category"
-      on:sl-change={(e)=>{
-        setCategory(e.target.value)
-      }}
-      >
-      <sl-option value={""}>No Category</sl-option>
-      {#each categories as category }
-        <sl-option value={category.type}>{category.name}</sl-option>
-      {/each}
-    </sl-select>
-        
-    {#if props.category}
-      <div style="margin-left:10px;margin-bottom:3px;width:30px;height:30px;border-radius:50%;background-color:{getCategory(props).color}"></div>
-    {/if}
-  </div>
-  {/if}
   {#if labelTypes.length > 0}
-  <div class="multi-select">
-
+  <div class="multi-select card-section">
+    <div class="detail-label">Labels</div>
     <sl-select
       bind:this={labelSelect}
       on:sl-change={(e)=>{
@@ -272,7 +288,6 @@
         handleSave(props)
       }}
       value={selectedLabels.map(l=>l.value)}
-      label="Labels"
       multiple 
       >
       {#each labelOptions as option}
@@ -284,10 +299,10 @@
   </div>
   {/if}
   {#if Object.keys($avatars).length > 0}
-  <div class="multi-select">
+  <div class="multi-select card-section">
+    <div class="detail-label">Assigned to</div>
     <sl-select
       value={selectedAvatarsForSelect}
-      label="Assigned To"
       on:sl-change={(e)=>{
         selectedAvatars = e.target.value
         setAgents()
@@ -322,7 +337,7 @@
     </div>
   </sl-dialog>
 
-  <div class="comments">
+  <div class="comments card-section">
     <h4>{card ? card.comments.length:""} Comments</h4>
 
     <div class="add-comment">
@@ -376,22 +391,6 @@
       {/if}
     </div>
   </div>
-
-  <div class='controls'>
-    {#if handleDelete}
-      <sl-button variant="danger" on:click={()=>handleDelete(cardId)}>
-        Delete
-      </sl-button>
-    {/if}
-    {#if handleArchive}
-      <sl-button style="margin-left:5px" on:click={()=>{close();handleArchive()}}>
-        Archive
-      </sl-button>
-    {/if}
-    <sl-button style="margin-left:5px" on:click={()=>{close();}}>
-      Close
-    </sl-button>
-  </div>
 </div>
 </sl-drawer>
 <style>
@@ -415,6 +414,20 @@
     display: flex;
     flex-direction: column;
     flex-basis: 100%;
+    padding: 20px;
+  }
+
+  .category-selector {
+    width: 100%;
+    display: flex;
+    padding-bottom: 15px;
+  }
+
+  .category-button {
+    width: 20px;
+    height: 20px;
+    border-radius: 5px;
+    margin-right: 5px;
   }
 
   .card-title {
@@ -438,6 +451,10 @@
     bottom: 0;
     top: initial;
     z-index: 150;
+  }
+
+  .edit-card::part(body) {
+    padding: 0;
   }
 
   .edit-card::part(panel) {
@@ -485,10 +502,34 @@
     cursor: pointer;
     border-radius: 50%;
     padding:2px;
-    width:20px;
+    width: 30px;
     display: flex;
     justify-content: center;
+    align-items: center;
   }
+
+  .card-controls {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    display: flex;
+  }
+
+  .card-controls .details-button {
+    margin-right: 3px;
+  }
+
+  .card-section {
+    border-top: 1px dashed rgba(35, 32, 75, .1);
+    padding: 20px;
+    width: 100%;
+  }
+
+  .detail-label {
+    color: rgba(35, 32, 75, .5);
+    padding-bottom: 10px;
+  }
+
   .details-button:hover {
     background-color: rgb(240, 249, 2244);
     border: solid 1px rgb(149, 219, 252);
