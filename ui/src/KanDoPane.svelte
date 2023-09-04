@@ -818,6 +818,10 @@
     opacity: .8;
     line-height: 18px;
     padding-top: 3px;
+    -webkit-line-clamp: 3;
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
   }
 
   .contributors {
