@@ -503,10 +503,16 @@
     font-size: 16px;
     padding: 15px 0;
   }
+  
   .comments {
     margin-top: 5px;
     padding-top: 5px;
     background: linear-gradient(180deg, rgba(102, 138, 174, 0.1) 0%, rgba(189, 209, 230, 0) 100%);
+ 
+  }
+
+  .comments.card-section {
+    padding-bottom: 40px;
   }
 
   .comments .card-label {
