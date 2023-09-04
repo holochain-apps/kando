@@ -3,7 +3,7 @@
     import '@shoelace-style/shoelace/dist/components/input/input.js';
     import { onMount } from "svelte";
     import Fa from 'svelte-fa'
-    import { faCancel } from '@fortawesome/free-solid-svg-icons';
+    import { faCancel, faEdit } from '@fortawesome/free-solid-svg-icons';
     import { onVisible } from './util';
 
     export let handleSave
@@ -65,6 +65,7 @@
         }}
     >
         {text}
+        <Fa icon={faEdit} style="opacity: .3; height: .875rem; margin-left: 3px; position: relative; top: -.15rem"/>
     </div>
 </div>
 
@@ -74,6 +75,7 @@
         width: 100%;
         font-weight: bold;
     }
+
     .hidden {
         display: none;
     }

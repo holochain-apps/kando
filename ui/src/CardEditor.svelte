@@ -209,7 +209,7 @@ let labelSelect
     display: flex;
     flex-basis: 270px;
     font-style: normal;
-    color: #000000;
+  color: rgba(35, 32, 74, 1.0);
     justify-content: space-between;
     flex-direction: column;
   }

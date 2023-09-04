@@ -487,6 +487,17 @@
                   <div class="card-content"
                     on:click={(e)=>{e.stopPropagation(); cardDetails(cardId)}}
                   >
+                    {#if $state.labelDefs.length > 0}
+                    <div class="labels">
+                      {#each $state.labelDefs as {type, emoji, toolTip}}
+                        {#if isLabeled(props, type)}
+                          <div title={toolTip}>
+                          <EmojiIcon emoji={emoji} class="label-icon"/>
+                          </div>
+                        {/if}
+                      {/each}
+                    </div>
+                    {/if}
                     <div style="display:flex;justify-content:space-between">
                       <h3 class="card-title">{props.title}</h3>
                       <div class="action-button"
@@ -498,26 +509,18 @@
                     </div>
                     <div class="card-description">{@html Marked.parse(props.description)}</div>
                   </div>
-                  {#if $state.labelDefs.length > 0}
-                  <div class="labels">
-                    {#each $state.labelDefs as {type, emoji, toolTip}}
-                      {#if isLabeled(props, type)}
-                        <div title={toolTip}>
-                        <EmojiIcon emoji={emoji} class="label-icon"/>
-                        </div>
-                      {/if}
-                    {/each}
+                  {#if (props && props.agents && props.agents.length > 0) || ( comments.length>0)}
+                  <div class="contributors">
+                    {#if props && props.agents && props.agents.length > 0}
+                      {#each props.agents as agent}
+                        <AvatarIcon size={20} avatar={$avatars[agent]} key={decodeHashFromBase64(agent)}/>
+                      {/each}
+                    {/if}
+                    {#if comments.length>0}
+                      <div class="comment-count"><Fa icon={faComments} />: {comments.length}</div>
+                    {/if}
                   </div>
                   {/if}
-                  {#if props && props.agents && props.agents.length > 0}
-                    {#each props.agents as agent}
-                      <AvatarIcon size={20} avatar={$avatars[agent]} key={decodeHashFromBase64(agent)}/>
-                    {/each}
-                  {/if}
-                  {#if comments.length>0}
-                    <div class="comment-count"><Fa icon={faComments} />: {comments.length}</div>
-                  {/if}
-                  
                 </div>
             {/if}
           {/each}
@@ -605,7 +608,7 @@
     align-items: center;
   }
   .board-name {
-    font-size: 16px;
+    font-size: 24px;
   }
   .right-items {
     display: flex;
@@ -802,16 +805,37 @@
     font-size: 12px;
     opacity: .8;
     line-height: 16px;
-    padding-top: 3px;
+  }
+
+  .contributors {
+    padding-top: 15px;
+    padding-left: 8px;
+    padding-right: 10px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
   }
 
   .labels {
-    display: flex;
-    align-items: center;
-    justify-content: space-around;
-    margin-top: 5px;
+    display: block;
+    padding-bottom: 10px;
   }
   
+  .labels div {
+    display: inline-flex;
+    width: 30px;
+    height: 30px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 5px;
+    margin-right: 10px;
+    border: 1px solid rgba(235, 235, 238, 1.0);
+  }
+
+  .label-icon {
+    margin-right: 0;
+  }
+
   .action-button {
     cursor: pointer;
     border-radius: 50%;

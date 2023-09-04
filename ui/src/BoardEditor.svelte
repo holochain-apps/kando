@@ -281,7 +281,6 @@
     flex-basis: 270px;
     font-style: normal;
     font-weight: 600;
-    color: #000000;
     flex-direction: column;
     justify-content: flex-start;
   }

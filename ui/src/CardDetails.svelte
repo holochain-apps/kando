@@ -196,7 +196,7 @@
 <div class='card-editor' >
   <div class="card-elements">
     <div style="display:flex;justify-content:space-between">
-      <div style="width:100%">
+      <div class="card-title">
       <ClickEdit
         text={props.title} 
         handleSave={(text)=>{
@@ -211,9 +211,7 @@
         <Fa icon={faClose}/>
       </div>
     </div>
-    <div>Column: {store.getCardGroupName(cardId, $state)}</div>
-    <h4>Description</h4>
-
+    <div class="belongs-to">In column <strong>{store.getCardGroupName(cardId, $state)}</strong></div>
     {#if editingDescription}
       <sl-textarea rows=10 class='textarea' value={editDesc} 
         on:sl-input={e=>editDesc = e.target.value}
@@ -234,7 +232,7 @@
       <div style="display:flex;flex-direction: column">
         <div class="details" on:click={(e)=>editDescription()}>{@html Marked.parse(props.description)}</div>
         <div style="display:flex;justify-content:flex-end">
-          <sl-button size="small" style="margin-left:5px;margin-top:10px" on:click={()=>editDescription()}>
+          <sl-button style="margin-left:5px;margin-top:10px" on:click={()=>editDescription()}>
             Edit
           </sl-button>
         </div>
@@ -409,7 +407,7 @@
     display: flex;
     flex-basis: 270px;
     font-style: normal;
-    color: #000000;
+    color: rgba(35, 32, 74, 1.0);
     justify-content: space-between;
     flex-direction: column;
   }
@@ -417,6 +415,10 @@
     display: flex;
     flex-direction: column;
     flex-basis: 100%;
+  }
+
+  .card-title {
+    font-size: 24px;
   }
 
   .multi-select {
@@ -446,9 +448,17 @@
     display: none;
   }
 
+  .belongs-to {
+    opacity: .6;
+    margin-top: -5px;
+    font-size: 14px;
+  }
+
   .details {
     max-height: 300px;
     overflow: auto;
+    font-size: 16px;
+    padding: 15px 0;
   }
   .comments {
     margin-top: 5px;
