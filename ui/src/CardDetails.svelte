@@ -136,14 +136,15 @@
 
   let labelSelect
 
-  let commentText
+  let commentText = ""
+  let commentTextElem
   let commenting= ""
   let commentingCardId = ""
   let commentDialog 
   const newComment = (cardId:uuidv1)=> {
     commentingCardId = cardId
     commentDialog.label="New Comment"
-    commentText.value = ""
+    commentTextElem.value = ""
     commenting="new"
     commentDialog.show()
   }
@@ -151,7 +152,7 @@
     commentingCardId=cardId
     commentDialog.label="Edit Comment"
     commenting=comment.id
-    commentText.value = comment.text
+    commentTextElem.value = comment.text
     commentDialog.show()
   }
   const addComment = (id: uuidv1, text: string) => {
@@ -186,7 +187,6 @@
 
   let commentingFocused = false
   let commentElement
-
 </script>
 <sl-drawer class="edit-card" bind:this={dialog}
   style="--width:700px"
@@ -318,7 +318,7 @@
     </div>
     {/if}
     <sl-dialog bind:this={commentDialog}>
-      <sl-textarea bind:this={commentText}></sl-textarea>
+      <sl-textarea bind:this={commentTextElem}></sl-textarea>
       <div style="display:flex;justify-content:flex-end;margin-top:5px;">
         <sl-button style="padding: 0 5px;" size="small"  text on:click={()=> {
           commentDialog.hide()
@@ -327,9 +327,9 @@
         </sl-button>
         <sl-button style="padding: 0 5px;" size="small" variant="primary" text on:click={()=> {
           if (commenting=="new")
-            addComment(commentingCardId, commentText.value)
+            addComment(commentingCardId, commentTextElem.value)
           else {
-            updateComment(commentingCardId, commenting, commentText.value)
+            updateComment(commentingCardId, commenting, commentTextElem.value)
           }
           commentDialog.hide()
         }}>
@@ -343,18 +343,37 @@
 
       <div class="add-comment">
         <sl-input bind:this={commentElement} placeholder="Add a comment"
+          on:sl-input={(e)=>{
+              commentText = e.target.value
+          }}
           on:sl-focus={()=>commentingFocused = true}
-          on:sl-blur={()=>commentingFocused = false}
+          on:sl-blur={()=>{
+            commentingFocused = false
+            commentElement.value = ""
+          }}
+          on:sl-select={
+            ()=>{
+            addComment(cardId, commentElement.value)
+          }}
+            on:keydown={(e)=> {
+              if (e.keyCode == 27) {
+                commentElement.blur()
+                e.stopPropagation()
+              }
+          }}
+
         >
         </sl-input>
         {#if commentingFocused}
-          <sl-button on:mousedown={()=>{
-            addComment(cardId, commentElement.value)
-            commentElement.value = ""
-          }}>
+          <sl-button
+            disabled={!commentText}
+            on:mousedown={()=>{
+              addComment(cardId, commentElement.value)
+            }}>
               <Fa icon={faPaperPlane}/>
           </sl-button>
-          <sl-button on:mousedown={()=>{
+          <sl-button 
+            on:mousedown={()=>{
             commentingFocused = false
             commentElement.value = ""
           }}>
@@ -366,7 +385,7 @@
 
       <div class="comment-list">
         {#if card}
-          {#each card.comments as comment}
+          {#each card.comments.reverse() as comment}
             <div class="comment">
               <div class="comment-header">
                 <div class="comment-avatar"><AvatarIcon size={20} avatar={$avatars[comment.agent]} key={decodeHashFromBase64(comment.agent)}/></div>
