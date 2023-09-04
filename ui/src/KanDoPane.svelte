@@ -625,6 +625,7 @@
     box-shadow: 0px 4px 4px rgba(66, 66, 66, 0.1);
     border-radius: 5px;
   }
+
   .filter-by {
     display: flex;
     align-items: center;
@@ -664,7 +665,7 @@
 
   .column-title, .add-column {
     font-weight: bold;
-    font-size: 16px;
+    font-size: 18px;
     padding: 10px;
     border-radius: 0 0 5px 5px;
     position: sticky;
@@ -674,7 +675,16 @@
     box-shadow: 0px 4px 15px rgba(35, 32, 74, 0.15);
     z-index: 150;
   }
-
+  .add-column {
+    opacity: .7;
+    transition: all .25s ease;
+  }
+  .add-column:hover, .add-column:focus {
+    padding: 15px;
+    margin: 0 -5px;
+    opacity: 1;
+    cursor: pointer;
+  }
   .column-footer {
     border-top: 1px solid #999;
     padding: 0 5px;
