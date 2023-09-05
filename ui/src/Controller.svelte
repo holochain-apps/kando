@@ -131,7 +131,7 @@
       animation-name: slideIn;
       animation-iteration-count: 1;
       animation-timing-function: cubic-bezier(0.42, 0, 0.58, 1.1);
-      z-index: 1000;
+      z-index: 199;
       --margin-end-position: 0px;
       --margin-start-position: -330px;
       margin-left: 0;
