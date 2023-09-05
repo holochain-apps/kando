@@ -190,7 +190,7 @@
 
 </script>
 <sl-drawer class="edit-card" bind:this={dialog}
-  style="--width:700px"
+  style="--size:500px"
   no-header
   on:sl-hide={()=>close()}
   >

@@ -159,20 +159,6 @@
         }
     }
 
-    @keyframes sideOut {
-      from {
-            margin-left: 0px;
-            opacity: 1;
-            backdrop-filter: blur(0px);
-        }
-
-        to {
-            opacity: 0;
-            left: -330px;
-            backdrop-filter: blur(10px);
-        }
-    }
-
   .background {
     position: absolute;
     z-index: 0;
