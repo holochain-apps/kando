@@ -79,6 +79,12 @@
     }
     const archiveBoard = () => {
         store.boardList.archiveBoard(boardHash)
+        const recent = get(store.uiProps).recent
+        const idx = recent.findIndex((h)=> h === boardHash)
+        if (idx >= 0) {
+            recent.splice(idx,1)
+            store.setUIprops({recent})
+        }
         close()
     }
     const close = ()=>{

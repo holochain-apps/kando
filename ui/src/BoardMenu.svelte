@@ -42,9 +42,9 @@
         closeActiveCard()
     }
 
-    const unarchiveBoard = (hash: EntryHashB64) => () => {
+    const unarchiveBoard = (hash: EntryHashB64) => {
         store.boardList.unarchiveBoard(hash)
-        store.setUIprops({showMenu:false})
+        selectBoard(hash)
     }
 
     let aboutDialog
@@ -57,33 +57,32 @@
     <div style="display:flex;flex-direction: row;">
     <div class="new-board" on:click={()=>newBoardDialog.open()} title="New Board"><Fa icon={faSquarePlus} size=2x style="margin-left: 15px;"/><span>New Board</span></div>
     </div>
-    {#if $uiProps.recent.length > 0}
-        <h3 class="type-header">Recent Boards</h3>
-        <div class="boards-section">
-            {#each $uiProps.recent as boardHash }
-                <div class="board"
-                    on:click={()=>{
-                        selectBoard(boardHash)
-                    }}>
-                    <div class="board-name">{$boardList.boards.find(b=>b.hash==boardHash).name}</div>
-                    <div class="board-bg" style="background-image: url({bgUrl});"></div>
-                </div>
-            {/each}
-        </div>
-    {/if}
-    {#if activeBoards}
+    {#if $uiProps.recent.length > 0 || activeBoards}
         <h3 class="type-header">Active Boards</h3>
         <div class="boards-section">
-            {#each $boardList.boards as board }
-                {#if board.status !== "archived" }
-                    <div
-                        on:click={()=>selectBoard(board.hash)}
-                        class="board" id={board.hash}>
-                        <div class="board-name">{board.name}</div>
+            {#if $uiProps.recent.length > 0}
+                {#each $uiProps.recent as boardHash }
+                    <div class="board"
+                        on:click={()=>{
+                            selectBoard(boardHash)
+                        }}>
+                        <div class="board-name">{$boardList.boards.find(b=>b.hash==boardHash).name}</div>
                         <div class="board-bg" style="background-image: url({bgUrl});"></div>
                     </div>
-                {/if}
-            {/each}
+                {/each}
+            {/if}
+            {#if activeBoards}
+                {#each $boardList.boards as board }
+                    {#if board.status !== "archived" && !$uiProps.recent.includes(board.hash)}
+                        <div
+                            on:click={()=>selectBoard(board.hash)}
+                            class="board" id={board.hash}>
+                            <div class="board-name">{board.name}</div>
+                            <div class="board-bg" style="background-image: url({bgUrl});"></div>
+                        </div>
+                    {/if}
+                {/each}
+            {/if}
         </div>
     {/if}
     {#if archivedBoards}
