@@ -55,7 +55,7 @@
 <div class="board-menu"
     class:wide={wide} >
     <div style="display:flex;flex-direction: row;">
-    <div class="new-board" on:click={()=>newBoardDialog.open()} style="margin-left:10px;font-size:14px" title="New Board"><Fa icon={faSquarePlus} size=2x style="margin-left: 15px;"/><span>New Board</span></div>
+    <div class="new-board" on:click={()=>newBoardDialog.open()} title="New Board"><Fa icon={faSquarePlus} size=2x style="margin-left: 15px;"/><span>New Board</span></div>
     </div>
     {#if $uiProps.recent.length > 0}
         <h3 class="type-header">Recent Boards</h3>
@@ -184,6 +184,8 @@
         display: flex;
         align-items: center;
         border-radius: 5px;
+        font-size: 16px;
+        font-weight: bold;
     }
 
     .new-board span {
