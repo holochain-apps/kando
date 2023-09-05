@@ -201,7 +201,6 @@
         border: 1px solid;
         background: linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgb(200 221 237) 100%);
         position: relative;
-        margin-left: 0;
         animation-duration: .35s;
         box-shadow: 0px 4px 8px rgba(35, 32, 74, 0.8);
     }
@@ -210,7 +209,7 @@
         cursor: pointer;
         padding: 15px 10px;
         background: linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 1) 100%);
-        margin: 0px;
+        margin: 0px 5px;
     }
 
     .footer {
