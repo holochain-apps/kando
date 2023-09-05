@@ -205,23 +205,9 @@
           <div class:category-selected={props.category == category.type} title={category.name} class="category-button" on:click={(e)=>{setCategory(props.category == category.type ? "" : category.type)}} style="background-color: {category.color}"></div>
         {/each}
         </div>
-
-  <!--       
-        <sl-select
-          value={props.category}
-          label="Category"
-          on:sl-change={(e)=>{
-            setCategory(e.target.value)
-          }}
-          >
-          <sl-option value={""}>No Category</sl-option>
-          {#each categories as category }
-            <sl-option value={category.type}>{category.name}</sl-option>
-          {/each}
-        </sl-select> -->
-            
-
       </div>
+      {:else}
+      <div class="top-spacer"></div>
       {/if}
 
       <div style="display:flex;justify-content:space-between">
@@ -295,8 +281,6 @@
           <sl-option value={option.value}>{option.label}</sl-option>
         {/each}
       </sl-select>
-
-
     </div>
     {/if}
     {#if Object.keys($avatars).length > 0}
@@ -483,6 +467,12 @@
   .multi-select {
     margin: 5px 0;
   }
+
+  .top-spacer {
+    display: block;
+    height: 35px;
+  }
+
   .controls {
     display: flex;
     flex-direction: row;

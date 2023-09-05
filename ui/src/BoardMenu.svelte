@@ -31,9 +31,15 @@
     // $: bgUrl = boardState ?  ($boardState.props && $boardState.props.bgUrl) ? $boardState.props.bgUrl : DEFAULT_KD_BG_IMG : NO_BOARD_IMG
     const bgUrl = "none"
 
+
+    const closeActiveCard = ()=> {
+        store.boardList.setActiveCard(undefined)
+    }
+
     const selectBoard = (hash: EntryHashB64) => {
         store.setUIprops({showMenu:false})
         store.setActiveBoard(hash)
+        closeActiveCard()
     }
 
     const unarchiveBoard = (hash: EntryHashB64) => () => {
@@ -42,6 +48,7 @@
     }
 
     let aboutDialog
+
 </script>
 
 <AboutDialog bind:this={aboutDialog} />
