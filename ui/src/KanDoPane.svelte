@@ -651,17 +651,22 @@
     background-color: #fff;
     box-shadow: 0px 4px 15px rgba(35, 32, 74, 0.15);
     z-index: 150;
+    transition: all .25s ease;
   }
   .add-column {
     opacity: .7;
     transition: all .25s ease;
   }
-  .add-column:hover, .add-column:focus {
+  .add-column:hover {
     padding: 15px;
     margin: 0 -5px;
     opacity: 1;
     cursor: pointer;
   }
+  .column-title:hover {
+    cursor: pointer;
+  }
+
   .column-footer {
     border-top: 1px solid #999;
     padding: 0 5px;
@@ -714,8 +719,8 @@
   }
 
   .board::-webkit-scrollbar-thumb {
-    border-radius: 5px 5px 0 0;
-    background: rgba(20,60,119,.6);
+    border-radius: 0 0 0 0;
+    background: rgba(20,60,119,.7);
     /* background: linear-gradient(180deg, rgba(20, 60, 119, 0) 0%, rgba(20,60,119,.6) 100%); */
   }
 

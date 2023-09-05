@@ -86,11 +86,16 @@
             <BoardMenu wide={true}></BoardMenu>
           </div>
         {:else}
-          <div class="board-menu" transition:slide={{ axis: 'x', duration: 400 }} >
+          <div class="board-menu">
             <BoardMenu wide={false}></BoardMenu>
           </div>
         {/if}
+      {:else}
+        <div class="board-menu slideOut">
+          <BoardMenu wide={false}></BoardMenu>
+        </div>
       {/if}
+
         
         {#if $activeBoardHash !== undefined}
           <KanDoPane on:requestChange={(event) => {kdStore.boardList.requestBoardChanges($activeBoardHash,event.detail)}}/>
@@ -120,6 +125,54 @@
     height: 100vh;
     position: relative;
   }
+
+  .board-menu {
+      animation-duration: .3s;
+      animation-name: slideIn;
+      animation-iteration-count: 1;
+      animation-timing-function: cubic-bezier(0.42, 0, 0.58, 1.1);
+      z-index: 1000;
+      --margin-end-position: 0px;
+      --margin-start-position: -330px;
+      margin-left: 0;
+
+    }
+
+    .board-menu.slideOut {
+      animation-duration: .3s;
+      animation-name: slideIn;
+      --margin-end-position: -330px;
+      animation-timing-function: cubic-bezier(0.42, 0, 0.58, 1.1);
+      --margin-start-position: 0px;
+      margin-left: -330px;
+    }
+
+    @keyframes slideIn {
+        from {
+            margin-left: var(--margin-start-position);
+            backdrop-filter: blur(10px);
+        }
+
+        to {
+            margin-left: var(--margin-end-position);
+            backdrop-filter: blur(0px);
+        }
+    }
+
+    @keyframes sideOut {
+      from {
+            margin-left: 0px;
+            opacity: 1;
+            backdrop-filter: blur(0px);
+        }
+
+        to {
+            opacity: 0;
+            left: -330px;
+            backdrop-filter: blur(10px);
+        }
+    }
+
   .background {
     position: absolute;
     z-index: 0;

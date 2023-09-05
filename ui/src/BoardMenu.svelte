@@ -101,7 +101,9 @@
     {/if}
 
     <NewBoardDialog bind:this={newBoardDialog}></NewBoardDialog>
-    <div class="footer" on:click={()=>aboutDialog.open()}>   
+    <div class="footer" 
+        class:slideOut={$uiProps.showMenu == false}
+        on:click={()=>aboutDialog.open()}>   
         <div class="logo" title="About KanDo!"><KDLogoIcon /></div>
         <Fa icon={faCog} class="cog" size="1.5x" color="#fff"/>
     </div>
@@ -115,10 +117,11 @@
         display: flex;
         flex-wrap: wrap;
     }
+
     .board-menu {
         height: calc(100vh - 50px);
-        overflow: auto;
-        background-color: aliceblue;
+        overflow-y: auto;
+        overflow-x: hidden;
         min-width: 330px;
         width: 330px;
         max-width: 0;
@@ -129,7 +132,25 @@
         align-items: flex-start;
         position: relative;
         padding: 15px;
-        transition: all .25s ease;
+        padding-bottom: 50px;
+    }
+
+    .wide.board-menu {
+        width: 100vw;
+        height: calc(100vh - 50px);
+    }
+
+
+    .board-menu::-webkit-scrollbar {
+        width: 10px;
+        background-color: transparent;
+    }
+
+    .board-menu::-webkit-scrollbar-thumb {
+        height: 5px;
+        border-radius: 0;
+        background: rgba(20,60,119,.9);
+        opacity: 1;
     }
 
     .wide {
@@ -179,6 +200,8 @@
         border: 1px solid;
         background-color: #fff;
         position: relative;
+        margin-left: 0;
+        animation-duration: .35s;
     }
 
     .board:hover {
@@ -186,11 +209,54 @@
     }
 
     .footer {
-        position: absolute;
-        bottom: 0;
+        position: fixed;
+        padding: 10px;
+        border-radius: 0;
+        bottom: 0px;
         height: 40px;
-        display: flex;
+        display: block;
         align-items: center;
+        width: 330px;
+        left: 0;
+        background-color: rgba(23, 55, 123, .9);
+        animation-duration: .3s;
+        animation-name: slideIn;
+        animation-iteration-count: 1;
+        animation-timing-function: cubic-bezier(0.42, 0, 0.58, 1.1);
+        z-index: 1000;
+        --margin-end-position: 0px;
+        --margin-start-position: -330px;
+        margin-left: 0;
+    }
+
+    .footer.slideOut {
+      animation-duration: .3s;
+      animation-name: slideIn;
+      --margin-end-position: -330px;
+      animation-timing-function: cubic-bezier(0.42, 0, 0.58, 1.1);
+      --margin-start-position: 0px;
+      margin-left: -330px;
+    }
+
+    @keyframes slideIn {
+        from {
+            margin-left: var(--margin-start-position);
+            backdrop-filter: blur(10px);
+        }
+
+        to {
+            margin-left: var(--margin-end-position);
+            backdrop-filter: blur(0px);
+        }
+    }
+    
+    .wide .footer {
+        width: 100%;
+        bottom: 0;
+    }
+
+    .footer div {
+        display: inline-block;
     }
 
     .footer:hover {
@@ -209,5 +275,4 @@
         width: 100%;
         background-size: cover;
     }
-
 </style>

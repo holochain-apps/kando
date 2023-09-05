@@ -35,6 +35,23 @@ input, button, select, textarea {
 	border-radius: 2px;
 }
 
+h1, h2, h3, h4, h5 {
+	font-family: "Figtree";
+}
+
+h1 {
+	font-size: 36px;
+}
+
+h2 {
+	font-size: 24px;
+}
+
+h3 {
+	font-size: 20px;
+}
+
+
 input:disabled {
 	color: #ccc;
 }
