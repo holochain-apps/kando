@@ -3,6 +3,7 @@
     import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
     import { faFileImport } from '@fortawesome/free-solid-svg-icons';
     import Fa from 'svelte-fa';
+    import type { KanDoStore } from "./kanDoStore";
 
 
     const { getStore } :any = getContext('kdStore');
@@ -21,14 +22,15 @@
         reader.addEventListener("load", async () => {
             const b = JSON.parse(reader.result as string)
             const board = await store.boardList.makeBoard(b)
-            selectBoard(board.hashB64())
+            store.setUIprops({showMenu:false})
+            store.setActiveBoard(board.hashB64())
         }, false);
         reader.readAsText(file);
     };
 </script>
 
 
-<sl-dialog label="KanDo!: UI v0.4.3 for DNA v0.3.x" bind:this={dialog} width={600} >
+<sl-dialog label="KanDo!: UI v0.5.0-beta2 for DNA v0.3.x" bind:this={dialog} width={600} >
     <div class="about">
         <p>KanDo! is a demonstration Holochain app built by Holo.</p>
         <p> <b>Developers:</b>

@@ -336,6 +336,14 @@
   const close = ()=> {
     kdStore.boardList.setActiveCard(undefined)
   }
+
+  const cardColor = (props) => {
+    if (props && props.category) {
+      const def = $state.categoryDefs.find(c=>c.type == props.category)
+      if (def) return def.color
+    }
+    return "white"
+  }
   
 </script>
 <div class="board">
@@ -458,7 +466,7 @@
                   on:dragend={handleDragEnd}
                   on:click={(e)=>{e.stopPropagation(); cardDetails(cardId)}}
       
-                  style:background-color={props && props.category ?  $state.categoryDefs.find(c=>c.type == props.category).color : "white"}
+                  style:background-color={cardColor(props)}
                   >
                   <div class="card-content"
                     on:click={(e)=>{e.stopPropagation(); cardDetails(cardId)}}
@@ -475,7 +483,7 @@
                     </div>
                     {/if}
                     <div style="display:flex;justify-content:space-between">
-                      <h3 class="card-title">{props.title}</h3>
+                      <div class="card-title">{props.title}</div>
                       <div class="action-button"
                         on:click={(e)=>{e.stopPropagation(); editCard(cardId,props)()}}
                         >
@@ -793,6 +801,7 @@
 
   .card-title {
     font-size: 16px;
+    font-weight: bold;
   }
 
   .card-description {
