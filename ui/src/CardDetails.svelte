@@ -6,6 +6,7 @@
   import '@shoelace-style/shoelace/dist/components/option/option.js';
   import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
   import '@shoelace-style/shoelace/dist/components/input/input.js';
+  import '@shoelace-style/shoelace/dist/components/drawer/drawer.js';
   import type { AgentPubKeyB64 } from "@holochain/client/lib/types";
   import { cloneDeep, isEqual } from "lodash";
   import { v1 as uuidv1 } from "uuid";
@@ -13,11 +14,12 @@
   import type { KanDoStore } from './kanDoStore';
   import AvatarIcon from './AvatarIcon.svelte';
   import { decodeHashFromBase64 } from '@holochain/client';
-  import { faEdit, faTrash, faComments, faPlus, faClose } from '@fortawesome/free-solid-svg-icons';
+  import { faEdit, faTrash, faComments, faPlus, faArchive, faClose, faPaperPlane, faCancel } from '@fortawesome/free-solid-svg-icons';
   import type { Comment } from "./board";
 
   import { Marked, Renderer } from "@ts-stack/markdown";
   import Fa from 'svelte-fa';
+  import ClickEdit from './ClickEdit.svelte';
 
   Marked.setOptions
   ({
@@ -134,14 +136,15 @@
 
   let labelSelect
 
-  let commentText
+  let commentText = ""
+  let commentTextElem
   let commenting= ""
   let commentingCardId = ""
   let commentDialog 
   const newComment = (cardId:uuidv1)=> {
     commentingCardId = cardId
     commentDialog.label="New Comment"
-    commentText.value = ""
+    commentTextElem.value = ""
     commenting="new"
     commentDialog.show()
   }
@@ -149,7 +152,7 @@
     commentingCardId=cardId
     commentDialog.label="Edit Comment"
     commenting=comment.id
-    commentText.value = comment.text
+    commentTextElem.value = comment.text
     commentDialog.show()
   }
   const addComment = (id: uuidv1, text: string) => {
@@ -182,223 +185,297 @@
   let editingDescription = false
   let editDesc
 
+  let commentingFocused = false
+  let commentElement
+
 </script>
-<sl-dialog bind:this={dialog}
-  style="--width:700px"
+<sl-drawer class="edit-card" bind:this={dialog}
+  style="--size:500px"
   no-header
- 
-  on:sl-request-close={(event)=>{
-    if (event.detail.source === 'overlay') {
-      event.preventDefault();    
-    }}}>
-<div class='card-editor' >
+  on:sl-hide={()=>close()}
+  >
 
-  <div class="card-elements">
-    <div style="display:flex;justify-content:space-between">
-      {#if editingTitle}
-        <sl-input class='textarea' value={props.title} bind:this={inputElement}
-          on:sl-input={e=>props.title = e.target.value}
-          on:sl-blur={()=>{handleSave(props); editingTitle=false}}
-          ></sl-input>
+<div class='card-editor'>
+  <div class="card-wrapper">
+    <div class="card-elements">
+      
+      {#if categories.length > 0}
+      <div style="display:flex; flex-direction:row;align-items:flex-end">
+        <div class="category-selector">
+        {#each categories as category }
+          <div class:category-selected={props.category == category.type} title={category.name} class="category-button" on:click={(e)=>{setCategory(props.category == category.type ? "" : category.type)}} style="background-color: {category.color}"></div>
+        {/each}
+        </div>
+      </div>
       {:else}
-        <div style="display:flex;justify-content:space-between">
-          <h3 on:click={(e)=>{editingTitle = true}}>{props.title}</h3>
-          
-        </div>
+      <div class="top-spacer"></div>
       {/if}
-      <div class="comment-button"
-        on:click={(e)=>{close()}}
-        >
-        <Fa icon={faClose}/>
-      </div>
-    </div>
 
-    <h4>Description</h4>
-
-    {#if editingDescription}
-      <sl-textarea rows=10 class='textarea' value={editDesc} 
-        on:sl-input={e=>editDesc = e.target.value}
-        ></sl-textarea>
-        <div style="display:flex;justify-content:flex-end;margin-top:10px">
-          <sl-button size="small" style="margin-left:5px" on:click={()=>cancelEditDescription()}>
-            Cancel
-          </sl-button>
-          <sl-button size="small" style="margin-left:5px" variant="primary" 
-            on:click={()=>{
-              props.description = editDesc
-              handleSave(props)
-              editingDescription=false}}>
-            Save
-          </sl-button>
+      <div style="display:flex;justify-content:space-between">
+        <div class="card-title">
+        <ClickEdit
+          text={props.title} 
+          handleSave={(text)=>{
+            props.title = text
+            handleSave(props)
+          }}></ClickEdit>
         </div>
-    {:else}
-      <div style="display:flex;flex-direction: column">
-        <div class="details" on:click={(e)=>editDescription()}>{@html Marked.parse(props.description)}</div>
-        <div style="display:flex;justify-content:flex-end">
-          <sl-button size="small" style="margin-left:5px;margin-top:10px" on:click={()=>editDescription()}>
-            Edit
-          </sl-button>
-        </div>
-      </div>
-    {/if}
-
-
-  </div>
-  {#if categories.length > 0}
-
-  <div style="display:flex; flex-direction:row;align-items:flex-end">
-    <sl-select
-      value={props.category}
-      label="Category"
-      on:sl-change={(e)=>{
-        setCategory(e.target.value)
-      }}
-      >
-      <sl-option value={""}>No Category</sl-option>
-      {#each categories as category }
-        <sl-option value={category.type}>{category.name}</sl-option>
-      {/each}
-    </sl-select>
-        
-    {#if props.category}
-      <div style="margin-left:10px;margin-bottom:3px;width:30px;height:30px;border-radius:50%;background-color:{getCategory(props).color}"></div>
-    {/if}
-  </div>
-  {/if}
-  {#if labelTypes.length > 0}
-  <div class="multi-select">
-
-    <sl-select
-      bind:this={labelSelect}
-      on:sl-change={(e)=>{
-        props.labels= labelSelect.value
-        handleSave(props)
-      }}
-      value={selectedLabels.map(l=>l.value)}
-      label="Labels"
-      multiple 
-      >
-      {#each labelOptions as option}
-        <sl-option value={option.value}>{option.label}</sl-option>
-      {/each}
-    </sl-select>
-
-
-  </div>
-  {/if}
-  {#if Object.keys($avatars).length > 0}
-  <div class="multi-select">
-    <sl-select
-      value={selectedAvatarsForSelect}
-      label="Assigned To"
-      on:sl-change={(e)=>{
-        selectedAvatars = e.target.value
-        setAgents()
-      }}
-      multiple 
-      >
-      {#each avatarNames() as avatar}
-      <sl-option value={avatar.value}>{avatar.label}</sl-option>
-      {/each}
-    </sl-select>
-
-  </div>
-  {/if}
-  <sl-dialog bind:this={commentDialog}>
-    <sl-textarea bind:this={commentText}></sl-textarea>
-    <div style="display:flex;justify-content:flex-end;margin-top:5px;">
-      <sl-button style="padding: 0 5px;" size="small"  text on:click={()=> {
-        commentDialog.hide()
-      }}>
-          Cancel
-      </sl-button>
-      <sl-button style="padding: 0 5px;" size="small" variant="primary" text on:click={()=> {
-        if (commenting=="new")
-          addComment(commentingCardId, commentText.value)
-        else {
-          updateComment(commentingCardId, commenting, commentText.value)
-        }
-        commentDialog.hide()
-      }}>
-          Save
-      </sl-button>
-    </div>
-  </sl-dialog>
-
-  <div class="comments">
-    <h4>Comments</h4>
-
-    <sl-button 
-      style="padding: 0 5px;" size="small" text on:click={()=>newComment(cardId)}>
-      <div style="display: flex;">
-        <div style="margin-left:5px"><Fa icon={faComments} /> <Fa icon={faPlus}/></div>
-      </div>
-    </sl-button>
-
-    <div class="comment-list">
-      {#if card}
-      {#each card.comments as comment}
-        <div class="comment">
-          <div class="comment-header">
-            <div class="comment-avatar"><AvatarIcon size={20} avatar={$avatars[comment.agent]} key={decodeHashFromBase64(comment.agent)}/></div>
-            {store.timeAgo.format(new Date(comment.timestamp))}
-            {#if comment.agent==store.myAgentPubKey()}
-            <div class="comment-controls">
-              <div class="comment-button"
-                on:click={()=>editComment(cardId, comment)}
-                >
-                <Fa icon={faEdit}/>
+        <div class="card-controls">
+            {#if handleDelete}
+              <div class="details-button delete-button" title="Delete this card" on:click={()=>handleDelete(cardId)}>
+                <Fa icon={faTrash} style="width: 16px; height: 16px;"/>
               </div>
-              <div class="comment-button"
-                on:click={()=>deleteComment(cardId, comment.id)}
-                >
-                <Fa icon={faTrash}/>
-              </div>
-            </div>
             {/if}
+            {#if handleArchive}
+              <div class="details-button archive-button" title="Archive this card" on:click={()=>{close();handleArchive()}}>
+                <Fa icon={faArchive} style="width: 16px; height: 16px;"/>
+              </div>
+            {/if}
+          <div class="details-button" title="Close this card" on:click={(e)=>{close()}}>
+            <Fa icon={faClose} style="width: 24px; height: 24px;"/>
           </div>
-          <span class="comment-text">{@html Marked.parse(comment.text)}</span>
         </div>
-      {/each}
+      </div>
+      <div class="belongs-to">In column <strong>{store.getCardGroupName(cardId, $state)}</strong></div>
+      {#if editingDescription}
+        <sl-textarea rows=10 class='textarea' value={editDesc} 
+          on:sl-input={e=>editDesc = e.target.value}
+          ></sl-textarea>
+          <div style="display:flex;justify-content:flex-end;margin-top:10px">
+            <sl-button size="small" style="margin-left:5px" on:click={()=>cancelEditDescription()}>
+              Cancel
+            </sl-button>
+            <sl-button size="small" style="margin-left:5px" variant="primary" 
+              on:click={()=>{
+                props.description = editDesc
+                handleSave(props)
+                editingDescription=false}}>
+              Save
+            </sl-button>
+          </div>
+      {:else}
+          {#if props.description}
+        <div style="display:flex;flex-direction: column">
+          <div class="details" on:click={(e)=>editDescription()}>{@html Marked.parse(props.description)}</div>
+        </div>
+          {:else}
+          <div style="display:flex;flex-direction: column">
+            <div class="details" style="opacity: .7" on:click={(e)=>editDescription()}>Add a description... <Fa icon={faEdit} style="width: 12px; height: 12px;"/></div>
+          </div>
+          {/if}
       {/if}
-    </div>
-  </div>
 
-  <div class='controls'>
-    {#if handleDelete}
-      <sl-button variant="danger" on:click={()=>handleDelete(cardId)}>
-        Delete
-      </sl-button>
+
+    </div>
+    {#if labelTypes.length > 0}
+    <div class="multi-select card-section">
+      <div class="detail-label">Labels</div>
+      <sl-select
+        bind:this={labelSelect}
+        on:sl-change={(e)=>{
+          props.labels= labelSelect.value
+          handleSave(props)
+        }}
+        value={selectedLabels.map(l=>l.value)}
+        multiple 
+        >
+        {#each labelOptions as option}
+          <sl-option value={option.value}>{option.label}</sl-option>
+        {/each}
+      </sl-select>
+    </div>
     {/if}
-    {#if handleArchive}
-      <sl-button style="margin-left:5px" on:click={()=>{close();handleArchive()}}>
-        Archive
-      </sl-button>
+    {#if Object.keys($avatars).length > 0}
+    <div class="multi-select card-section">
+      <div class="detail-label">Assigned to</div>
+      <sl-select
+        value={selectedAvatarsForSelect}
+        on:sl-change={(e)=>{
+          selectedAvatars = e.target.value
+          setAgents()
+        }}
+        multiple 
+        >
+        {#each avatarNames() as avatar}
+        <sl-option value={avatar.value}>{avatar.label}</sl-option>
+        {/each}
+      </sl-select>
+
+    </div>
     {/if}
-    <sl-button style="margin-left:5px" on:click={()=>{close();}}>
-      Close
-    </sl-button>
+    <sl-dialog bind:this={commentDialog}>
+      <sl-textarea bind:this={commentTextElem}></sl-textarea>
+      <div style="display:flex;justify-content:flex-end;margin-top:5px;">
+        <sl-button style="padding: 0 5px;" size="small"  text on:click={()=> {
+          commentDialog.hide()
+        }}>
+            Cancel
+        </sl-button>
+        <sl-button style="padding: 0 5px;" size="small" variant="primary" text on:click={()=> {
+          if (commenting=="new")
+            addComment(commentingCardId, commentTextElem.value)
+          else {
+            updateComment(commentingCardId, commenting, commentTextElem.value)
+          }
+          commentDialog.hide()
+        }}>
+            Save
+        </sl-button>
+      </div>
+    </sl-dialog>
+
+    <div class="comments card-section">
+      <div class="card-label">Comments <span class="comment-count">{card ? card.comments.length:""}</span></div>
+
+      <div class="add-comment">
+        <sl-input bind:this={commentElement} placeholder="Add a comment"
+          on:sl-input={(e)=>{
+              commentText = e.target.value
+          }}
+          on:sl-focus={()=>commentingFocused = true}
+          on:sl-blur={()=>{
+                                            console.log("SL_BLUR comm")
+
+            commentingFocused = false
+            commentElement.value = ""
+          }}
+          on:sl-select={
+            ()=>{
+            addComment(cardId, commentElement.value)
+          }}
+            on:keydown={(e)=> {
+              if (e.keyCode == 27) {
+                commentElement.blur()
+                e.stopPropagation()
+              }
+          }}
+
+        >
+        </sl-input>
+        {#if commentingFocused}
+          <sl-button
+            disabled={!commentText}
+            on:mousedown={()=>{
+              addComment(cardId, commentElement.value)
+            }}>
+              <Fa icon={faPaperPlane}/>
+          </sl-button>
+          <sl-button 
+            on:mousedown={()=>{
+            commentingFocused = false
+            commentElement.value = ""
+          }}>
+              <Fa icon={faCancel}/>
+          </sl-button>
+        {/if}
+
+      </div>
+
+      <div class="comment-list">
+        {#if card}
+          {#each card.comments.reverse() as comment}
+            <div class="comment">
+              <div class="comment-header">
+                <div class="comment-avatar"><AvatarIcon size={20} avatar={$avatars[comment.agent]} key={decodeHashFromBase64(comment.agent)}/></div>
+                <div class="comment-time-and-controls">
+                  <div class="comment-time">{store.timeAgo.format(new Date(comment.timestamp))}</div>
+                  {#if comment.agent==store.myAgentPubKey()}
+                  <div class="comment-controls">
+                    <div class="comment-control"
+                      on:click={()=>editComment(cardId, comment)}
+                      >
+                      <Fa icon={faEdit} style="width: 12px; height: 12px;"/>
+                    </div>
+                    <div class="comment-control"
+                      on:click={()=>deleteComment(cardId, comment.id)}
+                      >
+                      <Fa icon={faTrash} style="width: 12px; height: 12px;"/>
+                    </div>
+                  </div>
+                  {/if}
+                </div>
+              </div>
+              <span class="comment-text">{@html Marked.parse(comment.text)}</span>
+            </div>
+          {/each}
+        {/if}
+      </div>
+    </div>
   </div>
 </div>
-</sl-dialog>
+</sl-drawer>
 <style>
+  .category-selected {
+    border: solid 2px gray;
+  }
+  .add-comment {
+    position: absolute;
+    padding: 20px;
+    background-color: rgba(223, 232, 240, 1.0);
+    bottom: 0px;
+    margin-left: -20px;
+    width: 100%;
+    z-index: 100;
+  }
   .card-editor {
     display: flex;
     flex-basis: 270px;
     font-style: normal;
-    color: #000000;
+    color: rgba(35, 32, 74, 1.0);
     justify-content: space-between;
     flex-direction: column;
+  }
+
+  .card-wrapper {
+    max-height: calc(100vh - 160px);
+    overflow-x: auto;
+  }
+
+  .card-wrapper::-webkit-scrollbar {
+    width: 5px;
+    background-color: transparent;
+  }
+
+  .card-wrapper::-webkit-scrollbar-thumb {
+      height: 5px;
+      border-radius: 5px;
+      background: rgba(20,60,119,.3);
+      opacity: 1;
   }
   .card-elements {
     display: flex;
     flex-direction: column;
     flex-basis: 100%;
+    padding: 20px;
+  }
+
+  .category-selector {
+    width: 100%;
+    display: flex;
+    padding-bottom: 15px;
+  }
+
+  .category-button {
+    width: 20px;
+    height: 20px;
+    border-radius: 5px;
+    margin-right: 5px;
+  }
+
+  .card-title {
+    font-size: 24px;
+    line-height: 30px;
   }
 
   .multi-select {
     margin: 5px 0;
   }
+
+  .top-spacer {
+    display: block;
+    height: 35px;
+  }
+
   .controls {
     display: flex;
     flex-direction: row;
@@ -407,21 +484,87 @@
     padding-left: 7px;
     padding-top: 10px;
   }
+
+  .comment-time-and-controls {
+    display: flex;
+  }
+
+  .edit-card::part(base) {
+    height: calc(100vh - 97px);
+    bottom: 0;
+    top: initial;
+    z-index: 150;
+  }
+
+  .edit-card::part(body) {
+    padding: 0;
+  }
+
+  .edit-card::part(panel) {
+    box-shadow: 0px 10px 15px rgba(0, 0, 0, 0.2);
+  }
+
+  .edit-card::part(overlay) {
+    display: none;
+  }
+
+  .belongs-to {
+    opacity: .6;
+    margin-top: 0;
+    font-size: 14px;
+  }
+
   .details {
     max-height: 300px;
     overflow: auto;
+    font-size: 16px;
+    padding: 15px 0 0 0;
   }
+
   .comments {
     margin-top: 5px;
     padding-top: 5px;
-    border-top: 1px solid;
+    background: linear-gradient(180deg, rgba(102, 138, 174, 0.1) 0%, rgba(189, 209, 230, 0) 100%);
+ 
   }
+
+  .comments.card-section {
+    padding-bottom: 40px;
+  }
+
+  .comments .card-label {
+    opacity: .5;
+    padding-bottom: 15px;
+  }
+
+  .comment-count {
+    min-width: 20px;
+    background-color: rgba(35, 32, 75, 1);
+    height: 20px;
+    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 20px;
+    color: #fff;
+  }
+  
   .comment {
     display:flex;
     flex-direction: column;
-    margin-top: 5px;
-    padding-top: 5px;
-    border-top: 1px solid lightgray;
+    padding-bottom: 15px;
+    margin-bottom: 10px;
+    box-shadow: 0px 4px 4px rgba(35, 32, 74, 0.15);
+    background-color: #fff;
+    line-height: 16px;
+    color: #23204A;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    transition: all .25s ease;
+    height: 0;
+    height: auto;
   }
   .comment-header {
     display:flex;
@@ -432,29 +575,95 @@
   .comment-avatar {
     margin-right:5px;
   }
-  .comment-button {
+  .details-button {
     cursor: pointer;
     border-radius: 50%;
     padding:2px;
-    width:20px;
+    width: 30px;
+    height: 30px;
     display: flex;
     justify-content: center;
+    align-items: center;
   }
-  .comment-button:hover {
+
+  .delete-button, .archive-button {
+    opacity: .7;
+    transition: all .25s ease;
+  }
+
+  .delete-button:hover, .archive-button:hover {
+    opacity: 1;
+  }
+
+  .card-controls {
+    position: absolute;
+    top: 15px;
+    z-index: 10;
+    right: 15px;
+    display: flex;
+  }
+
+  .card-controls .details-button {
+    margin-left: 10px;
+    background: #FFFFFF;
+    border: 1px solid rgba(35, 32, 74, 0.1);
+    box-shadow: 0px 4px 4px rgba(66, 66, 66, 0.1);
+    border-radius: 5px;
+  }
+
+  .card-section {
+    border-top: 1px dashed rgba(35, 32, 75, .1);
+    padding: 20px;
+    width: 100%;
+  }
+
+  .detail-label {
+    color: rgba(35, 32, 75, .5);
+    padding-bottom: 10px;
+  }
+
+  .details-button:hover {
     background-color: rgb(240, 249, 2244);
     border: solid 1px rgb(149, 219, 252);
     color:  rgb(3, 105, 161);
   }
   
   .comment-text {
-    margin-left: 10px;
+    padding: 10px;
   }
   .comment-list {
-    max-height:200px;
-    overflow-x:auto;
+    overflow-x: visible;
   }
   .comment-controls {
-    display:flex;
-    justify-self: flex-end;
+    display: block;
+    text-align: right;
+    width: 100%;
+  }
+
+  .comment-controls .comment-control {
+    font-size: 12px;
+    text-decoration: underline;
+    padding: 5px;
+    display: block;
+    margin-left: 5px;
+    display: inline-block;
+    opacity: .5;
+    transition: all .25s ease;
+    margin-right: -5px;
+  }
+
+  .comment-control:hover {
+    cursor: pointer;
+    font-weight: bold;
+    opacity: 1;
+  }
+
+  .comment-time {
+    font-size: 12px;
+    opacity: .5;
+    min-width: 100px;
+    text-align: right;
+    position: relative;
+    top: 4px;
   }
 </style>

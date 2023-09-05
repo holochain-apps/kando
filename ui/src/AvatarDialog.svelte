@@ -46,7 +46,7 @@
       flex-basis: 270px;
       font-style: normal;
       font-weight: 600;
-      color: #000000;
+    color: rgba(35, 32, 74, 1.0);
       flex-direction: column;
       justify-content: flex-start;
     }
