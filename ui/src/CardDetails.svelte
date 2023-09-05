@@ -187,6 +187,7 @@
 
   let commentingFocused = false
   let commentElement
+
 </script>
 <sl-drawer class="edit-card" bind:this={dialog}
   style="--width:700px"
@@ -253,14 +254,15 @@
             </sl-button>
           </div>
       {:else}
+          {#if props.description}
         <div style="display:flex;flex-direction: column">
           <div class="details" on:click={(e)=>editDescription()}>{@html Marked.parse(props.description)}</div>
-          <div style="display:flex;justify-content:flex-end">
-            <sl-button style="margin-left:5px;margin-top:10px" on:click={()=>editDescription()}>
-              Edit
-            </sl-button>
-          </div>
         </div>
+          {:else}
+          <div style="display:flex;flex-direction: column">
+            <div class="details" style="opacity: .7" on:click={(e)=>editDescription()}>Add a description... <Fa icon={faEdit} style="width: 12px; height: 12px;"/></div>
+          </div>
+          {/if}
       {/if}
 
 
@@ -462,6 +464,7 @@
 
   .card-title {
     font-size: 24px;
+    line-height: 30px;
   }
 
   .multi-select {
@@ -507,7 +510,7 @@
 
   .belongs-to {
     opacity: .6;
-    margin-top: -5px;
+    margin-top: 0;
     font-size: 14px;
   }
 
@@ -515,7 +518,7 @@
     max-height: 300px;
     overflow: auto;
     font-size: 16px;
-    padding: 15px 0;
+    padding: 15px 0 0 0;
   }
 
   .comments {
