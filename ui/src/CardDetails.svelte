@@ -334,14 +334,13 @@
           }}
           on:sl-focus={()=>commentingFocused = true}
           on:sl-blur={()=>{
-                                            console.log("SL_BLUR comm")
-
             commentingFocused = false
             commentElement.value = ""
           }}
-          on:sl-select={
+          on:sl-change={
             ()=>{
             addComment(cardId, commentElement.value)
+            commentElement.blur()
           }}
             on:keydown={(e)=> {
               if (e.keyCode == 27) {
