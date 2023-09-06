@@ -665,14 +665,17 @@
     opacity: .7;
     transition: all .25s ease;
   }
-  .add-column:hover {
+  .column-title:hover, .add-column:hover {
+    box-shadow: 0px 4px 15px rgba(35, 32, 74, 0.3);
     padding: 15px;
     margin: 0 -5px;
     opacity: 1;
     cursor: pointer;
   }
+
   .column-title:hover {
     cursor: pointer;
+    margin: 0 -5px -10px -5px;
   }
 
   .column-footer {
@@ -765,8 +768,8 @@
   .card:hover, .add-card:hover {
     cursor: pointer;
     box-shadow: 0px 8px 10px rgba(35, 32, 74, 0.25);
-    padding: 14px;
-    margin: -2px 6px 4px 6px;
+    padding: 20px;
+    margin: -5px 0px -5px 0px;
     position: relative;
     z-index: 100;
 
