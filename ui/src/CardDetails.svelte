@@ -461,6 +461,18 @@
     height: 20px;
     border-radius: 5px;
     margin-right: 5px;
+    transition: all .25s ease;
+    transform: scale(1);
+  }
+
+  .category-button:hover {
+    transform: scale(1.25);
+    cursor: pointer;
+  }
+
+  .category-button:active {
+    transform: scale(1.1);
+    box-shadow: 0px 5px 5px rgba(53, 39, 211, 0.35);
   }
 
   .card-title {
@@ -585,6 +597,17 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    transform: scale(1);
+    transition: all .25s ease;
+  }
+
+  .details-button:hover {
+    transform: scale(1.25);
+  }
+
+  .details-button:active {
+    transform: scale(1.1);
+    box-shadow: 0px 8px 10px rgba(53, 39, 211, 0.35);
   }
 
   .delete-button, .archive-button {

@@ -357,7 +357,7 @@
     </div>
     <div class="right-items">
 
-      <sl-button class="board-button" on:click={()=> editBoardDialog.open(cloneDeep($activeHash))} title="Settings">
+      <sl-button class="board-button settings" on:click={()=> editBoardDialog.open(cloneDeep($activeHash))} title="Settings">
         <Fa icon={faCog} size="1x"/>
       </sl-button>
       <sl-button  class="board-button" on:click={closeBoard} title="Close">
@@ -482,11 +482,9 @@
                       {/each}
                     </div>
                     {/if}
-                    <div style="display:flex;justify-content:space-between">
+                    <div class="card-edit" style="display:flex;justify-content:space-between">
                       <div class="card-title">{props.title}</div>
-                      <div class="action-button"
-                        on:click={(e)=>{e.stopPropagation(); editCard(cardId,props)()}}
-                        >
+                      <div class="board-button">
                         <Fa icon={faEdit}/>
                       </div>
 
@@ -525,10 +523,10 @@
         </div>
         <div class:hidden={!addingColumn} class="column-wrap">
           <div class="column">
-            <div class="add-column"
+            <div class="add-column editing-column-name"
               on:click={()=>{addingColumn = true; }}
             >
-              <sl-input 
+              <sl-input class="column-name-input"
                 bind:this={columnNameElem} 
                 placeholder="column name" 
                 on:keydown={(e)=> {
@@ -542,13 +540,12 @@
                 on:sl-change={()=>{newGroup()}}
                 >
               </sl-input>
-              <sl-button disabled={newColumnName.length==0} style="padding: 0 5px;" size="small" text 
+              <sl-button class="new-column-button board-button" disabled={newColumnName.length==0} style="padding: 0 5px;" size="small" text 
                 on:mousedown={()=>{
                   addingColumn = false  // sl-change will cause newGroup to be callsed
               }}>
                 <div style="display: flex;">
-                  New
-                  <div style="margin-left:5px"><Fa icon={faPlus}/></div>
+                  <div class="new-column-icon"><Fa icon={faPlus} style="font-size: 18px;"/></div>
                 </div>
               </sl-button>
             </div>
@@ -599,16 +596,61 @@
     display: flex;
     align-items: center;
   }
+
+  .right-items .board-button::part(base) {
+    font-size: 24px;
+  }
   
   .board-button {
     margin-left: 10px;
   }
 
+  .board-button.settings {
+    opacity: .7;
+  }
+
+  .board-button.settings:hover {
+    opacity: 1;
+  }
+
   .board-button::part(base) {
-  background: #FFFFFF;
-  border: 1px solid rgba(35, 32, 74, 0.1);
-  box-shadow: 0px 4px 4px rgba(66, 66, 66, 0.1);
-  border-radius: 5px;
+    border: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .board-button {
+    width: 36px;
+    height: 36px;
+    background: #FFFFFF;
+    border: 1px solid rgba(35, 32, 74, 0.1);
+    box-shadow: 0px 4px 4px rgba(66, 66, 66, 0.1);
+    border-radius: 5px;
+    padding: 5px 10px;
+    display: flex;
+    transform: scale(1);
+    align-items: center;
+    justify-content: center;
+    transition: all .25s ease;
+  }
+  
+  .board-button:hover {
+    transform: scale(1.25);
+  }
+
+  .board-button:active {
+    box-shadow: 0px 8px 10px rgba(53, 39, 211, 0.35);
+    transform: scale(1.1);
+  }
+
+  .card-edit .board-button:hover {
+    padding: 10px 15px;
+    margin: -5px 0px;
+  }
+  .card-edit .board-button:active {
+    padding: 5px 10px;
+    margin: 0px 5px;
+    box-shadow: 0px 8px 10px rgba(53, 39, 211, 0.35);
   }
 
   .filter-by {
@@ -665,12 +707,51 @@
     opacity: .7;
     transition: all .25s ease;
   }
+
+  .editing-column-name.add-column {
+    display: flex;
+    flex-direction: row;
+  }
+
+  .new-column-button {
+    width: 40px;
+    transform: scale(1);
+    transition: all .25s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    top: -2px;
+  }
+
+  .new-column-button:hover {
+    transform: scale(1.25);
+    cursor: pointer;
+  }
+  
+  .new-column-button:active {
+    transform: sclae(1.1);
+    box-shadow: 0px 8px 10px rgba(53, 39, 211, 0.35);
+  }
+
+  .new-column-button::part(base) {
+    border: none;
+  }
+
+  .new-column-icon {
+    position: relative;
+    top: 3px;
+  }
   .column-title:hover, .add-column:hover {
     box-shadow: 0px 4px 15px rgba(35, 32, 74, 0.3);
     padding: 15px;
     margin: 0 -5px;
     opacity: 1;
     cursor: pointer;
+  }
+
+  .column-name-input {
+    width: 230px;
   }
 
   .column-title:hover {
@@ -761,7 +842,7 @@
     height: auto;
   }
 
-  .card:hover .action-button {
+  .card:hover .board-button {
     opacity: 1;
   }
 
@@ -776,6 +857,12 @@
     /* uncomment to see this example of card growing dramatically */
     /* height: calc(100vh - 125px);
     max-height: calc(100vh - 125px); */
+  }
+
+  .card:active, .add-card:active {
+    box-shadow: 0px 8px 10px rgba(53, 39, 211, 0.35);
+    padding: 15px;
+    margin: 0px 5px 0px 5px;
   }
 
   .add-card {
@@ -796,6 +883,14 @@
     margin-right: 5px;
   }
 
+  .card-edit .board-button {
+    opacity: 0;
+    transition: all .25s ease;
+  }
+
+  .card:hover .card-edit .board-button {
+    opacity: 1;
+  }
   .card-content {
     overflow-y: auto;
     max-height: 200px;
@@ -848,21 +943,6 @@
     margin-right: 0;
   }
 
-  .action-button {
-    cursor: pointer;
-    border-radius: 50%;
-    padding:2px;
-    width:20px;
-    display: flex;
-    opacity: 0;
-    transition: opacity .25s ease;
-    justify-content: center;
-  }
-  .action-button:hover {
-    background-color: rgb(240, 249, 2244);
-    border: solid 1px rgb(149, 219, 252);
-    color:  rgb(3, 105, 161);
-  }
   .hidden {
     display: none;
   }
