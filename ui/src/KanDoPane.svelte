@@ -643,13 +643,18 @@
     transform: scale(1.1);
   }
 
+  .card-edit {
+    position: relative;
+    z-index: 1;
+  }
+
   .card-edit .board-button:hover {
     padding: 10px 15px;
-    margin: -5px 0px;
+    margin: -10px 0px;
   }
   .card-edit .board-button:active {
     padding: 5px 10px;
-    margin: 0px 5px;
+    margin: -10px 0px -10px 0;
     box-shadow: 0px 8px 10px rgba(53, 39, 211, 0.35);
   }
 
@@ -884,6 +889,8 @@
   }
 
   .card-edit .board-button {
+    margin-bottom: -20px;
+    margin-top: -10px;
     opacity: 0;
     transition: all .25s ease;
   }
@@ -892,8 +899,6 @@
     opacity: 1;
   }
   .card-content {
-    overflow-y: auto;
-    max-height: 200px;
     padding: 0 5px;
   }
 
@@ -911,6 +916,8 @@
     display: -webkit-box;
     overflow: hidden;
     -webkit-box-orient: vertical;
+    position: relative;
+    z-index: 0;
   }
 
   .contributors {

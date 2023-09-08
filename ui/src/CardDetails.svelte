@@ -407,7 +407,7 @@
 </sl-drawer>
 <style>
   .category-selected {
-    border: solid 2px gray;
+    border: solid 2px rgba(35, 32, 74, .5);
   }
   .add-comment {
     position: absolute;
@@ -514,7 +514,7 @@
   }
 
   .edit-card::part(panel) {
-    box-shadow: 0px 10px 15px rgba(0, 0, 0, 0.2);
+    box-shadow: 0px 10px 15px rgba(35, 32, 74, 0.2);
   }
 
   .edit-card::part(overlay) {
