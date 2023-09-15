@@ -15,7 +15,7 @@
   import AvatarIcon from './AvatarIcon.svelte';
   import { decodeHashFromBase64 } from '@holochain/client';
   import { faEdit, faTrash, faComments, faPlus, faArchive, faClose, faPaperPlane, faCancel } from '@fortawesome/free-solid-svg-icons';
-  import type { Comment } from "./board";
+  import type { Checklist, ChecklistItem, Comment } from "./board";
 
   import { Marked, Renderer } from "@ts-stack/markdown";
   import Fa from 'svelte-fa';
@@ -171,6 +171,32 @@
     requestChanges([{ type: "delete-card-comment", id, commentId}]);
   }
 
+  const addChecklist = (id: uuidv1, title: string) => {
+    const checklist:Checklist = {
+      id: uuidv1(),
+      title,
+      items: []
+    }
+    requestChanges([{ type: "add-card-checklist", id, checklist}])
+  }
+  const updateChecklist = (id: uuidv1, checklistId:uuidv1, title: string, items: Array<ChecklistItem>) => {
+    requestChanges([{ type: "update-card-checklist", id, checklistId, title, items}]);
+  }
+  const deleteChecklist = (id: uuidv1, checklistId:uuidv1) => {
+    requestChanges([{ type: "delete-card-checklist", id, checklistId}]);
+  }
+
+  const addChecklistItem = (id: uuidv1, list:Checklist, text: string) => {
+    const item = {checked:false, text}
+    let items = cloneDeep(list.items)
+    if (!items) {
+      items = [item]
+    } else {
+      items.push(item)
+    }
+    updateChecklist(id, list.id, list.title, items)
+  }
+
   const editDescription = () => {
     editingDescription=true; 
     editDesc = `${props.description}`
@@ -188,6 +214,10 @@
   let commentingFocused = false
   let commentElement
 
+  let addingChecklist = false
+  let checklistElement
+  let addingChecklistItem = -1
+  let checklistItemElement
 </script>
 <sl-drawer class="edit-card" bind:this={dialog}
   style="--size:500px"
@@ -264,7 +294,105 @@
           </div>
           {/if}
       {/if}
-
+      <div class="checklists">
+        {#if !addingChecklist}
+          <sl-button size="small" style="margin-left:5px" variant="primary" 
+              on:click={()=>{
+                addingChecklist=true}}>
+              Add checklist
+          </sl-button>
+        {:else}
+          <sl-input bind:this={checklistElement} placeholder="Checklist Title"
+            on:sl-input={(e)=>{
+            }}
+            on:sl-blur={()=>{
+              addingChecklist = false
+              checklistElement.value = ""
+            }}
+      
+            on:keydown={(e)=> {
+                if (e.keyCode == 27) {
+                  checklistElement.blur()
+                  e.stopPropagation()
+                }
+                if (e.keyCode == 13) {
+                  addChecklist(cardId, checklistElement.value)
+                  checklistElement.blur()
+                  e.stopPropagation()
+                }
+            }}
+          ></sl-input>
+          <sl-button
+            disabled={!checklistElement}
+            on:mousedown={()=>{
+              addChecklist(cardId, checklistElement.value)
+            }}>
+              <Fa icon={faPlus}/>
+          </sl-button>
+          <sl-button 
+            on:mousedown={()=>{
+            addingChecklist = false
+          }}>
+              <Fa icon={faCancel}/>
+          </sl-button>
+        {/if}
+        {#if card && card.checklists && card.checklists.length > 0}
+          {#each card.checklists as list, idx}
+          <div class="checklist">
+            <h3>{list.title}</h3>
+            
+            {#each list.items as item}
+            <div class="checklist-item">
+              <sl-checkbox
+                on:sl-change={(e)=>{alert(`CHANGE: ${e.target.value}`)}} 
+                checked={item.checked}
+                >{item.text}</sl-checkbox>
+            </div>
+            {/each}
+            {#if addingChecklistItem != idx}
+              <sl-button size="small" style="margin-left:5px" variant="primary" 
+                  on:click={()=>{
+                    addingChecklistItem=idx}}>
+                  Add item
+              </sl-button>
+            {:else}
+              <sl-input bind:this={checklistItemElement} placeholder="Checklist Item"
+                on:sl-input={(e)=>{
+                }}
+                on:sl-blur={()=>{
+                  checklistItemElement.value = ""
+                }}
+          
+                on:keydown={(e)=> {
+                    if (e.keyCode == 27) {
+                      checklistItemElement.blur()
+                      e.stopPropagation()
+                    }
+                    if (e.keyCode == 13) {
+                      addChecklistItem(cardId, list, checklistItemElement.value)
+                      checklistItemElement.blur()
+                      e.stopPropagation()
+                    }
+                }}
+              ></sl-input>
+              <sl-button
+                disabled={!checklistItemElement}
+                on:mousedown={()=>{
+                  addChecklistItem(cardId, list, checklistItemElement.value)
+                }}>
+                  <Fa icon={faPlus}/>
+              </sl-button>
+              <sl-button 
+                on:mousedown={()=>{
+                addingChecklistItem = -1
+              }}>
+                  <Fa icon={faCancel}/>
+              </sl-button>
+            {/if}
+          </div>
+          {/each}
+        {/if}
+      </div>
 
     </div>
     {#if labelTypes.length > 0}
@@ -689,5 +817,9 @@
     text-align: right;
     position: relative;
     top: 4px;
+  }
+
+  .checklists {
+    margin-top: 20px;
   }
 </style>
