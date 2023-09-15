@@ -334,7 +334,7 @@ export interface BoardState {
               const comments = state.cards[i].comments
               const index = comments.findIndex((comment) => comment.id === delta.commentId)
               if (index>=0) {
-                state.cards[i].comments.splice(index,1)
+                state.cards[i].comments.splice(index, 1)
               }
             }
           });
@@ -356,13 +356,11 @@ export interface BoardState {
               const checklists = state.cards[i].checklists
               const index = checklists.findIndex((checklist) => checklist.id === delta.checklistId)
               if (index >= 0) {
-                const checklist = {
+                state.cards[i].checklists[index] = {
                   id:state.cards[i].checklists[index].id,
                   title: delta.title,
                   items: delta.items,
                 }
-                state.cards[i].checklists.splice(index,1)
-                state.cards[i].checklists.unshift(checklist);
               }
           }});
           break;
