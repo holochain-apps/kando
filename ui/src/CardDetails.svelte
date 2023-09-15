@@ -197,6 +197,11 @@
     updateChecklist(id, list.id, list.title, items)
   }
 
+  const deleteChecklistItem = (id: uuidv1, checklistId:uuidv1, idx: number) {
+    let items = cloneDeep(list.items)
+    updateChecklist(id, list.id, list.title, items)
+  }
+
   const editDescription = () => {
     editingDescription=true; 
     editDesc = `${props.description}`
@@ -339,14 +344,27 @@
         {#if card && card.checklists && card.checklists.length > 0}
           {#each card.checklists as list, idx}
           <div class="checklist">
-            <h3>{list.title}</h3>
-            
-            {#each list.items as item}
+              <div style="display:flex">
+                <h3>{list.title}</h3>
+                  <sl-button 
+                    on:mousedown={()=>{
+                    deleteChecklist(cardId,list)
+                  }}>
+              </div>
+            {#each list.items as item, itemIdx}
             <div class="checklist-item">
               <sl-checkbox
-                on:sl-change={(e)=>{alert(`CHANGE: ${e.target.value}`)}} 
+                on:sl-change={(e)=>{
+                  setChecklistItemStatus(cardId,list,itemIdx,e.target.checked)
+                }} 
                 checked={item.checked}
                 >{item.text}</sl-checkbox>
+                <sl-button 
+                  on:mousedown={()=>{
+                  deleteChecklistItem(cardId,list,itemIdx)
+                }}>
+                    <Fa icon={faTrash}/>
+                </sl-button>
             </div>
             {/each}
             {#if addingChecklistItem != idx}
