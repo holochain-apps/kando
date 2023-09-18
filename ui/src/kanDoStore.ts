@@ -77,7 +77,6 @@ export class KanDoStore {
     }
 
     myAgentPubKey(): AgentPubKeyB64 {
-        console.log("CLIENT myPubKey", this.client.myPubKey)
         return encodeHashToBase64(this.client.myPubKey);
     }
 
