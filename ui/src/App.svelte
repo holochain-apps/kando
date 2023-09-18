@@ -17,7 +17,7 @@
   async function initialize() : Promise<void> {
     console.log("adminPort is", adminPort)
     if (adminPort) {
-      const adminWebsocket = await AdminWebsocket.connect(`ws://localhost:${adminPort}`)
+      const adminWebsocket = await AdminWebsocket.connect(new URL(`ws://localhost:${adminPort}`))
       const x = await adminWebsocket.listApps({})
       console.log("apps", x)
       const cellIds = await adminWebsocket.listCellIds()
@@ -25,7 +25,7 @@
       await adminWebsocket.authorizeSigningCredentials(cellIds[0])
     }
     console.log("appPort and Id is", appPort, appId)
-    client = await AppAgentWebsocket.connect(url, appId)
+    client = await AppAgentWebsocket.connect(new URL(url), appId)
 
     connected = true
   }
@@ -41,7 +41,6 @@
 
 <style>
   :global(body) {
-    font-family: Roboto,'Open Sans','Helvetica Neue',sans-serif;
     min-height: 0;
     display: flex;
     flex-direction: column;

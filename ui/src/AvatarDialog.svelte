@@ -6,18 +6,10 @@
     export let avatar
     export let handleSave
 
-    const handleKeydown = (e) => {
-      if (e.key === "Escape") {
-        close()
-      } else if (e.key === "Enter" && e.ctrlKey && avatar.name!=="") {
-        handleSave(avatar)
-      }
-    }
     export const close=()=>{dialog.hide()}
     export const open=()=>{dialog.show()}
     let dialog
 </script>
-<svelte:window on:keydown={handleKeydown}/>
 
 <sl-dialog label="Edit Profile" bind:this={dialog}>
     <div class="avatar-editor">
@@ -54,7 +46,7 @@
       flex-basis: 270px;
       font-style: normal;
       font-weight: 600;
-      color: #000000;
+    color: rgba(35, 32, 74, 1.0);
       flex-direction: column;
       justify-content: flex-start;
     }

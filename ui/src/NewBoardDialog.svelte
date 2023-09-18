@@ -11,7 +11,7 @@
     let editCategoryDefs = []
     let dialog: SlDialog
     
-    const { getStore } :any = getContext('tsStore');
+    const { getStore } :any = getContext('kdStore');
 
     const store:KanDoStore = getStore();
 
@@ -29,6 +29,10 @@
 
 </script>
 <sl-dialog bind:this={dialog} label="New Board"
+    on:sl-initial-focus={(e)=>{
+        boardEditor.initialFocus()
+        e.preventDefault()
+    }}
     on:sl-request-close={(event)=>{
         if (event.detail.source === 'overlay') {
         event.preventDefault();    

@@ -3,18 +3,21 @@
   "version": "0.1.0",
   "scripts": {
     "start": "vite --clearScreen false --port $UI_PORT",
+    "start:we": "vite -c we-applet-vite.config.ts --clearScreen false --port $UI_PORT",
     "build": "vite build",
+    "build:we": "vite build -c we-applet-vite.config.ts",
     "build-check": "npm run check && vite build",
     "check": "svelte-check --tsconfig ./tsconfig.json",
-    "package": "rm -f dist.zip && npm run build && cd dist && bestzip ../dist.zip *"
+    "package": "rm -f dist.zip && npm run build && cd dist && bestzip ../dist.zip *",
+    "package:we": "rm -f dist.zip && npm run build:we && cd dist && bestzip ../dist.zip *"
   },
   "dependencies": {
-    "@holochain-open-dev/elements": "^0.5.0",
-    "@holochain-open-dev/profiles": "^0.14.0",
-    "@holochain-open-dev/stores": "^0.5.0",
-    "@holochain-open-dev/utils": "^0.14.0",
-    "@holochain-syn/core": "^0.5.0",
-    "@holochain/client": "^0.14.1",
+    "@holochain-open-dev/elements": "^0.7.0",
+    "@holochain-open-dev/profiles": "^0.16.0",
+    "@holochain-open-dev/stores": "^0.6.0",
+    "@holochain-open-dev/utils": "^0.15.0",
+    "@holochain-syn/core": "^0.5.1",
+    "@holochain/client": "^0.16",
     "@mdi/js": "^7.1.96",
     "@ts-stack/markdown": "^1.4.0",
     "lodash": "^4.17.21",
@@ -29,8 +32,8 @@
     "svelte-awesome-color-picker": "2.4.6",
     "emoji-picker-element": "1.18.3",
     "javascript-time-ago": "2.3.7",
-    "@types/javascript-time-ago": "^2.0.3"
-
+    "@types/javascript-time-ago": "^2.0.3",
+    "@lightningrodlabs/we-applet": "^0.6.1"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^2.0.2",

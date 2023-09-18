@@ -1,10 +1,11 @@
 <script lang="ts">
-  import { createEventDispatcher, getContext } from "svelte";
+  import { createEventDispatcher, getContext, onMount } from "svelte";
   import CardEditor from "./CardEditor.svelte";
+  import CardDetails from "./CardDetails.svelte";
   import EmojiIcon from "./icons/EmojiIcon.svelte";
-  import { sortBy } from "lodash/fp";
+  //import { sortBy } from "lodash/fp";
   import type { KanDoStore } from "./kanDoStore";
-  import SortSelector from "./SortSelector.svelte";
+  import LabelSelector from "./LabelSelector.svelte";
   import { Marked, Renderer } from "@ts-stack/markdown";
   import { v1 as uuidv1 } from "uuid";
   import { type Card, Group, UngroupedId, type CardProps, type BoardState, type Comment } from "./board";
@@ -12,31 +13,18 @@
   import AvatarIcon from "./AvatarIcon.svelte";
   import { decodeHashFromBase64 } from "@holochain/client";
   import { cloneDeep, isEqual } from "lodash";
-  import sanitize from "sanitize-filename";
   import Fa from "svelte-fa";
-  import { faArchive, faArrowRight, faClose, faCog, faComments, faEdit, faFileExport, faPlus, faTrash, faXmark } from "@fortawesome/free-solid-svg-icons";
+  import { faArrowRight, faClose, faCog, faComments, faEdit, faPlus } from "@fortawesome/free-solid-svg-icons";
   import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
+  import ClickEdit from "./ClickEdit.svelte";
+  import { onVisible } from "./util";
 
-
-  const download = (filename: string, text: string) => {
-    var element = document.createElement('a');
-    element.setAttribute('href', 'data:text/json;charset=utf-8,' + encodeURIComponent(text));
-    element.setAttribute('download', filename);
-
-    element.style.display = 'none';
-    document.body.appendChild(element);
-
-    element.click();
-
-    document.body.removeChild(element);
-  }
-
-  const exportBoard = (state: BoardState) => {
-        const prefix = "kando"
-        const fileName = sanitize(`${prefix}_export_${state.name}.json`)
-        download(fileName, JSON.stringify(state))
-        alert(`Your board was exported to your Downloads folder as: '${fileName}'`)
-    }
+  onMount(async () => {
+        onVisible(columnNameElem,()=>{
+          columnNameElem.focus()
+          columnNameElem.select()
+        })
+	});
 
   const dispatch = createEventDispatcher()
 
@@ -52,48 +40,68 @@
     smartypants: false
   });
 
-  $: sortOption = null;
+  $: filterOption = null;
 
-  function setSortOption(newSortOption) {
-    sortOption = newSortOption;
+  function setFilterOption(newOption) {
+    filterOption = newOption;
   }
 
-  const { getStore } :any = getContext("tsStore");
-  let tsStore: KanDoStore = getStore();
+  const { getStore } :any = getContext("kdStore");
+  let kdStore: KanDoStore = getStore();
 
-  $: activeHash = tsStore.boardList.activeBoardHash;
-  $: state = tsStore.boardList.getReadableBoardState($activeHash);
+  $: uiProps = kdStore.uiProps
+  $: activeHash = kdStore.boardList.activeBoardHash;
+  $: activeCard = kdStore.boardList.activeCard;
+  $: state = kdStore.boardList.getReadableBoardState($activeHash);
   $: items = $state ? $state.cards : undefined;
-  $: sortCards = sortOption
-    ? sortBy((card: Card) => countLabels(card.props, sortOption) * -1)
-    : (items) => items;
+  $: sortCards = (items) => items // no sort algorithm for now
 
-  $: avatars = tsStore.boardList.avatars()
+  $: avatars = kdStore.boardList.avatars()
+  
+  $: openCard = (cardId) => {
+    if (cardId) {
+      if (cardDetailsDialog) cardDetailsDialog.open(cardId)
+    } else {
+      if (cardDetailsDialog) cardDetailsDialog.reset()
+    }
+    return cardId
+  }
+
+
+  $: cardDetailsId = openCard($activeCard)
 
   let creatingInColumn: uuidv1 | undefined = undefined;
   let createCardDialog
   let editCardDialog
+  let cardDetailsDialog
   let editingCardId: uuidv1
 
   let columns:{ [key:string]: Group } = {}
   let cardsMap:{ [key:string]:Card } ={}
   $: unused = groupCards(items);
+
   const groupCards = (items) => {
     if ($state) {
       columns = {}
       $state.groups.forEach(g => columns[g.id] = cloneDeep(g))
       cardsMap = {} 
-      items.forEach(s => cardsMap[s.id] = cloneDeep(s))
+      items.forEach(c => cardsMap[c.id] = cloneDeep(c))
     }
   }
 
-  let showArchived = false
+  // this is a way to get the add column to show up if there are 
+  // no groups (besides the archive group)
+  // TODO figure out to to get it to focus
+  $: hashChanged = (_hash) => {
+    addingColumn = $state.groups.length == 1
+  }
+  $: x = hashChanged($activeHash)
 
   const sorted = (itemIds, sortFn)=> {
     var items = itemIds.map((id)=>cardsMap[id])
-    if (sortOption) {
-      items = sortFn(items) 
-    }
+    // if (sortOption) {
+    //   items = sortFn(items) 
+    // }
     return items
   }
 
@@ -121,6 +129,12 @@
     editCardDialog.edit(id, props)
   };
 
+  const cardDetails = (id: uuidv1) => {
+
+    kdStore.boardList.setActiveCard(id)
+    //cardDetailsDialog.open(id)
+  };
+
   const addCard = (column: uuidv1, props: CardProps) => {
       if (column === undefined) {column = 0}
       const card:Card = {
@@ -135,7 +149,7 @@
     const comment:Comment = {
       id: uuidv1(),
       text,
-      agent: tsStore.myAgentPubKey(),
+      agent: kdStore.myAgentPubKey(),
       timestamp: new Date().getTime()
     }
 
@@ -154,7 +168,6 @@
         console.error("Failed to find item with id", editingCardId);
       } else {
         let changes = []
-        console.log("card.props", card.props, "props", props)
         if (!isEqual(card.props, props)) {
           changes.push({ type: "update-card-props", id: card.id, props: cloneDeep(props)})
         }
@@ -178,7 +191,8 @@
   };
 
   const closeBoard = () => {
-    tsStore.boardList.closeActiveBoard();
+    kdStore.boardList.closeActiveBoard();
+    kdStore.setUIprops({showMenu:true})
   };
   let editBoardDialog
   let dragOn = true
@@ -269,7 +283,7 @@
   }
 
   $: sortedColumns = () => {
-    if (showArchived) {
+    if ($uiProps.showArchived[$activeHash]) {
       // make sure the ungrouped group is at the end.
       let cols = $state.groups.map((group)=> [group.id, $state.grouping[group.id]])
       const idx = cols.findIndex(([id,_]) => id == UngroupedId)
@@ -298,29 +312,55 @@
     commentText.value = comment.text
     commentDialog.show()
   }
+
+  $: addingColumn = false
+  let newColumnName = ""
+  let columnNameElem 
+
+
+  const newGroup = async ()=>{
+    if (newColumnName == "") {
+      return
+    }
+    const newGroups = cloneDeep($state.groups)
+    newGroups.push(new Group(newColumnName))
+    newColumnName = ""
+    await kdStore.boardList.requestBoardChanges($activeHash, [
+      {
+        type: "set-groups",
+        groups: newGroups
+      }
+    ])          
+  }
+
+  const close = ()=> {
+    kdStore.boardList.setActiveCard(undefined)
+  }
+
+  const cardColor = (props) => {
+    if (props && props.category) {
+      const def = $state.categoryDefs.find(c=>c.type == props.category)
+      if (def) return def.color
+    }
+    return "white"
+  }
+  
 </script>
 <div class="board">
     <EditBoardDialog bind:this={editBoardDialog}></EditBoardDialog>
   <div class="top-bar">
     <div class="left-items">
-      <h5>{$state.name}</h5>
+      <h5 class="board-name">{$state.name}</h5>
+    </div>
+    <div class="filter-by">
+      <LabelSelector setOption={setFilterOption} option={filterOption} />
     </div>
     <div class="right-items">
-      <div class="sortby">
-        Sort: <SortSelector {setSortOption} {sortOption} />
-      </div>
-      <div class="archived">
-        <sl-button circle on:click={()=>showArchived=!showArchived} title={showArchived ? "Hide Archived Cards" : "Show Archived Cards"}>
-          <Fa icon={showArchived ? faArchive: faArchive} />
-        </sl-button>
-      </div>
-      <sl-button circle on:click={()=> editBoardDialog.open(cloneDeep($activeHash))} title="Settings">
+
+      <sl-button class="board-button settings" on:click={()=> editBoardDialog.open(cloneDeep($activeHash))} title="Settings">
         <Fa icon={faCog} size="1x"/>
       </sl-button>
-      <sl-button circle on:click={() => exportBoard($state)} title="Export">
-        <Fa icon={faFileExport} />
-      </sl-button>
-      <sl-button circle on:click={closeBoard} title="Close">
+      <sl-button  class="board-button" on:click={closeBoard} title="Close">
         <Fa icon={faClose} />
       </sl-button>
     </div>
@@ -332,7 +372,7 @@
     handleSave={createCard} {cancelEdit} avatars={avatars} labelTypes={$state.labelDefs} categories={$state.categoryDefs} />
   <CardEditor
     bind:this={editCardDialog}
-    title="Edit Card"
+    title="Details"
     handleSave={updateCard}
     handleDelete={deleteCard}
     handleArchive={() => {
@@ -344,9 +384,12 @@
     labelTypes={$state.labelDefs}
     categories={$state.categoryDefs}
   />
+  <CardDetails
+    bind:this={cardDetailsDialog}
+    avatars={avatars}
+  />
 
-
-    <div class="columns">
+    <div class="columns" on:click={(e)=>{close()}}>
       {#each sortedColumns() as [columnId, cardIds], i}
         <div class="column-wrap">
         <div class="column"
@@ -359,7 +402,27 @@
           on:dragover={handleDragOver}
           >
           <div class="column-item column-title">
-            <div>{columnId === UngroupedId ? "Archived" : columns[columnId].name}</div>
+            <div style="width:100%">
+            {#if columnId === UngroupedId}
+              Archived
+            {:else}
+            <ClickEdit
+              text={columns[columnId].name} 
+              handleSave={(text)=>{
+                const newGroups = cloneDeep($state.groups)
+                const idx = newGroups.findIndex(g=>g.id==columnId)
+                if (idx >= 0) {
+                  newGroups[idx].name = text
+                  kdStore.boardList.requestBoardChanges($activeHash, [
+                    {
+                      type: "set-groups",
+                      groups: newGroups
+                    }
+                  ])
+                }
+              }}></ClickEdit>
+            {/if}
+            </div>
           </div>
 
           <sl-dialog bind:this={commentDialog}>
@@ -384,7 +447,8 @@
           </sl-dialog>
 
           <div class="cards">
-          {#each sorted($state.grouping[columnId], sortCards) as { id:cardId, comments, labels, props }, i}
+          {#each sorted($state.grouping[columnId], sortCards) as { id:cardId, comments, props }, i}
+            {#if !filterOption || (props.labels.includes(filterOption))}
                 {#if 
                   dragTarget == columnId && 
                   cardId!=draggedItemId && 
@@ -400,123 +464,217 @@
                   draggable={dragOn}
                   on:dragstart={handleDragStart}
                   on:dragend={handleDragEnd}
+                  on:click={(e)=>{e.stopPropagation(); cardDetails(cardId)}}
       
-                  style:background-color={props && props.category ?  $state.categoryDefs.find(c=>c.type == props.category).color : "white"}
+                  style:background-color={cardColor(props)}
                   >
                   <div class="card-content"
-                    on:click={editCard(cardId, props)} 
+                    on:click={(e)=>{e.stopPropagation(); cardDetails(cardId)}}
                   >
-                    <h3>{props.title}</h3>
-                    {@html Marked.parse(props.description)}
-                  </div>
-                  <div class="labels">
-                    {#each $state.labelDefs as {type, emoji, toolTip}}
-                      {#if isLabeled(props, type)}
-                        <div title={toolTip}>
-                        <EmojiIcon emoji={emoji} class="label-icon"/>
-                        </div>
-                      {/if}
-                    {/each}
-                  </div>
-                  {#if props && props.agents && props.agents.length > 0}
-                    {#each props.agents as agent}
-                      <AvatarIcon size={20} avatar={$avatars[agent]} key={decodeHashFromBase64(agent)}/>
-                    {/each}
-                  {/if}
-                  <div class="comments">
-                    <sl-button 
-                      style="padding: 0 5px;" size="small" text on:click={()=>newComment(cardId)}>
-                      <div style="display: flex;">
-                        <div style="margin-left:5px"><Fa icon={faComments} /> <Fa icon={faPlus}/></div>
-                      </div>
-                    </sl-button>
-
-                    <div class="comment-list">
-                      {#each comments as comment}
-                        <div class="comment">
-                          <div class="comment-header">
-                            <div class="comment-avatar"><AvatarIcon size={20} avatar={$avatars[comment.agent]} key={decodeHashFromBase64(comment.agent)}/></div>
-                            {tsStore.timeAgo.format(new Date(comment.timestamp))}
-                            {#if comment.agent==tsStore.myAgentPubKey()}
-                            <div class="comment-controls">
-                              <div class="comment-button"
-                                on:click={()=>editComment(cardId, comment)}
-                                >
-                                <Fa icon={faEdit}/>
-                              </div>
-                              <div class="comment-button"
-                                on:click={()=>deleteComment(cardId, comment.id)}
-                                >
-                                <Fa icon={faTrash}/>
-                              </div>
-                            </div>
-                            {/if}
+                    {#if props.labels.length > 0}
+                    <div class="labels">
+                      {#each $state.labelDefs as {type, emoji, toolTip}}
+                        {#if isLabeled(props, type)}
+                          <div title={toolTip}>
+                          <EmojiIcon emoji={emoji} class="label-icon"/>
                           </div>
-                          <span class="comment-text">{@html Marked.parse(comment.text)}</span>
-                        </div>
+                        {/if}
                       {/each}
                     </div>
+                    {/if}
+                    <div class="card-edit" style="display:flex;justify-content:space-between">
+                      <div class="card-title">{props.title}</div>
+                      <div class="board-button">
+                        <Fa icon={faEdit}/>
+                      </div>
+
+                    </div>
+                    <div class="card-description">{@html Marked.parse(props.description)}</div>
                   </div>
+                  {#if (props && props.agents && props.agents.length > 0) || ( comments.length>0)}
+                  <div class="contributors">
+                    {#if props && props.agents && props.agents.length > 0}
+                      {#each props.agents as agent}
+                        <AvatarIcon size={20} avatar={$avatars[agent]} key={decodeHashFromBase64(agent)}/>
+                      {/each}
+                    {/if}
+                    {#if comments.length>0}
+                      <div class="comment-count"><Fa icon={faComments} />: {comments.length}</div>
+                    {/if}
+                  </div>
+                  {/if}
                 </div>
-        {/each}
+            {/if}
+          {/each}
           {#if dragTarget == columnId && dragOrder == $state.grouping[columnId].length}
             <div> <Fa icon={faArrowRight} />  </div>
           {/if}
-
-          </div>
-          <div class="column-item column-footer">
-            <sl-button style="padding: 0 5px;" size="small" text on:click={newCard(columnId)}>
-              <div style="display: flex;">
-                Add Card
-                <div style="margin-left:5px"><Fa icon={faPlus}/></div>
-              </div>
-            </sl-button>
+              <div class="add-card" on:click={newCard(columnId)}><span class="add-icon">+</span><span>Add Card</span></div>
           </div>
         </div>
         </div>
       {/each}
-    </div>
+        <div  class:hidden={addingColumn} class="column-wrap">
+          <div class="column">
+            <div class="add-column column-item"
+              on:click={()=>{newColumnName = ""; addingColumn = true;columnNameElem.value=""; columnNameElem.focus()}}
+            >Add Column +</div>
+          </div>
+        </div>
+        <div class:hidden={!addingColumn} class="column-wrap">
+          <div class="column">
+            <div class="add-column editing-column-name"
+              on:click={()=>{addingColumn = true; }}
+            >
+              <sl-input class="column-name-input"
+                bind:this={columnNameElem} 
+                placeholder="column name" 
+                on:keydown={(e)=> {
+                  if (e.keyCode == 27) {
+                    newColumnName = ""
+                    addingColumn=false
+                  }
+                }}
+                on:sl-input={e=>newColumnName = e.target.value} 
+                on:sl-blur={()=>{addingColumn=false}}
+                on:sl-change={()=>{newGroup()}}
+                >
+              </sl-input>
+              <sl-button class="new-column-button board-button" disabled={newColumnName.length==0} style="padding: 0 5px;" size="small" text 
+                on:mousedown={()=>{
+                  addingColumn = false  // sl-change will cause newGroup to be callsed
+              }}>
+                <div style="display: flex;">
+                  <div class="new-column-icon"><Fa icon={faPlus} style="font-size: 18px;"/></div>
+                </div>
+              </sl-button>
+            </div>
+          </div>
+        </div>
+      </div>
   {/if}
+  <div class="bottom-fade"></div>
 </div>
 <style>
   .board {
     display: flex;
     flex-direction: column;
     background: transparent;
-    border-radius: 3px;
-    margin-left: 15px;
-    margin-right: 15px;
-    margin-top: 15px;
+    border-radius: 0;
     min-height: 0;
     overflow-x: auto;
-    padding-bottom: 10px;
+    width: 100%;
+    position: relative;
+    max-height: calc(100vh - 50px);
   }
   .top-bar {
+    box-shadow: 0px 10px 15px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
-    background-color: #cccccc99;
+    background-color: #fff;
     padding-left: 10px;
     padding-right: 10px;
-    border-radius: 3px;
+    border-radius: 0;
+    position: sticky;
+    width: 100%;
+    top: 0;
+    left: 0;
+    z-index: 200;
     color: white
   }
   .left-items {
     display: flex;
     align-items: center;
   }
+  .board-name {
+    font-size: 24px;
+    padding-left: 5px;
+  }
   .right-items {
     display: flex;
     align-items: center;
   }
-  .sortby {
-    border-right: 1px solid lightgray;
+
+  .right-items .board-button::part(base) {
+    font-size: 24px;
+  }
+  
+  .board-button {
+    margin-left: 10px;
+  }
+
+  .board-button.settings {
+    opacity: .7;
+  }
+
+  .board-button.settings:hover {
+    opacity: 1;
+  }
+
+  .board-button::part(base) {
+    border: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .board-button {
+    width: 36px;
+    height: 36px;
+    background: #FFFFFF;
+    border: 1px solid rgba(35, 32, 74, 0.1);
+    box-shadow: 0px 4px 4px rgba(66, 66, 66, 0.1);
+    border-radius: 5px;
+    padding: 5px 10px;
+    display: flex;
+    transform: scale(1);
+    align-items: center;
+    justify-content: center;
+    transition: all .25s ease;
+  }
+  
+  .board-button:hover {
+    transform: scale(1.25);
+  }
+
+  .board-button:active {
+    box-shadow: 0px 8px 10px rgba(53, 39, 211, 0.35);
+    transform: scale(1.1);
+  }
+
+  .card-edit {
+    position: relative;
+    z-index: 1;
+  }
+
+  .card-edit .board-button:hover {
+    padding: 10px 15px;
+    margin: -10px 0px;
+  }
+  .card-edit .board-button:active {
+    padding: 5px 10px;
+    margin: -10px 0px -10px 0;
+    box-shadow: 0px 8px 10px rgba(53, 39, 211, 0.35);
+  }
+
+  .filter-by {
     display: flex;
     align-items: center;
     margin-right: 8px;
     height: 47px;
     padding-right: 10px;
+  }
+
+  .bottom-fade {
+    position: fixed;
+    bottom: 0;
+    z-index: 100;
+    width: 100%;
+    height: 20px;
+    bottom: 10px;
+    background: linear-gradient(180deg, rgba(189, 209, 230, 0) 0%, rgba(102, 138, 174, 0.81) 100%);
+    opacity: 0.4;
   }
  
   .columns {
@@ -525,16 +683,87 @@
     max-height: 100%;
     background: transparent;
     min-height: 0;
+    padding: 0 15px 0 15px;
+    position: relative;
+    z-index: 1;
   }
+
   .column-item {
     padding: 10px 10px 0px 10px;
     display: flex;
     align-items: center;
     flex: 0 1 auto;
   }
-  .column-title {
+
+  .column-title, .add-column {
     font-weight: bold;
+    font-size: 18px;
+    padding: 10px;
+    border-radius: 0 0 5px 5px;
+    position: sticky;
+    z-index: 0;
+    top: 0;
+    background-color: #fff;
+    box-shadow: 0px 4px 15px rgba(35, 32, 74, 0.15);
+    z-index: 150;
+    transition: all .25s ease;
   }
+  .add-column {
+    opacity: .7;
+    transition: all .25s ease;
+  }
+
+  .editing-column-name.add-column {
+    display: flex;
+    flex-direction: row;
+  }
+
+  .new-column-button {
+    width: 40px;
+    transform: scale(1);
+    transition: all .25s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    top: -2px;
+  }
+
+  .new-column-button:hover {
+    transform: scale(1.25);
+    cursor: pointer;
+  }
+  
+  .new-column-button:active {
+    transform: sclae(1.1);
+    box-shadow: 0px 8px 10px rgba(53, 39, 211, 0.35);
+  }
+
+  .new-column-button::part(base) {
+    border: none;
+  }
+
+  .new-column-icon {
+    position: relative;
+    top: 3px;
+  }
+  .column-title:hover, .add-column:hover {
+    box-shadow: 0px 4px 15px rgba(35, 32, 74, 0.3);
+    padding: 15px;
+    margin: 0 -5px;
+    opacity: 1;
+    cursor: pointer;
+  }
+
+  .column-name-input {
+    width: 230px;
+  }
+
+  .column-title:hover {
+    cursor: pointer;
+    margin: 0 -5px -10px -5px;
+  }
+
   .column-footer {
     border-top: 1px solid #999;
     padding: 0 5px;
@@ -545,15 +774,16 @@
     flex-direction: column;
   }
   .column {
+    margin-right: 10px;
     display: flex;
     flex-direction: column;
-    background-color: #eeeeeecc;
     width: 300px;
-    margin-top: 10px;
-    margin-left: 5px;
+    margin-left: 10px;
     border-radius: 3px;
     min-width: 130px;
     min-height: 0;
+    max-height: calc(100vh - 100px);
+    overflow: visible;
   }
   .first-column {
     margin-left: 0px !important;
@@ -561,9 +791,36 @@
   .cards {
     display: flex;
     flex-direction: column;
-    overflow-y: auto;
-    min-height: 38px;
+    overflow-y: scroll;
+    width: calc(100% + 8px);
+    height: calc(100vh - 150px);
+    margin-top: 0;
+    padding-top: 10px;
+    padding-bottom: 20px;
   }
+  .cards::-webkit-scrollbar {
+    width: 5px;
+    background-color: transparent;
+  }
+
+  .cards::-webkit-scrollbar-thumb {
+      height: 5px;
+      border-radius: 5px;
+      background: rgba(20,60,119,.3);
+      opacity: 1;
+  }
+
+  .board::-webkit-scrollbar {
+    height: 10px;
+    background-color: transparent;
+  }
+
+  .board::-webkit-scrollbar-thumb {
+    border-radius: 0 0 0 0;
+    background: rgba(20,60,119,.7);
+    /* background: linear-gradient(180deg, rgba(20, 60, 119, 0) 0%, rgba(20,60,119,.6) 100%); */
+  }
+
   .glowing {
     outline: none;
     border-color: #9ecaed;
@@ -573,84 +830,127 @@
     transform: rotate(3deg);
     box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.5) !important;
   }
-  .first-card {
-    margin-top: 10px !important;
-  }
-  .card {
+
+  .card, .add-card {
     background-color: white;
     margin: 0px 10px 10px 10px;
-    padding: 5px;
-    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+    box-shadow: 0px 4px 4px rgba(35, 32, 74, 0.15);
     font-size: 12px;
     line-height: 16px;
-    color: #000000;
-    border-radius: 3px;
+    color: #23204A;
+    border-radius: 5px;
     display:flex;
     flex-direction:column;
+    padding: 10px;
+    transition: all .25s ease;
+    height: 0;
+    height: auto;
+  }
+
+  .card:hover .board-button {
+    opacity: 1;
+  }
+
+  .card:hover, .add-card:hover {
+    cursor: pointer;
+    box-shadow: 0px 8px 10px rgba(35, 32, 74, 0.25);
+    padding: 20px;
+    margin: -5px 0px -5px 0px;
+    position: relative;
+    z-index: 100;
+
+    /* uncomment to see this example of card growing dramatically */
+    /* height: calc(100vh - 125px);
+    max-height: calc(100vh - 125px); */
+  }
+
+  .card:active, .add-card:active {
+    box-shadow: 0px 8px 10px rgba(53, 39, 211, 0.35);
+    padding: 15px;
+    margin: 0px 5px 0px 5px;
+  }
+
+  .add-card {
+    display: flex;
+    flex-direction: row;
+    font-size: 14px;
+    opacity: .7;
+  }
+
+  .add-card:hover {
+    opacity: 1;
+  }
+
+  .add-icon {
+    font-size: 24px;
+    opacity: .6;
+    font-weight: bold;
+    margin-right: 5px;
+  }
+
+  .card-edit .board-button {
+    margin-bottom: -20px;
+    margin-top: -10px;
+    opacity: 0;
+    transition: all .25s ease;
+  }
+
+  .card:hover .card-edit .board-button {
+    opacity: 1;
   }
   .card-content {
-    overflow-y: auto;
-    max-height: 200px;
     padding: 0 5px;
   }
-  .labels {
+
+  .card-title {
+    font-size: 16px;
+    font-weight: bold;
+  }
+
+  .card-description {
+    font-size: 14px;
+    opacity: .8;
+    line-height: 18px;
+    padding-top: 3px;
+    -webkit-line-clamp: 3;
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    position: relative;
+    z-index: 0;
+  }
+
+  .contributors {
+    padding-top: 15px;
+    padding-left: 8px;
+    padding-right: 10px;
     display: flex;
-    align-items: center;
-    justify-content: space-around;
-    margin-top: 5px;
-  }
-  .comments {
-    margin-top: 5px;
-    padding-top: 5px;
-    border-top: 1px solid;
-  }
-  .comment {
-    display:flex;
-    flex-direction: column;
-    margin-top: 5px;
-    padding-top: 5px;
-    border-top: 1px solid lightgray;
-  }
-  .comment-header {
-    display:flex;
     flex-direction: row;
-    align-items: center;
     justify-content: space-between;
   }
-  .comment-avatar {
-    margin-right:5px;
-  }
-  .comment-button {
-    cursor: pointer;
-    border-radius: 50%;
-    padding:2px;
-    width:20px;
-    display: flex;
-    justify-content: center;
-  }
-  .comment-button:hover {
-    background-color: rgb(240, 249, 2244);
-    border: solid 1px rgb(149, 219, 252);
-    color:  rgb(3, 105, 161);
+
+  .labels {
+    display: block;
+    padding-bottom: 10px;
   }
   
-  .comment-text {
-    margin-left: 10px;
-  }
-  .comment-list {
-    max-height:200px;
-    overflow-x:auto;
-  }
-  .comment-controls {
-    display:flex;
-    justify-self: flex-end;
-  }
-  .avatar-name {
+  .labels div {
+    display: inline-flex;
+    width: 30px;
+    height: 30px;
+    align-items: center;
+    justify-content: center;
     border-radius: 5px;
-    background-color: rgb(13, 145, 147);
-    color: white;
-    padding: 0 3px;
-    padding-bottom: 2px;
-    margin-right: 4px;
+    margin-right: 10px;
+    border: 1px solid rgba(235, 235, 238, 1.0);
+    background-color: rgba(255,255,255,.8);
+  }
+
+  .label-icon {
+    margin-right: 0;
+  }
+
+  .hidden {
+    display: none;
   }
 </style>

@@ -288,7 +288,6 @@ export interface BoardState {
               const comments = state.cards[i].comments
               const index = comments.findIndex((comment) => comment.id === delta.commentId)
               if (index >= 0) {
-                console.log("FOUND")
                 const comment = {
                   id:state.cards[i].comments[index].id,
                   agent:state.cards[i].comments[index].agent,

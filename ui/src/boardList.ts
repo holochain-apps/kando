@@ -1,5 +1,4 @@
 import { RootStore, type Commit, type SynGrammar, type SynStore, type Workspace, type WorkspaceStore } from "@holochain-syn/core";
-import type { Dictionary } from "@holochain-open-dev/core-types";
 import { Board, CommitTypeBoard, UngroupedId } from "./board";
 import type { EntryHashMap, EntryRecord } from "@holochain-open-dev/utils";
 import { derived, get, writable, type Readable, type Writable } from "svelte/store";
@@ -21,9 +20,9 @@ export interface Avatar {
 }
 
 export interface BoardListState {
-    avatars: Dictionary<Avatar>;
+    avatars: { [key:string]:Avatar};
     boards: BoardRecord[];
-    agentBoards: Dictionary<Array<EntryHashB64>>;
+    agentBoards: { [key:string]:Array<EntryHashB64>};
 }
 
 
@@ -137,8 +136,9 @@ export const boardListGrammar: BoardListGrammar = {
 
 export class BoardList {
     public workspace: WorkspaceStore<BoardListGrammar>
-    public boards: Dictionary<Board>
+    public boards: { [key:string]: Board}
     activeBoardHash: Writable<EntryHashB64| undefined> = writable(undefined)
+    activeCard: Writable<string| undefined> = writable(undefined)
 
     constructor(public rootStore: RootStore<BoardListGrammar>, public boardsRootStore: RootStore<BoardGrammar>) {
         this.boards = {}
@@ -169,7 +169,7 @@ export class BoardList {
         const me = new BoardList(rootStore, boardsRootStore);
         console.log("BoardList", me)
         const workspaces = await toPromise(rootStore.allWorkspaces);
-        console.log("Workspaxces", workspaces)
+        console.log("Workspaces", workspaces)
 
         // if there is no workspace then we have a problem!!
         for (let i=0;i<workspaces.length;i+=1) {
@@ -232,6 +232,10 @@ export class BoardList {
             board = this.boards[hash] = new Board(await this.boardsRootStore.joinWorkspace(workspaceHash));
         }
         return board
+    }
+
+    async setActiveCard(cardId: string | undefined) {
+        this.activeCard.update((n) => {return cardId} )
     }
 
     async setActiveBoard(hash: EntryHashB64 | undefined) {
