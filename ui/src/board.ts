@@ -33,10 +33,22 @@ export type Comment = {
   timestamp: Timestamp
 }
 
+export type ChecklistItem = {
+  checked: boolean,
+  text: string,
+}
+
+export type Checklist = {
+  id: uuidv1;
+  title: string,
+  items: Array<ChecklistItem>  
+}
+
 export type Card = {
     id: uuidv1;
     props: CardProps;
     comments: Array<Comment>
+    checklists: Array<Checklist>
 };
   
 export const UngroupedId = "_"
@@ -126,6 +138,23 @@ export interface BoardState {
         type: "delete-card-comment";
         id: uuidv1;
         commentId: uuidv1;
+      }
+      | {
+        type: "add-card-checklist";
+        id: uuidv1;
+        checklist: Checklist;
+      }
+    | {
+        type: "update-card-checklist";
+        id: uuidv1;
+        checklistId: uuidv1;
+        title: string;
+        items: Array<ChecklistItem>
+      }
+    | {
+        type: "delete-card-checklist";
+        id: uuidv1;
+        checklistId: uuidv1;
       }
     | {
         type: "delete-card";
@@ -305,7 +334,43 @@ export interface BoardState {
               const comments = state.cards[i].comments
               const index = comments.findIndex((comment) => comment.id === delta.commentId)
               if (index>=0) {
-                state.cards[i].comments.splice(index,1)
+                state.cards[i].comments.splice(index, 1)
+              }
+            }
+          });
+          break;
+        case "add-card-checklist":
+          state.cards.forEach((card, i) => {
+            if (card.id === delta.id) {
+              if (state.cards[i].checklists) {
+                state.cards[i].checklists.push(delta.checklist);
+              } else  {
+                state.cards[i].checklists = [delta.checklist]
+              }
+            }
+          });
+          break;
+        case "update-card-checklist":
+          state.cards.forEach((card, i) => {
+            if (card.id === delta.id) {
+              const checklists = state.cards[i].checklists
+              const index = checklists.findIndex((checklist) => checklist.id === delta.checklistId)
+              if (index >= 0) {
+                state.cards[i].checklists[index] = {
+                  id:state.cards[i].checklists[index].id,
+                  title: delta.title,
+                  items: delta.items,
+                }
+              }
+          }});
+          break;
+        case "delete-card-checklist":
+          state.cards.forEach((card, i) => {
+            if (card.id === delta.id) {
+              const checklists = state.cards[i].checklists
+              const index = checklists.findIndex((checklist) => checklist.id === delta.checklistId)
+              if (index>=0) {
+                state.cards[i].checklists.splice(index,1)
               }
             }
           });

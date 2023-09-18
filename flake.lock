@@ -175,16 +175,28 @@
     "holochain": {
       "flake": false,
       "locked": {
+<<<<<<< HEAD
         "lastModified": 1692965835,
         "narHash": "sha256-tylLGAliWQnnYjTdjTN8N7xxlcHgso085wkQ8NgmOpI=",
         "owner": "holochain",
         "repo": "holochain",
         "rev": "6d424d347d5296bc8e92ff5233f5a6ed22ed736f",
+=======
+        "lastModified": 1694632043,
+        "narHash": "sha256-5QWUpWnwuzUi3hROrOZyQNla8iGdr+oGCH2nniRePBE=",
+        "owner": "holochain",
+        "repo": "holochain",
+        "rev": "1f59d33623031eefe76b5f3573970c9c33f21877",
+>>>>>>> checklists
         "type": "github"
       },
       "original": {
         "owner": "holochain",
+<<<<<<< HEAD
         "ref": "holochain-0.1.6",
+=======
+        "ref": "holochain-0.2.2",
+>>>>>>> checklists
         "repo": "holochain",
         "type": "github"
       }
@@ -224,11 +236,19 @@
         ]
       },
       "locked": {
+<<<<<<< HEAD
         "lastModified": 1695017877,
         "narHash": "sha256-faYPOOxWZ3jD+d//vQqB6sEOAKPBNdmnU19ZfdjhKyE=",
         "owner": "holochain",
         "repo": "holochain",
         "rev": "fb285905433012124c431d7e8c895ebdf90ee4bc",
+=======
+        "lastModified": 1694702869,
+        "narHash": "sha256-hDR2lOIMhDqmBzS0XERHr7ZXU75A5Btr91qm3U+aBxA=",
+        "owner": "holochain",
+        "repo": "holochain",
+        "rev": "a611796c26fc14fc2836342360637255099ebc5e",
+>>>>>>> checklists
         "type": "github"
       },
       "original": {
@@ -237,6 +257,32 @@
         "type": "github"
       }
     },
+<<<<<<< HEAD
+=======
+    "holochain-nix-versions": {
+      "inputs": {
+        "holochain": "holochain",
+        "lair": "lair",
+        "launcher": "launcher",
+        "scaffolding": "scaffolding"
+      },
+      "locked": {
+        "dir": "versions/0_2",
+        "lastModified": 1694702869,
+        "narHash": "sha256-hDR2lOIMhDqmBzS0XERHr7ZXU75A5Btr91qm3U+aBxA=",
+        "owner": "holochain",
+        "repo": "holochain",
+        "rev": "a611796c26fc14fc2836342360637255099ebc5e",
+        "type": "github"
+      },
+      "original": {
+        "dir": "versions/0_2",
+        "owner": "holochain",
+        "repo": "holochain",
+        "type": "github"
+      }
+    },
+>>>>>>> checklists
     "lair": {
       "flake": false,
       "locked": {
@@ -288,11 +334,19 @@
     },
     "nixpkgs": {
       "locked": {
+<<<<<<< HEAD
         "lastModified": 1694767346,
         "narHash": "sha256-5uH27SiVFUwsTsqC5rs3kS7pBoNhtoy9QfTP9BmknGk=",
         "owner": "NixOS",
         "repo": "nixpkgs",
         "rev": "ace5093e36ab1e95cb9463863491bee90d5a4183",
+=======
+        "lastModified": 1694422566,
+        "narHash": "sha256-lHJ+A9esOz9vln/3CJG23FV6Wd2OoOFbDeEs4cMGMqc=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "3a2786eea085f040a66ecde1bc3ddc7099f6dbeb",
+>>>>>>> checklists
         "type": "github"
       },
       "original": {
@@ -393,11 +447,19 @@
         ]
       },
       "locked": {
+<<<<<<< HEAD
         "lastModified": 1695003086,
         "narHash": "sha256-d1/ZKuBRpxifmUf7FaedCqhy0lyVbqj44Oc2s+P5bdA=",
         "owner": "oxalica",
         "repo": "rust-overlay",
         "rev": "b87a14abea512d956f0b89d0d8a1e9b41f3e20ff",
+=======
+        "lastModified": 1694657451,
+        "narHash": "sha256-cRZa9ZmUi0EFKcmzpsOXLVhiMQD8XLrku8v+U1YiGm8=",
+        "owner": "oxalica",
+        "repo": "rust-overlay",
+        "rev": "7c4f46f0b3597e3c4663285e6794194e55574879",
+>>>>>>> checklists
         "type": "github"
       },
       "original": {
@@ -409,11 +471,19 @@
     "scaffolding": {
       "flake": false,
       "locked": {
+<<<<<<< HEAD
         "lastModified": 1694727585,
         "narHash": "sha256-ea/JlbLUTJ2yMIY0a+RcDZYh0bPTdEAQyWuLecM2HNw=",
         "owner": "holochain",
         "repo": "scaffolding",
         "rev": "4b63dd9cc47d96ea62ed74ed680e398176babddc",
+=======
+        "lastModified": 1692147670,
+        "narHash": "sha256-jFt4LTUaUZTiOg2DLlbUqyeV2edfUxiJSljRjVJlObE=",
+        "owner": "holochain",
+        "repo": "scaffolding",
+        "rev": "8a63d356a0856643769adc567e078796c6509511",
+>>>>>>> checklists
         "type": "github"
       },
       "original": {
