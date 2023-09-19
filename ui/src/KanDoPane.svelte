@@ -8,13 +8,13 @@
   import LabelSelector from "./LabelSelector.svelte";
   import { Marked, Renderer } from "@ts-stack/markdown";
   import { v1 as uuidv1 } from "uuid";
-  import { type Card, Group, UngroupedId, type CardProps, type BoardState, type Comment } from "./board";
+  import { type Card, Group, UngroupedId, type CardProps, type BoardState, type Comment, type Checklist } from "./board";
   import EditBoardDialog from "./EditBoardDialog.svelte";
   import AvatarIcon from "./AvatarIcon.svelte";
   import { decodeHashFromBase64 } from "@holochain/client";
   import { cloneDeep, isEqual } from "lodash";
   import Fa from "svelte-fa";
-  import { faArrowRight, faClose, faCog, faComments, faEdit, faPlus } from "@fortawesome/free-solid-svg-icons";
+  import { faArrowRight, faCheck, faClose, faCog, faComments, faEdit, faPlus } from "@fortawesome/free-solid-svg-icons";
   import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
   import ClickEdit from "./ClickEdit.svelte";
   import { onVisible } from "./util";
@@ -140,6 +140,7 @@
       const card:Card = {
         id: uuidv1(),
         comments: [],
+        checklists: [], 
         props,
       };
       dispatch("requestChange", [{ type: "add-card", value: card, group: column}]);
@@ -344,6 +345,23 @@
     }
     return "white"
   }
+
+  const checkedChecklistItems = (checklists:Array<Checklist>) : number => {
+    let result = 0
+    for (const list of checklists) {
+      for (const item of list.items) {
+        result += item.checked ? 1 : 0
+      }
+    }
+    return result
+  }
+  const totalChecklistItems = (checklists:Array<Checklist>) : number => {
+    let result = 0
+    for (const list of checklists) {
+      result += list.items.length
+    }
+    return result    
+  }
   
 </script>
 <div class="board">
@@ -447,7 +465,7 @@
           </sl-dialog>
 
           <div class="cards">
-          {#each sorted($state.grouping[columnId], sortCards) as { id:cardId, comments, props }, i}
+          {#each sorted($state.grouping[columnId], sortCards) as { id:cardId, comments, props, checklists }, i}
             {#if !filterOption || (props.labels.includes(filterOption))}
                 {#if 
                   dragTarget == columnId && 
@@ -491,7 +509,7 @@
                     </div>
                     <div class="card-description">{@html Marked.parse(props.description)}</div>
                   </div>
-                  {#if (props && props.agents && props.agents.length > 0) || ( comments.length>0)}
+                  {#if (props && props.agents && props.agents.length > 0) || ( comments.length>0) || (checklists && checklists.length> 0)}
                   <div class="contributors">
                     {#if props && props.agents && props.agents.length > 0}
                       {#each props.agents as agent}
@@ -500,6 +518,9 @@
                     {/if}
                     {#if comments.length>0}
                       <div class="comment-count"><Fa icon={faComments} />: {comments.length}</div>
+                    {/if}
+                    {#if checklists && checklists.length>0}
+                      <div class="checklist-count"><Fa icon={faCheck} /> {checkedChecklistItems(checklists)} / {totalChecklistItems(checklists)}</div>
                     {/if}
                   </div>
                   {/if}
