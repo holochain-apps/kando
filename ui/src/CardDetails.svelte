@@ -171,16 +171,18 @@
     requestChanges([{ type: "delete-card-comment", id, commentId}]);
   }
 
-  const addChecklist = (id: uuidv1, title: string) => {
+  const addChecklist = (id: uuidv1, title: string, order: number) => {
     const checklist:Checklist = {
       id: uuidv1(),
       title,
-      items: []
+      items: [],
+      order,
+      timestamp: new Date().getTime(),
     }
     requestChanges([{ type: "add-card-checklist", id, checklist}])
   }
-  const updateChecklist = (id: uuidv1, checklistId:uuidv1, title: string, items: Array<ChecklistItem>) => {
-    requestChanges([{ type: "update-card-checklist", id, checklistId, title, items}]);
+  const updateChecklist = (id: uuidv1, checklistId:uuidv1, title: string, order:number, items: Array<ChecklistItem>) => {
+    requestChanges([{ type: "update-card-checklist", id, checklistId, title, order, items}]);
   }
   const deleteChecklist = (id: uuidv1, checklistId:uuidv1) => {
     requestChanges([{ type: "delete-card-checklist", id, checklistId}]);
@@ -194,21 +196,21 @@
     } else {
       items.push(item)
     }
-    updateChecklist(id, list.id, list.title, items)
+    updateChecklist(id, list.id, list.title, list.order, items)
   }
 
 
   const setChecklistItemStatus = (id: uuidv1, list:Checklist, idx: number, checked: boolean) => {
     let items = cloneDeep(list.items)
     items[idx].checked = checked
-    updateChecklist(id, list.id, list.title, items)
+    updateChecklist(id, list.id, list.title, list.order, items)
   }
 
 
   const deleteChecklistItem = (id: uuidv1, list:Checklist, idx: number) => {
     let items = cloneDeep(list.items)
     items.splice(idx, 1)
-    updateChecklist(id, list.id, list.title, items)
+    updateChecklist(id, list.id, list.title, list.order, items)
   }
 
   const editDescription = () => {
@@ -328,7 +330,7 @@
                   e.stopPropagation()
                 }
                 if (e.keyCode == 13) {
-                  addChecklist(cardId, checklistElement.value)
+                  addChecklist(cardId, checklistElement.value, Object.keys(card.checklists).length)
                   checklistElement.blur()
                   e.stopPropagation()
                 }
@@ -337,7 +339,7 @@
           <sl-button
             disabled={!checklistTitle}
             on:mousedown={()=>{
-              addChecklist(cardId, checklistElement.value)
+              addChecklist(cardId, checklistElement.value, Object.keys(card.checklists).length)
             }}>
               <Fa icon={faPlus}/>
           </sl-button>
@@ -348,8 +350,8 @@
               <Fa icon={faCancel}/>
           </sl-button>
         {/if}
-        {#if card && card.checklists && card.checklists.length > 0}
-          {#each card.checklists as list, idx}
+        {#if card && card.checklists && Object.keys(card.checklists).length > 0}
+          {#each Object.values(card.checklists).sort((a,b)=>a.order - b.order) as list, idx}
           <div class="checklist">
               <div style="display:flex">
                 <ClickEdit
@@ -484,7 +486,7 @@
     </sl-dialog>
 
     <div class="comments card-section">
-      <div class="card-label">Comments <span class="comment-count">{card ? card.comments.length:""}</span></div>
+      <div class="card-label">Comments <span class="comment-count">{card ? Object.keys(card.comments).length:""}</span></div>
 
       <div class="add-comment">
         <sl-input bind:this={commentElement} placeholder="Add a comment"
@@ -533,7 +535,7 @@
 
       <div class="comment-list">
         {#if card}
-          {#each card.comments.reverse() as comment}
+          {#each Object.values(card.comments).sort((a,b)=> a.timestamp - b.timestamp) as comment}
             <div class="comment">
               <div class="comment-header">
                 <div class="comment-avatar"><AvatarIcon size={20} avatar={$avatars[comment.agent]} key={decodeHashFromBase64(comment.agent)}/></div>

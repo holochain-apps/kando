@@ -8,7 +8,7 @@
   import LabelSelector from "./LabelSelector.svelte";
   import { Marked, Renderer } from "@ts-stack/markdown";
   import { v1 as uuidv1 } from "uuid";
-  import { type Card, Group, UngroupedId, type CardProps, type BoardState, type Comment, type Checklist } from "./board";
+  import { type Card, Group, UngroupedId, type CardProps, type BoardState, type Comment, type Checklist, type Checklists } from "./board";
   import EditBoardDialog from "./EditBoardDialog.svelte";
   import AvatarIcon from "./AvatarIcon.svelte";
   import { decodeHashFromBase64 } from "@holochain/client";
@@ -139,8 +139,8 @@
       if (column === undefined) {column = 0}
       const card:Card = {
         id: uuidv1(),
-        comments: [],
-        checklists: [], 
+        comments: {},
+        checklists: {}, 
         props,
       };
       dispatch("requestChange", [{ type: "add-card", value: card, group: column}]);
@@ -346,18 +346,18 @@
     return "white"
   }
 
-  const checkedChecklistItems = (checklists:Array<Checklist>) : number => {
+  const checkedChecklistItems = (checklists: Checklists) : number => {
     let result = 0
-    for (const list of checklists) {
+    for (const [id,list] of Object.entries(checklists)) {
       for (const item of list.items) {
         result += item.checked ? 1 : 0
       }
     }
     return result
   }
-  const totalChecklistItems = (checklists:Array<Checklist>) : number => {
+  const totalChecklistItems = (checklists: Checklists) : number => {
     let result = 0
-    for (const list of checklists) {
+    for (const [id,list] of Object.entries(checklists)) {
       result += list.items.length
     }
     return result    
@@ -509,17 +509,17 @@
                     </div>
                     <div class="card-description">{@html Marked.parse(props.description)}</div>
                   </div>
-                  {#if (props && props.agents && props.agents.length > 0) || ( comments.length>0) || (checklists && checklists.length> 0)}
+                  {#if (props && props.agents && props.agents.length > 0) || ( Object.keys(comments).length>0) || (Object.keys(checklists).length> 0)}
                   <div class="contributors">
                     {#if props && props.agents && props.agents.length > 0}
                       {#each props.agents as agent}
                         <AvatarIcon size={20} avatar={$avatars[agent]} key={decodeHashFromBase64(agent)}/>
                       {/each}
                     {/if}
-                    {#if comments.length>0}
-                      <div class="comment-count"><Fa icon={faComments} />: {comments.length}</div>
+                    {#if Object.keys(comments).length>0}
+                      <div class="comment-count"><Fa icon={faComments} />: {Object.keys(comments).length}</div>
                     {/if}
-                    {#if checklists && checklists.length>0}
+                    {#if Object.keys(checklists).length>0}
                       <div class="checklist-count"><Fa icon={faCheck} /> {checkedChecklistItems(checklists)} / {totalChecklistItems(checklists)}</div>
                     {/if}
                   </div>

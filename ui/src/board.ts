@@ -40,15 +40,20 @@ export type ChecklistItem = {
 
 export type Checklist = {
   id: uuidv1;
+  timestamp: Timestamp
+  order: number,
   title: string,
   items: Array<ChecklistItem>  
 }
 
+export type Checklists = {[key: string]: Checklist}
+export type Comments = {[key: string]: Comment}
+
 export type Card = {
     id: uuidv1;
     props: CardProps;
-    comments: Array<Comment>
-    checklists: Array<Checklist>
+    comments: Comments
+    checklists: Checklists
 };
   
 export const UngroupedId = "_"
@@ -149,7 +154,8 @@ export interface BoardState {
         id: uuidv1;
         checklistId: uuidv1;
         title: string;
-        items: Array<ChecklistItem>
+        items: Array<ChecklistItem>;
+        order: number;
       }
     | {
         type: "delete-card-checklist";
@@ -307,59 +313,50 @@ export interface BoardState {
         case "add-card-comment":
           state.cards.forEach((card, i) => {
             if (card.id === delta.id) {
-              state.cards[i].comments.unshift(delta.comment);
+              state.cards[i].comments[delta.comment.id] = delta.comment;
             }
           });
           break;
         case "update-card-comment":
           state.cards.forEach((card, i) => {
             if (card.id === delta.id) {
-              const comments = state.cards[i].comments
-              const index = comments.findIndex((comment) => comment.id === delta.commentId)
-              if (index >= 0) {
+              const existingComment = state.cards[i].comments[delta.commentId]
+              if (existingComment) {
                 const comment = {
-                  id:state.cards[i].comments[index].id,
-                  agent:state.cards[i].comments[index].agent,
+                  id:delta.commentId,
+                  agent:existingComment.agent,
                   text: delta.text,
                   timestamp: new Date().getTime()
                 }
-                state.cards[i].comments.splice(index,1)
-                state.cards[i].comments.unshift(comment);
+                state.cards[i].comments[delta.commentId] = comment
               }
           }});
           break;
         case "delete-card-comment":
           state.cards.forEach((card, i) => {
             if (card.id === delta.id) {
-              const comments = state.cards[i].comments
-              const index = comments.findIndex((comment) => comment.id === delta.commentId)
-              if (index>=0) {
-                state.cards[i].comments.splice(index, 1)
-              }
+              delete state.cards[i].comments[delta.commentId]
             }
           });
           break;
         case "add-card-checklist":
           state.cards.forEach((card, i) => {
             if (card.id === delta.id) {
-              if (state.cards[i].checklists) {
-                state.cards[i].checklists.push(delta.checklist);
-              } else  {
-                state.cards[i].checklists = [delta.checklist]
-              }
+              state.cards[i].checklists[delta.checklist.id] = delta.checklist;
             }
           });
           break;
         case "update-card-checklist":
           state.cards.forEach((card, i) => {
             if (card.id === delta.id) {
-              const checklists = state.cards[i].checklists
-              const index = checklists.findIndex((checklist) => checklist.id === delta.checklistId)
-              if (index >= 0) {
-                state.cards[i].checklists[index] = {
-                  id:state.cards[i].checklists[index].id,
+              const checklist = state.cards[i].checklists[delta.checklistId]
+              if (checklist) {
+                state.cards[i].checklists[delta.checklistId] = {
+                  id:delta.checklistId,
                   title: delta.title,
                   items: delta.items,
+                  timestamp: new Date().getTime(),
+                  order: delta.order,
                 }
               }
           }});
@@ -367,11 +364,7 @@ export interface BoardState {
         case "delete-card-checklist":
           state.cards.forEach((card, i) => {
             if (card.id === delta.id) {
-              const checklists = state.cards[i].checklists
-              const index = checklists.findIndex((checklist) => checklist.id === delta.checklistId)
-              if (index>=0) {
-                state.cards[i].checklists.splice(index,1)
-              }
+              delete state.cards[i].checklists[delta.checklistId]
             }
           });
           break;
