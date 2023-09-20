@@ -4,6 +4,7 @@
     import { faFileImport } from '@fortawesome/free-solid-svg-icons';
     import Fa from 'svelte-fa';
     import type { KanDoStore } from "./kanDoStore";
+    import { v1 as uuidv1 } from "uuid";
 
 
     const { getStore } :any = getContext('kdStore');
@@ -21,6 +22,29 @@
 
         reader.addEventListener("load", async () => {
             const b = JSON.parse(reader.result as string)
+            for (const [idx, card] of b.cards.entries()) {
+                if (card.comments && typeof(card.comments.length) === "number") {
+                    // array of comments, convert to object
+                    const comments = {}
+                    for (const c  of card.comments) {
+                        comments[c.id] = c
+                    }
+                    card.comments = comments
+                }
+                if (card.checklists && typeof(card.checklists.length) === "number") {
+                    // array of checklists, convert to object
+                    const checklists = {}
+                    let i = 0
+                    for (const l of card.checklists) {
+                        l.id = uuidv1()
+                        l.timestamp = new Date().getTime()
+                        l.order = i
+                        checklists[l.id] = l
+                        i += 1
+                    }
+                    card.checklists = checklists
+                }
+            }
             const board = await store.boardList.makeBoard(b)
             store.setUIprops({showMenu:false})
             store.setActiveBoard(board.hashB64())
