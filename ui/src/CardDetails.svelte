@@ -312,48 +312,10 @@
           {/if}
       {/if}
       <div class="checklists">
-        {#if !addingChecklist}
-          <div class="details" style="opacity: .7" on:click={(e)=>addingChecklist=true}>Add a checklist... <Fa icon={faEdit} style="width: 12px; height: 12px;"/></div>
-        {:else}
-          <sl-input bind:this={checklistElement} placeholder="Checklist Title"
-            on:sl-input={(e)=>{
-              checklistTitle = e.target.value
-            }}
-            on:sl-blur={()=>{
-              addingChecklist = false
-              checklistElement.value = ""
-            }}
-      
-            on:keydown={(e)=> {
-                if (e.keyCode == 27) {
-                  checklistElement.blur()
-                  e.stopPropagation()
-                }
-                if (e.keyCode == 13) {
-                  addChecklist(cardId, checklistElement.value, Object.keys(card.checklists).length)
-                  checklistElement.blur()
-                  e.stopPropagation()
-                }
-            }}
-          ></sl-input>
-          <sl-button
-            disabled={!checklistTitle}
-            on:mousedown={()=>{
-              addChecklist(cardId, checklistElement.value, Object.keys(card.checklists).length)
-            }}>
-              <Fa icon={faPlus}/>
-          </sl-button>
-          <sl-button 
-            on:mousedown={()=>{
-            addingChecklist = false
-          }}>
-              <Fa icon={faCancel}/>
-          </sl-button>
-        {/if}
         {#if card && card.checklists && Object.keys(card.checklists).length > 0}
           {#each Object.values(card.checklists).sort((a,b)=>a.order - b.order) as list, idx}
           <div class="checklist">
-              <div style="display:flex">
+              <div class="list-title">
                 <ClickEdit
                   text={list.title}
                   handleSave={()=>{
@@ -373,7 +335,7 @@
                 }} 
                 checked={item.checked}
                 >{item.text}</sl-checkbox>
-                <span  on:click={(e)=>{
+                <span class="delete-item"  on:click={(e)=>{
                   e.stopPropagation();
                   deleteChecklistItem(cardId,list,itemIdx)
                  }}><Fa icon={faTrash} style="opacity: .3; height: .875rem; margin-left: 3px; position: relative; top: -.15rem"/></span >
@@ -381,49 +343,102 @@
             </div>
             {/each}
             {#if addingChecklistItem != idx}
-              <sl-button size="small" style="margin-left:5px" variant="primary" 
+              <div class="add-checklist-item" 
                   on:click={()=>{
                     addingChecklistItem=idx}}>
-                  Add item
-              </sl-button>
+                  
+                  <div>
+                    <span class="add-item-icon"><Fa icon={faPlus}/></span>
+                    Add item
+                  </div>
+              </div>
             {:else}
-              <sl-input bind:this={checklistItemElement} placeholder="Checklist Item"
-                on:sl-input={(e)=>{
-                }}
-                on:sl-blur={()=>{
-                  checklistItemElement.value = ""
-                }}
-          
-                on:keydown={(e)=> {
-                    if (e.keyCode == 27) {
+              <div class="adding-checklist-item">
+                <div class="adding-checklist-input-wrapper">
+                  <div class="adding-checklist-empty-box"></div>
+                  <sl-input bind:this={checklistItemElement} placeholder="New checklist item" class="adding-checklist-input"
+                    on:sl-input={(e)=>{
+                    }}
+                    on:sl-blur={()=>{
                       checklistItemElement.value = ""
-                      addingChecklistItem = -1
-                      e.stopPropagation()
-                    }
-                    if (e.keyCode == 13) {
+                    }}
+              
+                    on:keydown={(e)=> {
+                        if (e.keyCode == 27) {
+                          checklistItemElement.value = ""
+                          addingChecklistItem = -1
+                          e.stopPropagation()
+                        }
+                        if (e.keyCode == 13) {
+                          addChecklistItem(cardId, list, checklistItemElement.value)
+                          checklistItemElement.value = ""
+                          e.stopPropagation()
+                        }
+                    }}
+                  ></sl-input>
+                </div>
+                <div class="adding-checklist-controls">
+                  <sl-button
+                    disabled={!checklistItemElement}
+                    on:mousedown={()=>{
                       addChecklistItem(cardId, list, checklistItemElement.value)
-                      checklistItemElement.value = ""
-                      e.stopPropagation()
-                    }
-                }}
-              ></sl-input>
-              <sl-button
-                disabled={!checklistItemElement}
-                on:mousedown={()=>{
-                  addChecklistItem(cardId, list, checklistItemElement.value)
-                  checklistItemElement.focus()
-                }}>
-                  <Fa icon={faPlus}/>
-              </sl-button>
-              <sl-button 
-                on:mousedown={()=>{
-                addingChecklistItem = -1
-              }}>
-                  <Fa icon={faCancel}/>
-              </sl-button>
+                      checklistItemElement.focus()
+                    }}>
+                      <Fa icon={faPlus}/>
+                  </sl-button>
+                  <sl-button 
+                    on:mousedown={()=>{
+                    addingChecklistItem = -1
+                  }}>
+                      <Fa icon={faCancel}/>
+                  </sl-button>
+                </div>
+              </div>
             {/if}
           </div>
           {/each}
+        {/if}
+        {#if !addingChecklist}
+          <div class="checklist">
+            <div style="opacity: .7" on:click={(e)=>addingChecklist=true}>Add a checklist... <Fa icon={faEdit} style="width: 12px; height: 12px;"/></div>
+          </div>
+        {:else}
+          <div class="checklist add-checklist">
+            <sl-input class="add-checklist-input" bind:this={checklistElement} placeholder="New checklist title"
+              on:sl-input={(e)=>{
+                checklistTitle = e.target.value
+              }}
+              on:sl-blur={()=>{
+                addingChecklist = false
+                checklistElement.value = ""
+              }}
+        
+              on:keydown={(e)=> {
+                  if (e.keyCode == 27) {
+                    checklistElement.blur()
+                    e.stopPropagation()
+                  }
+                  if (e.keyCode == 13) {
+                    addChecklist(cardId, checklistElement.value, Object.keys(card.checklists).length)
+                    checklistElement.blur()
+                    e.stopPropagation()
+                  }
+              }}
+            ></sl-input>
+            <sl-button
+              disabled={!checklistTitle}
+              on:mousedown={()=>{
+                addChecklist(cardId, checklistElement.value, Object.keys(card.checklists).length)
+              }}>
+                <Fa icon={faPlus}/>
+            </sl-button>
+            <sl-button 
+              on:mousedown={()=>{
+              addingChecklist = false
+            }}>
+                <Fa icon={faCancel}/>
+            </sl-button>
+          </div>
         {/if}
       </div>
 
@@ -854,7 +869,100 @@
 
   .checklists {
   }
+
   .checklist {
     margin-top: 15px;
+    border-radius: 5px;
+    padding: 10px;
+    font-size: 15px;
+    border: 1px dashed rgba(35, 32, 75, .1);
+  }
+
+  .add-checklist {
+    display: flex;
+  }
+
+  .checklist-item, .add-checklist-item {
+    padding: 5px;
+    display: flex;
+    justify-content: space-between;
+    background-color: rgba(241, 245, 247, 0);
+    transition: all .25s ease;
+    border-radius: 5px;
+    align-items: center;
+    font-size: 15px;
+  }
+
+  .checklist-item:hover {
+    background-color: rgba(241, 245, 247, 1.0);
+  }
+
+  .add-checklist-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .add-checklist-item:hover {
+    cursor: pointer;
+    background-color: rgba(241, 245, 247, 1.0);
+  }
+
+  .add-item-icon, .adding-checklist-empty-box {
+    background-color: rgba(212, 212, 216, .40);
+    display: inline-flex;
+    width: 16px;
+    align-items: center;
+    justify-content: center;
+    height: 16px;
+    border-radius: 3px;
+    margin-right: 5px;
+    position: relative;
+    top: 3px;
+  }
+
+  .adding-checklist-empty-box {
+    position: absolute;
+    top: 10px;
+    left: 5px;
+    z-index: 10;
+  }
+
+  .list-title {
+    font-size: 16px;
+  }
+
+  .delete-item {
+    opacity: 0;
+    position: relative;
+    top: 2px;
+    transition: all .25s ease;
+  }
+
+  .checklist-item:hover .delete-item {
+    opacity: 1;
+  }
+
+  .delete-item:hover {
+    cursor: pointer;
+  }
+
+  .adding-checklist-item {
+    display: flex;
+  }
+
+  .adding-checklist-input-wrapper, .add-checklist-input {
+    width: calc(100% - 90px);
+    position: relative;
+    font-size: 15px;
+    margin-right: 3px;
+  }
+
+  .add-checklist-input::part(input)::placeholder, .adding-checklist-input::part(input)::placeholder {
+    opacity: .7;
+  }
+
+  .adding-checklist-input::part(base) {
+    padding-left: 15px;
   }
 </style>
