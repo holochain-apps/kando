@@ -516,12 +516,14 @@
                         <AvatarIcon size={20} avatar={$avatars[agent]} key={decodeHashFromBase64(agent)}/>
                       {/each}
                     {/if}
-                    {#if Object.keys(comments).length>0}
-                      <div class="comment-count"><Fa icon={faComments} />: {Object.keys(comments).length}</div>
-                    {/if}
-                    {#if Object.keys(checklists).length>0}
-                      <div class="checklist-count"><Fa icon={faCheck} /> {checkedChecklistItems(checklists)} / {totalChecklistItems(checklists)}</div>
-                    {/if}
+                    <div class="comments-checklist">
+                      {#if Object.keys(checklists).length>0}
+                        <div class="checklist-count"><Fa icon={faCheck} /> {checkedChecklistItems(checklists)} / {totalChecklistItems(checklists)}</div>
+                      {/if}
+                      {#if Object.keys(comments).length>0}
+                        <div class="comment-count"><Fa icon={faComments} />: {Object.keys(comments).length}</div>
+                      {/if}
+                    </div>
                   </div>
                   {/if}
                 </div>
@@ -948,6 +950,16 @@
     display: flex;
     flex-direction: row;
     justify-content: space-between;
+  }
+
+  .comments-checklist {
+    display: flex;
+    position: relative;
+    top: 3px;
+  }
+  
+  .comment-count {
+    margin-left: 15px;
   }
 
   .labels {
