@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { Group, LabelDef, type BoardProps, CategoryDef, UngroupedId, Board } from './board';
+    import { Group, LabelDef, type BoardProps, type BoardState, CategoryDef, UngroupedId, Board } from './board';
     import { getContext, onMount } from 'svelte';
   	import DragDropList, { VerticalDropZone, reorder, type DropEvent } from 'svelte-dnd-list';
     import ColorPicker from 'svelte-awesome-color-picker';
@@ -7,20 +7,23 @@
     import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
     import '@shoelace-style/shoelace/dist/components/button/button.js';
     import '@shoelace-style/shoelace/dist/components/input/input.js';
+    import '@shoelace-style/shoelace/dist/components/checkbox/checkbox.js';
+    import sanitize from "sanitize-filename";
     import Fa from 'svelte-fa'
-    import { faPlus, faGripVertical, faTrash} from '@fortawesome/free-solid-svg-icons';
+    import { faPlus, faGripVertical, faTrash, faFileExport} from '@fortawesome/free-solid-svg-icons';
     import { cloneDeep } from "lodash";
-
     import type { KanDoStore } from './kanDoStore';
-  import type { EntryHashB64 } from '@holochain/client';
+    import type { EntryHashB64 } from '@holochain/client';
 
-    const { getStore } :any = getContext('tsStore');
+    const { getStore } :any = getContext('kdStore');
 
     const store:KanDoStore = getStore();
+    $: uiProps = store.uiProps
 
     export let handleSave
     export let handleDelete = undefined
     export let cancelEdit
+
 
     let boardHash:EntryHashB64|undefined = undefined
     let text = ''
@@ -29,12 +32,42 @@
     let labelDefs: Array<LabelDef> = []
     let categoryDefs: Array<CategoryDef> = []
     let nameInput
+
+
+    $: state = store.boardList.getReadableBoardState(boardHash);
+
+    const exportBoard = (state: BoardState) => {
+        const prefix = "kando"
+        const fileName = sanitize(`${prefix}_export_${state.name}.json`)
+        download(fileName, JSON.stringify(state))
+        alert(`Your board was exported to your Downloads folder as: '${fileName}'`)
+    }
+
+    const download = (filename: string, text: string) => {
+      var element = document.createElement('a');
+      element.setAttribute('href', 'data:text/json;charset=utf-8,' + encodeURIComponent(text));
+      element.setAttribute('download', filename);
+
+      element.style.display = 'none';
+      document.body.appendChild(element);
+
+      element.click();
+
+      document.body.removeChild(element);
+    }
+
     export const reset = () => {
       text = ''
       props = {bgUrl: ""}
-      groups = [new Group("Backlog"), new Group("Prioritized"), new Group("Doing"), new Group("Done")]
+      groups = [] // new Group("Backlog"), new Group("Prioritized"), new Group("Doing"), new Group("Done")
       labelDefs = []
       categoryDefs = []
+      nameInput.value = ""
+      nameInput.focus()
+    }
+
+    export const initialFocus = () => {
+      nameInput.focus()
     }
 
     export const  edit = async (hash: EntryHashB64)=> {
@@ -56,6 +89,7 @@
       } else {
           console.log("board not found:", boardHash)
       }
+
     }
 
     const addLabelDef = () => {
@@ -85,27 +119,6 @@
     onMount( async () => {
     })
 
-    const handleKeydown = (e) => {
-      if (e.key === "Escape") {
-        cancelEdit()
-      } else if (e.key === "Enter" && e.ctrlKey) {
-        handleSave(text, groups, labelDefs, props)
-      } else  if (e.key === 'Tab') {
-        // trap focus
-        const tabbable = Array.from(document.querySelectorAll('input'))
-
-        let index = tabbable.findIndex((elem)=>elem == document.activeElement)
-  
-        if (index === -1 && e.shiftKey) index = 0;
-
-        index += tabbable.length + (e.shiftKey ? -1 : 1);
-        index %= tabbable.length;
-
-        tabbable[index].focus();
-        e.preventDefault();
-      }
-    }
-
     const onDropGroups = ({ detail: { from, to } }: CustomEvent<DropEvent>) => {
       if (!to || from === to || from.dropZoneID !== "groups") {
         return;
@@ -131,13 +144,14 @@
    let emojiDialog,colorDialog
    let showColorPicker :number|undefined = undefined
    let hex
+   let showArchived
 </script>
 
-<svelte:window on:keydown={handleKeydown}/>
   <div class='board-editor'>
     <div class="edit-title">
       <div class="title-text">Title:</div> <sl-input class='textarea' maxlength="60" bind:this={nameInput}  on:input={e=>text= e.target.value}></sl-input>
     </div>
+    {#if boardHash}
     <div class="edit-groups unselectable">
       <div class="title-text">Columns:
         <sl-button circle size="small" on:click={() => addGroup()}>
@@ -264,17 +278,25 @@
     <div class="edit-title">
       <div class="title-text">Background Image:</div> <sl-input class='textarea' maxlength="255" value={props.bgUrl} on:input={e=>props.bgUrl = e.target.value} />
     </div>
-
+    <div>
+      <sl-checkbox bind:this={showArchived} checked={$uiProps.showArchived[boardHash]}>Show Archived Cards</sl-checkbox>
+    </div>
+    {/if}
     <div class='controls'>
+      {#if boardHash}
+        <sl-button class="board-control" on:click={() => exportBoard($state)} title="Export">
+          <Fa icon={faFileExport} /> Export
+        </sl-button>
+      {/if}
       {#if handleDelete}
-        <sl-button on:click={handleDelete}>
+        <sl-button class="board-control" on:click={handleDelete}>
           Archive
         </sl-button>
       {/if}
-      <sl-button on:click={cancelEdit} style="margin-left:10px">
+      <sl-button on:click={cancelEdit} class="board-control">
         Cancel
       </sl-button>
-      <sl-button style="margin-left:10px" on:click={() => handleSave(text, groups, labelDefs, categoryDefs, props)} variant="primary">
+      <sl-button class="board-control" on:click={() => handleSave(text, groups, labelDefs, categoryDefs, props, showArchived? showArchived.checked:false)} variant="primary">
         Save
       </sl-button>
     </div>
@@ -288,7 +310,6 @@
     flex-basis: 270px;
     font-style: normal;
     font-weight: 600;
-    color: #000000;
     flex-direction: column;
     justify-content: flex-start;
   }
@@ -317,6 +338,11 @@
     flex-direction: row;
     align-items: center;
   }
+
+  .board-control {
+    margin-right: 10px;
+  }
+
   .grip {
     margin-right:10px;
     cursor: pointer;

@@ -8,7 +8,7 @@
   
   export let profilesStore: ProfilesStore|undefined
 
-  const { getStore } :any = getContext('tsStore');
+  const { getStore } :any = getContext('kdStore');
   const store:KanDoStore = getStore();
   $: participants = store.boardList.participants()
   $: activeFolk = $participants.active
@@ -21,11 +21,6 @@
   export const open=()=>{dialog.show()}
   let dialog
 
-  const handleKeydown = (e) => {
-    if (e.key === "Escape") {
-        close()
-    }
-  }
   const getProfile = (folk) : Profile | undefined => {
 
     if ($allProfiles.status != "complete") {
@@ -39,7 +34,6 @@
     return undefined
   }
 </script>
-<svelte:window on:keydown={handleKeydown}/>
 
 <sl-dialog label="Participants Online" bind:this={dialog}>
     <div class="participants">

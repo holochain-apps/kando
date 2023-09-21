@@ -6,18 +6,21 @@
     import type { AppAgentClient } from '@holochain/client';
     import type { SynStore } from '@holochain-syn/store';
     import type { ProfilesStore } from "@holochain-open-dev/profiles";
-  import Fa from 'svelte-fa';
-  import { faCog, faFileImport, faSquarePlus } from '@fortawesome/free-solid-svg-icons';
+    import Fa from 'svelte-fa';
+    import { faCog, faFileImport, faSquarePlus } from '@fortawesome/free-solid-svg-icons';
+    import KDLogoIcon from "./icons/KDLogoIcon.svelte";
+    import BoardMenu from "./BoardMenu.svelte";
+    import { slide } from 'svelte/transition';
 
     export let roleName = ""
   
     let synStore: SynStore;
-    let tsStore: KanDoStore;
+    let kdStore: KanDoStore;
     
     export let client : AppAgentClient
     export let profilesStore : ProfilesStore|undefined = undefined
 
-    $: activeBoardHash = tsStore && tsStore.boardList ? tsStore.boardList.activeBoardHash : undefined
+    $: activeBoardHash = kdStore && kdStore.boardList ? kdStore.boardList.activeBoardHash : undefined
 
     initialize()
 
@@ -25,26 +28,27 @@
       getStore: () => synStore,
     });
   
-    setContext('tsStore', {
-      getStore: () => tsStore,
+    setContext('kdStore', {
+      getStore: () => kdStore,
     });
-    const DEFAULT_KD_BG_IMG = "https://images.unsplash.com/photo-1557682250-33bd709cbe85"
+    const DEFAULT_KD_BG_IMG = "none"
     //const DEFAULT_KD_BG_IMG = "https://img.freepik.com/free-photo/studio-background-concept-abstract-empty-light-gradient-purple-studio-room-background-product-plain-studio-background_1258-54461.jpg"
-    const NO_BOARD_IMG = "https://holochain.org/img/big_logo.png"
-    $: boardList = tsStore? tsStore.boardList.stateStore() : undefined
+    const NO_BOARD_IMG = "none"
+    $: boardList = kdStore? kdStore.boardList.stateStore() : undefined
     $: archivedBoards = boardList ? $boardList.boards.filter((board)=>board.status === "archived") : []
     $: activeBoards = boardList ? $boardList.boards.filter((board)=>board.status !== "archived") : []
-    $: boardState = tsStore ? tsStore.boardList.getReadableBoardState($activeBoardHash) :  undefined
+    $: boardState = kdStore ? kdStore.boardList.getReadableBoardState($activeBoardHash) :  undefined
     $: bgUrl = boardState ?  ($boardState.props && $boardState.props.bgUrl) ? $boardState.props.bgUrl : DEFAULT_KD_BG_IMG : NO_BOARD_IMG
     $: bgImage = `background-image: url("`+ bgUrl+`");`
-    $: myAgentPubKey = tsStore ? tsStore.myAgentPubKey() : undefined
+    $: myAgentPubKey = kdStore ? kdStore.myAgentPubKey() : undefined
+    $: uiProps = kdStore ? kdStore.uiProps : undefined
 
     async function initialize() : Promise<void> {
       const store = createStore()
       synStore = store.synStore;
       try {
         await store.loadBoards()
-        tsStore = store
+        kdStore = store
       } catch (e) {
         console.log("Error loading boards:", e)
       }
@@ -56,7 +60,7 @@
       );
       return store
     }
-  
+    let menuVisible = false
   </script>
   
   <svelte:head>
@@ -64,67 +68,125 @@
   </svelte:head>
   <div class="flex-scrollable-parent">
     <div class="flex-scrollable-container">
-    <div class='app' style={bgImage}>
+      <div class='app'>
 
-    {#if tsStore}
-      <Toolbar profilesStore={profilesStore}/>
-      {#if ($boardList.avatars[myAgentPubKey] && $boardList.avatars[myAgentPubKey].name) || profilesStore}
-        {#if boardList && $boardList.boards.length == 0}
-          <div class="welcome-text">
-            <h2>Welcome!</h2>
-              <p>KanDo offers real-time collaborative Kanban boards for task and project management. </p>
-              <p>
-                Click on the <Fa style="width:20px; color:black; " icon={faSquarePlus}></Fa> above to create your first board.
-                You can add columns for your board, customize voting categories and settings, and more in the board creation window.
-              </p>
-            <p>You can always edit these settings with the <Fa style="width:20px; color:black; " icon={faCog}></Fa> button in the upper right when you have a board selected. </p>
-          </div>
-        {/if}
+      {#if kdStore}
+      <div class="wrapper">
+
+      <div class="header">
+        <Toolbar 
+          profilesStore={profilesStore}/>
+      </div>
+      <div class="workspace" style="display:flex">
+      {#if $uiProps.showMenu}
         {#if boardList && $boardList.boards.length > 0 && $activeBoardHash === undefined}
-          <div class="welcome-text">
-            <!-- {#if !$boardList.agentBoards[myAgentPubKey]} -->
-              <p>Active Boards: {activeBoards.length}, Archived Boards: {archivedBoards.length}</p>
-                <p>
-                  Select a board from the dropdown above, or add a new one with the  <Fa style="width:20px; color:black; " icon={faSquarePlus}></Fa> button.
-                  You can add columns for your board, customize voting categories and settings, and more in the board creation window.
-                </p>
-              <p>You can always edit these settings with the <Fa style="width:20px; color:black; " icon={faCog}></Fa> button in the upper right when you have a board selected. </p>
-              <p>Any boards that you have archived will appear under the <Fa style="width:20px; color:black; " icon={faFileImport}></Fa> button, and you can un-archive them by selecting them from the list.</p>
-            <!-- {:else}
-              <h4> My Boards</h4>
-              <div class="my-boards">
-                {#each $boardList.agentBoards[myAgentPubKey] as myBoard}
-                  <div class="my-board"
-                    on:click={()=>tsStore.boardList.setActiveBoard(myBoard)}
-                    >
-                    {get(tsStore.boardList.getReadableBoardState(myBoard)).name}
-                  </div>
-                {/each}
-              </div>
-            {/if} -->
+          <div class="board-menu" >
+            <BoardMenu wide={true}></BoardMenu>
+          </div>
+        {:else}
+          <div class="board-menu">
+            <BoardMenu wide={false}></BoardMenu>
           </div>
         {/if}
+      {:else}
+        <div class="board-menu slideOut">
+          <BoardMenu wide={false}></BoardMenu>
+        </div>
       {/if}
-      {#if $activeBoardHash !== undefined}
-        <KanDoPane on:requestChange={(event) => {tsStore.boardList.requestBoardChanges($activeBoardHash,event.detail)}}/>
-      {/if}
-    {:else}
-      <div class="loading"><div class="loader"></div></div>
-    {/if}
-  </div>
 
-</div></div>
+        
+        {#if $activeBoardHash !== undefined}
+          <KanDoPane on:requestChange={(event) => {kdStore.boardList.requestBoardChanges($activeBoardHash,event.detail)}}/>
+        {/if}
+        </div>
+        </div>
+      {:else}
+        <div class="loading"><div class="loader"></div></div>
+      {/if}
+      <div class="background">
+        <div class="background-overlay"></div>
+        <div class="background-image"
+              style={`background-image: url(${bgUrl}`}></div>
+      </div>
+    </div>
+  </div>
+</div>
 <style>
   .app {
     margin: 0;
     padding-bottom: 10px;
-    background-image: var(--bg-img, url(""));
     background-size: cover;
     display: flex;
     flex-direction: column;
     min-height: 0;
+    background-color: #fff;
     height: 100vh;
+    position: relative;
   }
+
+  .board-menu {
+      animation-duration: .3s;
+      animation-name: slideIn;
+      animation-iteration-count: 1;
+      animation-timing-function: cubic-bezier(0.42, 0, 0.58, 1.1);
+      z-index: 199;
+      --margin-end-position: 0px;
+      --margin-start-position: -330px;
+      margin-left: 0;
+
+    }
+
+    .board-menu.slideOut {
+      animation-duration: .3s;
+      animation-name: slideIn;
+      --margin-end-position: -330px;
+      animation-timing-function: cubic-bezier(0.42, 0, 0.58, 1.1);
+      --margin-start-position: 0px;
+      margin-left: -330px;
+    }
+
+    @keyframes slideIn {
+        from {
+            margin-left: var(--margin-start-position);
+            backdrop-filter: blur(10px);
+        }
+
+        to {
+            margin-left: var(--margin-end-position);
+            backdrop-filter: blur(0px);
+        }
+    }
+
+  .background {
+    position: absolute;
+    z-index: 0;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .background-overlay {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.87) 0%, rgba(148, 179, 205, 0.78) 100%);
+    position: absolute;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    opacity: .8;
+  }
+
+  .background-image {
+    position: absolute;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    background-size: cover;
+  }
+
   :global(:root) {
     --resizeable-height: 200px;
     --tab-width: 60px;
@@ -135,16 +197,7 @@
       max-width: none;
     }
   }
-  .welcome-text {
-    border-radius: 5px;
-    border: 1px solid #222;
-    margin: auto;
-    margin-top: 50px;
-    max-width: 650px;
-    padding: 26px;
-    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
-    background-color: white;
-  }
+
   .loading {
     text-align: center;
     padding-top: 100px;
@@ -187,6 +240,12 @@
     max-height: 100%;
     overflow-y: auto;
   }
+
+  .wrapper {
+    position: relative;
+    z-index: 10;
+  }
+
   /* .my-boards {
     display: flex;
   }

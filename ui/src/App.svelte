@@ -41,7 +41,6 @@
 
 <style>
   :global(body) {
-    font-family: Roboto,'Open Sans','Helvetica Neue',sans-serif;
     min-height: 0;
     display: flex;
     flex-direction: column;

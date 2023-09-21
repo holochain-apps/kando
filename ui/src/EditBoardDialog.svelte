@@ -7,7 +7,8 @@
     import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
     import '@shoelace-style/shoelace/dist/components/button/button.js';
     import type SlDialog from '@shoelace-style/shoelace/dist/components/dialog/dialog';
-  import type { Board, BoardProps, BoardState, CategoryDef, Group, LabelDef } from './board';
+    import type { Board, BoardProps, BoardState, CategoryDef, Group, LabelDef } from './board';
+  import { get } from 'svelte/store';
 
     let boardHash:EntryHashB64|undefined = undefined
 
@@ -22,11 +23,15 @@
         dialog.show()
     }
 
-    const { getStore } :any = getContext('tsStore');
+    const { getStore } :any = getContext('kdStore');
 
     const store:KanDoStore = getStore();
 
-    const updateBoard = async ( name: string, groups: Group[], labelDefs: LabelDef[],  categoryDefs: CategoryDef[], props: BoardProps) => {
+    const updateBoard = async ( name: string, groups: Group[], labelDefs: LabelDef[],  categoryDefs: CategoryDef[], props: BoardProps, showArchived: boolean) => {
+        const sa:{[key: string]: boolean} = get(store.uiProps).showArchived
+        sa[boardHash] = showArchived
+        store.setUIprops({showArchived:sa})
+
         // ignore board type we don't update that.
         const board: Board | undefined = await store.boardList.getBoard(boardHash)
         if (board) {
@@ -74,6 +79,13 @@
     }
     const archiveBoard = () => {
         store.boardList.archiveBoard(boardHash)
+        const recent = get(store.uiProps).recent
+        const idx = recent.findIndex((h)=> h === boardHash)
+        if (idx >= 0) {
+            recent.splice(idx,1)
+            store.setUIprops({recent})
+        }
+        store.setUIprops({showMenu: true})
         close()
     }
     const close = ()=>{
@@ -83,6 +95,12 @@
     let boardEditor
 </script>
 <sl-dialog persistent bind:this={dialog} label="Edit Board" 
+on:sl-initial-focus={(e)=>{
+    boardEditor.initialFocus()
+    e.preventDefault()
+
+  }}
+
 on:sl-request-close={(event)=>{
     if (event.detail.source === 'overlay') {
     event.preventDefault();    
