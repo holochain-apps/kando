@@ -23,7 +23,9 @@
         reader.addEventListener("load", async () => {
             const b = JSON.parse(reader.result as string)
             for (const [idx, card] of b.cards.entries()) {
-                if (card.comments && typeof(card.comments.length) === "number") {
+                if (!card.comments) {
+                    card.comments = {}
+                } else if ( typeof(card.comments.length) === "number") {
                     // array of comments, convert to object
                     const comments = {}
                     for (const c  of card.comments) {
@@ -31,7 +33,9 @@
                     }
                     card.comments = comments
                 }
-                if (card.checklists && typeof(card.checklists.length) === "number") {
+                if (!card.checklists) {
+                    card.checklists = {}
+                } else if (typeof(card.checklists.length) === "number") {
                     // array of checklists, convert to object
                     const checklists = {}
                     let i = 0
@@ -54,7 +58,7 @@
 </script>
 
 
-<sl-dialog label="KanDo!: UI v0.5.0-beta4 for DNA v0.3.x" bind:this={dialog} width={600} >
+<sl-dialog label="KanDo!: UI v0.5.2 for DNA v0.4.x" bind:this={dialog} width={600} >
     <div class="about">
         <p>KanDo! is a demonstration Holochain app built by the Holochain Foundation.</p>
         <p> <b>Developers:</b>
