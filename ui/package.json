@@ -16,7 +16,7 @@
     "@holochain-open-dev/profiles": "^0.16.0",
     "@holochain-open-dev/stores": "^0.6.0",
     "@holochain-open-dev/utils": "^0.15.0",
-    "@holochain-syn/core": "^0.5.1",
+    "@holochain-syn/core": "^0.6.0",
     "@holochain/client": "^0.16",
     "@holo-host/web-sdk": "",
     "@mdi/js": "^7.1.96",
