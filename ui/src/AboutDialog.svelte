@@ -54,7 +54,7 @@
 </script>
 
 
-<sl-dialog label="KanDo!: UI v0.5.0-beta3 for DNA v0.3.x" bind:this={dialog} width={600} >
+<sl-dialog label="KanDo!: UI v0.5.0-beta4 for DNA v0.3.x" bind:this={dialog} width={600} >
     <div class="about">
         <p>KanDo! is a demonstration Holochain app built by the Holochain Foundation.</p>
         <p> <b>Developers:</b>
