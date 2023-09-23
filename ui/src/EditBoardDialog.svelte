@@ -85,6 +85,7 @@
             recent.splice(idx,1)
             store.setUIprops({recent})
         }
+        store.setUIprops({showMenu: true})
         close()
     }
     const close = ()=>{

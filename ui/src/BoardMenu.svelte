@@ -177,7 +177,7 @@
         position: relative;
         width: 290px;
         height: 50px;
-        background: #243076;
+        background: rgba(24, 55, 122, 1.0);
         border: 1px solid #4A559D;
         color: #fff;
         display: flex;
@@ -185,6 +185,19 @@
         border-radius: 5px;
         font-size: 16px;
         font-weight: bold;
+        transition: all .25s ease;
+        padding: 15px 0;
+        box-shadow: 0px 4px 8px rgba(35, 32, 74, 0);
+    }
+
+    .new-board:hover {
+        cursor: pointer;
+        padding: 15px 5px;
+        width: 300px;
+        border: 1px solid #252d5d;
+        background: rgb(10, 25, 57);
+        margin: 0 -5px 0 -5px;
+        box-shadow: 0px 4px 15px rgba(35, 32, 74, 0.8);
     }
 
     .new-board span {
@@ -202,15 +215,23 @@
         border: 1px solid;
         background: linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgb(200 221 237) 100%);
         position: relative;
-        animation-duration: .35s;
+        display: block;
         box-shadow: 0px 4px 8px rgba(35, 32, 74, 0.8);
     }
 
     .board:hover {
         cursor: pointer;
-        padding: 15px 10px;
+        z-index: 100;
+        padding: 15px;
+        width: 300px;
         background: linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 1) 100%);
-        margin: 0px 5px;
+        margin: 0 -5px 0 -5px;
+        box-shadow: 0px 4px 14px rgba(35, 32, 74, 0.8);
+        z-index: 100;
+    }
+
+    .wide .board:hover {
+        margin: 0 0 0 0;
     }
 
     .footer {

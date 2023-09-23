@@ -50,7 +50,18 @@
     box-shadow: 0px 4px 4px rgba(66, 66, 66, 0.1);
     border-radius: 5px;
     transition: all .25s ease;
+    transform: scale(1);
   }
+
+  .board-button:hover {
+    transform: scale(1.25);
+  }
+
+  .board-button:active {
+    box-shadow: 0px 8px 10px rgba(53, 39, 211, 0.35);
+    transform: scale(1.1);
+  }
+
   .selected {
     background-color: rgba(32, 32, 137, 1.0);
   }

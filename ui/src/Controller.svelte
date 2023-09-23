@@ -77,9 +77,7 @@
         <Toolbar 
           profilesStore={profilesStore}/>
       </div>
-
       <div class="workspace" style="display:flex">
-
       {#if $uiProps.showMenu}
         {#if boardList && $boardList.boards.length > 0 && $activeBoardHash === undefined}
           <div class="board-menu" >
