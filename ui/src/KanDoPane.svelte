@@ -509,7 +509,7 @@
                     </div>
                     <div class="card-description">{@html Marked.parse(props.description)}</div>
                   </div>
-                  {#if (props && props.agents && props.agents.length > 0) || ( Object.keys(comments).length>0) || (Object.keys(checklists).length> 0)}
+                  {#if (props && props.agents && props.agents.length > 0) || ( comments && Object.keys(comments).length>0) || (checklists && Object.keys(checklists).length> 0)}
                   <div class="contributors">
                     {#if props && props.agents && props.agents.length > 0}
                       {#each props.agents as agent}
@@ -517,10 +517,10 @@
                       {/each}
                     {/if}
                     <div class="comments-checklist">
-                      {#if Object.keys(checklists).length>0}
+                      {#if checklists && Object.keys(checklists).length>0}
                         <div class="checklist-count"><Fa icon={faCheck} /> {checkedChecklistItems(checklists)} / {totalChecklistItems(checklists)}</div>
                       {/if}
-                      {#if Object.keys(comments).length>0}
+                      {#if comments && Object.keys(comments).length>0}
                         <div class="comment-count"><Fa icon={faComments} />: {Object.keys(comments).length}</div>
                       {/if}
                     </div>
