@@ -512,6 +512,7 @@
           on:sl-blur={()=>{
             commentingFocused = false
             commentElement.value = ""
+            commentText = ""
           }}
      
           on:keydown={(e)=> {
@@ -520,10 +521,11 @@
                 e.stopPropagation()
               }
               if (e.keyCode == 13) {
-                addComment(cardId, commentElement.value)
-                commentElement.blur()
-                e.stopPropagation()
-
+                if (commentElement.value != "") {
+                  addComment(cardId, commentElement.value)
+                  commentElement.blur()
+                  e.stopPropagation()
+                }
               }
           }}
 
