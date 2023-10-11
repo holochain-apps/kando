@@ -90,7 +90,7 @@
         <div class="boards-section">
             {#each $boardList.boards as board }
                 {#if board.status === "archived" }
-                <div class="board" id={board.hash} on:click={unarchiveBoard(board.hash)}>
+                <div class="board" id={board.hash} on:click={()=>unarchiveBoard(board.hash)}>
                     <div class="board-name">{board.name}</div>
                     <div class="board-bg" style="background-image: url({bgUrl});"></div>
                 </div>
