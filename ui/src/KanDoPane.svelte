@@ -376,7 +376,7 @@
     <div class="right-items">
 
       <sl-button class="board-button settings" on:click={()=> editBoardDialog.open(cloneDeep($activeHash))} title="Settings">
-        <Fa icon={faCog} size="1x"/>
+        <Fa icon={faCog} size="1x" style="background: transparent;"/>
       </sl-button>
       <sl-button  class="board-button" on:click={closeBoard} title="Close">
         <Fa icon={faClose} />
@@ -618,6 +618,10 @@
   .right-items {
     display: flex;
     align-items: center;
+  }
+
+  sl-button.board-button::part(base) {
+    background-color: transparent;
   }
 
   .right-items .board-button::part(base) {
