@@ -1,5 +1,4 @@
 <script lang="ts">
-  import type { Avatar } from './boardList';
   import type { Readable } from 'svelte/store';
   import { UngroupedId, type CardProps, type CategoryDef, type LabelDef } from "./board";
   import '@shoelace-style/shoelace/dist/components/select/select.js';
@@ -7,13 +6,12 @@
   import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
   import '@shoelace-style/shoelace/dist/components/input/input.js';
   import '@shoelace-style/shoelace/dist/components/drawer/drawer.js';
-  import type { AgentPubKeyB64 } from "@holochain/client/lib/types";
   import { cloneDeep, isEqual } from "lodash";
   import { v1 as uuidv1 } from "uuid";
   import { getContext } from 'svelte';
   import type { KanDoStore } from './kanDoStore';
-  import AvatarIcon from './AvatarIcon.svelte';
-  import { decodeHashFromBase64 } from '@holochain/client';
+  import Avatar from './Avatar.svelte';
+  import { decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
   import { faEdit, faTrash, faPlus, faArchive, faClose, faPaperPlane, faCancel } from '@fortawesome/free-solid-svg-icons';
   import type { Checklist, ChecklistItem, Comment } from "./board";
 
@@ -35,8 +33,8 @@
   
   const { getStore } :any = getContext("kdStore");
   let store: KanDoStore = getStore();
-  $: activeBoardHash = store.boardList.activeBoardHash;
-  $: state = store.boardList.getReadableBoardState($activeBoardHash);
+  $: activeBoard = store.boardList.activeBoard;
+  $: state = $activeBoard.readableState()
   $: card = $state.cards.find(c=>c.id == cardId)
   $: props = cloneDeep(card ? card.props : DEFAULT_PROPS)
   $: labelTypes = $state.labelDefs
@@ -46,8 +44,7 @@
   $: selectedLabels = calcSelectedLabels(props.labels)
   $: selectedAvatars = cloneDeep(props.agents)
   $: selectedAvatarsForSelect = selectedAvatars.join(" ")
-
-  export let avatars: Readable<{[key: string]: Avatar}> 
+  $: allProfiles = store.profilesStore.allProfiles
 
   const DEFAULT_PROPS = {title:"", description:"", category: "", agents:[], labels:[]}
 
@@ -79,12 +76,6 @@
   const setAgents = () => {
     props.agents = selectedAvatars
     handleSave(props)
-  }
-
-  const avatarNames = () => {
-    const options= Object.entries($avatars).map(([key,value]) => 
-    {return {label: value["name"] ? value["name"]:key, value: key}} )
-    return options
   }
 
   const setLabels = () => {
@@ -131,7 +122,7 @@
   };
     
   const requestChanges = (changes) => {
-    store.boardList.requestBoardChanges($activeBoardHash,changes)
+    $activeBoard.requestChanges(changes)
   }
 
   let labelSelect
@@ -159,7 +150,7 @@
     const comment:Comment = {
       id: uuidv1(),
       text,
-      agent: store.myAgentPubKey(),
+      agent: store.myAgentPubKeyB64,
       timestamp: new Date().getTime()
     }
     requestChanges([{ type: "add-card-comment", id, comment}])
@@ -461,7 +452,7 @@
       </sl-select>
     </div>
     {/if}
-    {#if Object.keys($avatars).length > 0}
+    {#if $allProfiles.status=="complete"}
     <div class="multi-select card-section">
       <div class="detail-label">Assigned to</div>
       <sl-select
@@ -472,8 +463,8 @@
         }}
         multiple 
         >
-        {#each avatarNames() as avatar}
-        <sl-option value={avatar.value}>{avatar.label}</sl-option>
+        {#each Array.from($allProfiles.value) as [hash, profile]}
+        <sl-option value={encodeHashToBase64(hash)}>{profile.entry.nickname}</sl-option>
         {/each}
       </sl-select>
 
@@ -555,10 +546,10 @@
           {#each Object.values(card.comments).sort((a,b)=> a.timestamp - b.timestamp) as comment}
             <div class="comment">
               <div class="comment-header">
-                <div class="comment-avatar"><AvatarIcon size={20} avatar={$avatars[comment.agent]} key={decodeHashFromBase64(comment.agent)}/></div>
+                <div class="comment-avatar"><Avatar size={20}  agentPubKey={decodeHashFromBase64(comment.agent)}/></div>
                 <div class="comment-time-and-controls">
                   <div class="comment-time">{store.timeAgo.format(new Date(comment.timestamp))}</div>
-                  {#if comment.agent==store.myAgentPubKey()}
+                  {#if comment.agent==store.myAgentPubKeyB64}
                   <div class="comment-controls">
                     <div class="comment-control"
                       on:click={()=>editComment(cardId, comment)}

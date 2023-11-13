@@ -3,21 +3,21 @@
     import type { KanDoStore } from './kanDoStore';
     import { getContext, onMount } from 'svelte';
     import { isEqual } from 'lodash'
-    import type { EntryHashB64 } from '@holochain/client';
+    import { encodeHashToBase64, type EntryHash, type EntryHashB64 } from '@holochain/client';
     import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
     import '@shoelace-style/shoelace/dist/components/button/button.js';
     import type SlDialog from '@shoelace-style/shoelace/dist/components/dialog/dialog';
     import type { Board, BoardProps, BoardState, CategoryDef, Group, LabelDef } from './board';
   import { get } from 'svelte/store';
 
-    let boardHash:EntryHashB64|undefined = undefined
+    let boardHash:EntryHash|undefined = undefined
 
     let dialog: SlDialog
     onMount(async () => {
 
     })
 
-    export const  open = async (hash: EntryHashB64)=> {
+    export const  open = async (hash: EntryHash)=> {
         boardHash = hash
         boardEditor.edit(hash)
         dialog.show()
@@ -29,22 +29,15 @@
 
     const updateBoard = async ( name: string, groups: Group[], labelDefs: LabelDef[],  categoryDefs: CategoryDef[], props: BoardProps, showArchived: boolean) => {
         const sa:{[key: string]: boolean} = get(store.uiProps).showArchived
-        sa[boardHash] = showArchived
+        const boardHashB64 = encodeHashToBase64(boardHash)
+        sa[boardHashB64] = showArchived
         store.setUIprops({showArchived:sa})
 
-        // ignore board type we don't update that.
         const board: Board | undefined = await store.boardList.getBoard(boardHash)
         if (board) {
         let changes = []
         const state: BoardState = board.state()
         if (state.name != name) {
-            store.boardList.requestChanges([
-            {
-                type: 'set-name',
-                hash: board.hashB64(),
-                name: name
-            }
-            ])
             changes.push(
             {
                 type: 'set-name',
@@ -72,7 +65,7 @@
             })
         }
         if (changes.length > 0) {
-            await store.boardList.requestBoardChanges(boardHash, changes)
+            await board.requestChanges(changes)
         }
         }
         close()
@@ -80,7 +73,8 @@
     const archiveBoard = () => {
         store.boardList.archiveBoard(boardHash)
         const recent = get(store.uiProps).recent
-        const idx = recent.findIndex((h)=> h === boardHash)
+        const boardHashB64 = encodeHashToBase64(boardHash)
+        const idx = recent.findIndex((h)=> h === boardHashB64)
         if (idx >= 0) {
             recent.splice(idx,1)
             store.setUIprops({recent})

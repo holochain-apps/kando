@@ -1,7 +1,4 @@
 <script lang="ts">
-  import type { Avatar } from './boardList';
-  import type { Readable } from 'svelte/store';
-  import { onMount } from "svelte";
   import type { CardProps, CategoryDef, LabelDef } from "./board";
   import '@shoelace-style/shoelace/dist/components/select/select.js';
   import '@shoelace-style/shoelace/dist/components/option/option.js';
@@ -10,13 +7,19 @@
   import type { AgentPubKeyB64 } from "@holochain/client/lib/types";
   import { cloneDeep } from "lodash";
   import type { v1 as uuidv1 } from "uuid";
+  import { getContext } from "svelte";
+  import type { KanDoStore } from "./kanDoStore";
+  import { encodeHashToBase64 } from "@holochain/client";
+
+  const { getStore } :any = getContext("kdStore");
+  let store: KanDoStore = getStore();
+  $: allProfiles = store.profilesStore.allProfiles
 
   export let handleSave
   export let handleDelete = undefined
   export let handleArchive = undefined
   export let cancelEdit
   
-  export let avatars: Readable<{[key: string]: Avatar}> 
   export let labelTypes: Array<LabelDef>
   export let categories: Array<CategoryDef>
   export let title
@@ -72,12 +75,6 @@
   }
   const setAgents = () => {
     props.agents = selectedAvatars
-  }
-
-  const avatarNames = () => {
-    const options= Object.entries($avatars).map(([key,value]) => 
-    {return {label: value["name"] ? value["name"]:key, value: key}} )
-    return options
   }
 
   const labelOptions = ()  => {
@@ -160,23 +157,23 @@ let labelSelect
 
   </div>
   {/if}
-  {#if Object.keys($avatars).length > 0}
-  <div class="multi-select">
-    <sl-select
-      value={selectedAvatars.join(" ")}
-      label="Assigned To"
-      on:sl-change={(e)=>{
-        selectedAvatars = e.target.value
-        setAgents()
-      }}
-      multiple 
-      >
-      {#each avatarNames() as avatar}
-      <sl-option value={avatar.value}>{avatar.label}</sl-option>
-      {/each}
-    </sl-select>
+  {#if $allProfiles.status=="complete"}
+    <div class="multi-select">
+      <sl-select
+        value={selectedAvatars.join(" ")}
+        label="Assigned To"
+        on:sl-change={(e)=>{
+          selectedAvatars = e.target.value
+          setAgents()
+        }}
+        multiple 
+        >
+        {#each Array.from($allProfiles.value) as [hash, profile]}
+          <sl-option value={encodeHashToBase64(hash)}>{profile.entry.nickname}</sl-option>
+        {/each}
+      </sl-select>
 
-  </div>
+    </div>
   {/if}
   <div class='controls'>
     {#if handleDelete}

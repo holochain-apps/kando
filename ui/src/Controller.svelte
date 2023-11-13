@@ -6,23 +6,21 @@
     import type { AppAgentClient } from '@holochain/client';
     import type { SynStore } from '@holochain-syn/store';
     import type { ProfilesStore } from "@holochain-open-dev/profiles";
-    import Fa from 'svelte-fa';
-    import { faCog, faFileImport, faSquarePlus } from '@fortawesome/free-solid-svg-icons';
-    import KDLogoIcon from "./icons/KDLogoIcon.svelte";
     import BoardMenu from "./BoardMenu.svelte";
-    import { slide } from 'svelte/transition';
 
     export let roleName = ""
-  
-    let synStore: SynStore;
-    let kdStore: KanDoStore;
-    
     export let client : AppAgentClient
-    export let profilesStore : ProfilesStore|undefined = undefined
+    export let profilesStore : ProfilesStore
 
-    $: activeBoardHash = kdStore && kdStore.boardList ? kdStore.boardList.activeBoardHash : undefined
-
-    initialize()
+    let kdStore: KanDoStore = new KanDoStore (
+        profilesStore,
+        client,
+        roleName,
+      );
+    let synStore: SynStore = kdStore.synStore
+  
+    $: activeBoardHash = kdStore.boardList.activeBoardHash
+    $: activeBoard = kdStore.boardList.activeBoard
 
     setContext('synStore', {
       getStore: () => synStore,
@@ -34,32 +32,11 @@
     const DEFAULT_KD_BG_IMG = "none"
     //const DEFAULT_KD_BG_IMG = "https://img.freepik.com/free-photo/studio-background-concept-abstract-empty-light-gradient-purple-studio-room-background-product-plain-studio-background_1258-54461.jpg"
     const NO_BOARD_IMG = "none"
-    $: boardList = kdStore? kdStore.boardList.stateStore() : undefined
-    $: archivedBoards = boardList ? $boardList.boards.filter((board)=>board.status === "archived") : []
-    $: activeBoards = boardList ? $boardList.boards.filter((board)=>board.status !== "archived") : []
-    $: boardState = kdStore ? kdStore.boardList.getReadableBoardState($activeBoardHash) :  undefined
-    $: bgUrl = boardState ?  ($boardState.props && $boardState.props.bgUrl) ? $boardState.props.bgUrl : DEFAULT_KD_BG_IMG : NO_BOARD_IMG
-    $: bgImage = `background-image: url("`+ bgUrl+`");`
-    $: myAgentPubKey = kdStore ? kdStore.myAgentPubKey() : undefined
-    $: uiProps = kdStore ? kdStore.uiProps : undefined
+    $: uiProps = kdStore.uiProps
+    $: boardCount = kdStore.boardList.boardCount
 
-    async function initialize() : Promise<void> {
-      const store = createStore()
-      synStore = store.synStore;
-      try {
-        await store.loadBoards()
-        kdStore = store
-      } catch (e) {
-        console.log("Error loading boards:", e)
-      }
-    }
-    function createStore() : KanDoStore {
-      const store = new KanDoStore(
-        client,
-        roleName
-      );
-      return store
-    }
+    $: bgUrl = DEFAULT_KD_BG_IMG  // FIXME$activeBoard ?   ($activeBoard.state.props && $boardState.props.bgUrl) ? $boardState.props.bgUrl : DEFAULT_KD_BG_IMG 
+    $: bgImage = `background-image: url("`+ bgUrl+`");`
     let menuVisible = false
   </script>
   
@@ -78,9 +55,9 @@
           profilesStore={profilesStore}/>
       </div>
       <div class="workspace" style="display:flex">
-      {#if $uiProps.showMenu}
-        {#if boardList && $boardList.boards.length > 0 && $activeBoardHash === undefined}
-          <div class="board-menu" >
+      {#if $uiProps.showMenu && $boardCount.status == "complete"}
+       {#if $boardCount.value > 0 && $activeBoardHash === undefined}
+         <div class="board-menu" >
             <BoardMenu wide={true}></BoardMenu>
           </div>
         {:else}
@@ -96,7 +73,7 @@
 
         
         {#if $activeBoardHash !== undefined}
-          <KanDoPane on:requestChange={(event) => {kdStore.boardList.requestBoardChanges($activeBoardHash,event.detail)}}/>
+          <KanDoPane activeBoard={$activeBoard}/>
         {/if}
         </div>
         </div>

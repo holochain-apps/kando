@@ -14,10 +14,10 @@
     }
   }
   const { getStore } :any = getContext("kdStore");
-  let kdStore: KanDoStore = getStore();
+  let store: KanDoStore = getStore();
 
-  $: activeHash = kdStore.boardList.activeBoardHash;
-  $: state = kdStore.boardList.getReadableBoardState($activeHash);
+  $: activeBoard = store.boardList.activeBoard;
+  $: state = $activeBoard ? $activeBoard.readableState() : undefined
 
 </script>
 

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { createEventDispatcher, getContext, onMount } from "svelte";
+  import { getContext, onMount } from "svelte";
   import CardEditor from "./CardEditor.svelte";
   import CardDetails from "./CardDetails.svelte";
   import EmojiIcon from "./icons/EmojiIcon.svelte";
@@ -8,9 +8,9 @@
   import LabelSelector from "./LabelSelector.svelte";
   import { Marked, Renderer } from "@ts-stack/markdown";
   import { v1 as uuidv1 } from "uuid";
-  import { type Card, Group, UngroupedId, type CardProps, type BoardState, type Comment, type Checklist, type Checklists } from "./board";
+  import { type Card, Group, UngroupedId, type CardProps, type BoardState, type Comment, type Checklist, type Checklists, Board } from "./board";
   import EditBoardDialog from "./EditBoardDialog.svelte";
-  import AvatarIcon from "./AvatarIcon.svelte";
+  import Avatar from "./Avatar.svelte";
   import { decodeHashFromBase64 } from "@holochain/client";
   import { cloneDeep, isEqual } from "lodash";
   import Fa from "svelte-fa";
@@ -25,8 +25,6 @@
           columnNameElem.select()
         })
 	});
-
-  const dispatch = createEventDispatcher()
 
   Marked.setOptions
   ({
@@ -49,14 +47,15 @@
   const { getStore } :any = getContext("kdStore");
   let kdStore: KanDoStore = getStore();
 
+  export let activeBoard: Board
+
   $: uiProps = kdStore.uiProps
-  $: activeHash = kdStore.boardList.activeBoardHash;
+  $: participants = activeBoard.participants()
   $: activeCard = kdStore.boardList.activeCard;
-  $: state = kdStore.boardList.getReadableBoardState($activeHash);
+  $: activeHashB64 = kdStore.boardList.activeBoardHashB64;
+  $: state = activeBoard.readableState()
   $: items = $state ? $state.cards : undefined;
   $: sortCards = (items) => items // no sort algorithm for now
-
-  $: avatars = kdStore.boardList.avatars()
   
   $: openCard = (cardId) => {
     if (cardId) {
@@ -95,7 +94,7 @@
   $: hashChanged = (_hash) => {
     addingColumn = $state.groups.length == 1
   }
-  $: x = hashChanged($activeHash)
+  $: x = hashChanged($activeHashB64)
 
   const sorted = (itemIds, sortFn)=> {
     var items = itemIds.map((id)=>cardsMap[id])
@@ -143,24 +142,24 @@
         checklists: {}, 
         props,
       };
-      dispatch("requestChange", [{ type: "add-card", value: card, group: column}]);
+      activeBoard.requestChanges([{ type: "add-card", value: card, group: column}]);
   };
 
   const addComment = (id: uuidv1, text: string) => {
     const comment:Comment = {
       id: uuidv1(),
       text,
-      agent: kdStore.myAgentPubKey(),
+      agent: kdStore.myAgentPubKeyB64,
       timestamp: new Date().getTime()
     }
 
-    dispatch("requestChange", [{ type: "add-card-comment", id, comment}]);
+    activeBoard.requestChanges([{ type: "add-card-comment", id, comment}]);
   }
   const updateComment = (id: uuidv1, commentId:uuidv1, text: string) => {
-    dispatch("requestChange", [{ type: "update-card-comment", id, commentId, text}]);
+    activeBoard.requestChanges([{ type: "update-card-comment", id, commentId, text}]);
   }
   const deleteComment = (id: uuidv1, commentId:uuidv1) => {
-    dispatch("requestChange", [{ type: "delete-card-comment", id, commentId}]);
+    activeBoard.requestChanges([{ type: "delete-card-comment", id, commentId}]);
   }
 
   const updateCard = (_groupId: uuidv1, props:CardProps) => {
@@ -173,15 +172,15 @@
           changes.push({ type: "update-card-props", id: card.id, props: cloneDeep(props)})
         }
         if (changes.length > 0) {
-        dispatch("requestChange", changes);
+        activeBoard.requestChanges(changes);
         }
       }
       clearEdit()
   };
     
   const deleteCard = (id: uuidv1) => {
-        dispatch("requestChange", [{ type: "delete-card", id }]);
-        clearEdit()
+      activeBoard.requestChanges([{ type: "delete-card", id }]);
+      clearEdit()
     };
 
   const countLabels = (props, type) : number | undefined => {
@@ -266,7 +265,7 @@
       if (dragWithSelf) {
         dragOrder-=1
       }
-      dispatch("requestChange",[{ type: "update-card-group", id:srcId, group:column.id, index: dragOrder }])
+      activeBoard.requestChanges([{ type: "update-card-group", id:srcId, group:column.id, index: dragOrder }])
     }
     clearDrag()
     //console.log("handleDragDropColumn",e, column )
@@ -284,7 +283,7 @@
   }
 
   $: sortedColumns = () => {
-    if ($uiProps.showArchived[$activeHash]) {
+    if ($uiProps.showArchived[$activeHashB64]) {
       // make sure the ungrouped group is at the end.
       let cols = $state.groups.map((group)=> [group.id, $state.grouping[group.id]])
       const idx = cols.findIndex(([id,_]) => id == UngroupedId)
@@ -319,14 +318,14 @@
   let columnNameElem 
 
 
-  const newGroup = async ()=>{
+  const newGroup = ()=>{
     if (newColumnName == "") {
       return
     }
     const newGroups = cloneDeep($state.groups)
     newGroups.push(new Group(newColumnName))
     newColumnName = ""
-    await kdStore.boardList.requestBoardChanges($activeHash, [
+    activeBoard.requestChanges([
       {
         type: "set-groups",
         groups: newGroups
@@ -375,7 +374,7 @@
     </div>
     <div class="right-items">
 
-      <sl-button class="board-button settings" on:click={()=> editBoardDialog.open(cloneDeep($activeHash))} title="Settings">
+      <sl-button class="board-button settings" on:click={()=> editBoardDialog.open(activeBoard.hash)} title="Settings">
         <Fa icon={faCog} size="1x"/>
       </sl-button>
       <sl-button  class="board-button" on:click={closeBoard} title="Close">
@@ -387,24 +386,22 @@
   <CardEditor
     bind:this={createCardDialog}              
     title="New Card"
-    handleSave={createCard} {cancelEdit} avatars={avatars} labelTypes={$state.labelDefs} categories={$state.categoryDefs} />
+    handleSave={createCard} {cancelEdit} labelTypes={$state.labelDefs} categories={$state.categoryDefs} />
   <CardEditor
     bind:this={editCardDialog}
     title="Details"
     handleSave={updateCard}
     handleDelete={deleteCard}
     handleArchive={() => {
-        dispatch("requestChange",[{ type: "update-card-group", id:editingCardId, group:UngroupedId  }])
-        clearEdit()
+      activeBoard.requestChanges([{ type: "update-card-group", id:editingCardId, group:UngroupedId, index:0  }])
+      clearEdit()
     }}
     {cancelEdit}
-    avatars={avatars}
     labelTypes={$state.labelDefs}
     categories={$state.categoryDefs}
   />
   <CardDetails
     bind:this={cardDetailsDialog}
-    avatars={avatars}
   />
 
     <div class="columns" on:click={(e)=>{close()}}>
@@ -431,7 +428,7 @@
                 const idx = newGroups.findIndex(g=>g.id==columnId)
                 if (idx >= 0) {
                   newGroups[idx].name = text
-                  kdStore.boardList.requestBoardChanges($activeHash, [
+                  activeBoard.requestChanges([
                     {
                       type: "set-groups",
                       groups: newGroups
@@ -513,7 +510,7 @@
                   <div class="contributors">
                     {#if props && props.agents && props.agents.length > 0}
                       {#each props.agents as agent}
-                        <AvatarIcon size={20} avatar={$avatars[agent]} key={decodeHashFromBase64(agent)}/>
+                        <Avatar size={20}  agentPubKey={decodeHashFromBase64(agent)}/>
                       {/each}
                     {/if}
                     <div class="comments-checklist">

@@ -6,17 +6,16 @@ import {
     type RoleName,
     encodeHashToBase64,
     type EntryHashB64,
+    type AgentPubKey,
   } from '@holochain/client';
-import { RecordBag } from '@holochain-open-dev/utils';
 import { SynStore,  SynClient, type Commit } from '@holochain-syn/core';
-import { CommitTypeBoard, type BoardState } from './board';
-import { BoardList, CommitTypeBoardList } from './boardList';
-import { decode } from '@msgpack/msgpack';
-import {toPromise} from '@holochain-open-dev/stores'
+import { BoardList } from './boardList';
 import TimeAgo from "javascript-time-ago"
 import en from 'javascript-time-ago/locale/en'
 import type { v1 as uuidv1 } from "uuid";
 import { get, writable, type Writable } from "svelte/store";
+import type { ProfilesStore } from '@holochain-open-dev/profiles';
+import type { BoardState } from './board';
 
 
 TimeAgo.addDefaultLocale(en)
@@ -44,6 +43,7 @@ export interface UIProps {
   }
 
 export class KanDoStore {
+    myAgentPubKeyB64: AgentPubKeyB64
     timeAgo = new TimeAgo('en-US')
     service: KanDoService;
     boardList: BoardList;
@@ -64,104 +64,38 @@ export class KanDoStore {
         })
     }
 
-    setActiveBoard(hash:EntryHashB64) {
+    setActiveBoard(hash:EntryHash) {
+        const hashB64 = encodeHashToBase64(hash)
         const recent = get(this.uiProps).recent
-        const idx = recent.findIndex(h=>h===hash)
+        const idx = recent.findIndex(h=>h===hashB64)
         if (idx >=0) {
             recent.splice(idx,1)
         }
-        recent.unshift(hash)
+        recent.unshift(hashB64)
         recent.splice(6);
         this.setUIprops({recent})
         this.boardList.setActiveBoard(hash)
     }
 
-    myAgentPubKey(): AgentPubKeyB64 {
-        return encodeHashToBase64(this.client.myPubKey);
+    get myAgentPubKey(): AgentPubKey {
+        return this.client.myPubKey;
     }
 
     constructor(
+        public profilesStore: ProfilesStore,
         protected clientIn: AppAgentClient,
         protected roleName: RoleName,
         protected zomeName: string = ZOME_NAME
     ) {
         this.client = clientIn
+        this.myAgentPubKeyB64 = encodeHashToBase64(this.client.myPubKey);
         this.service = new KanDoService(
           this.client,
           this.roleName,
           this.zomeName
         );
-        //@ts-ignore
         this.synStore = new SynStore(new SynClient(this.client,this.roleName,this.zomeName))
-        // this.synStore.knownRoots.subscribe( async (roots) => {
-        //     if (this.updating) {
-        //         console.log(`${roots.entryActions.keys().length} ROOTS UPDATE CALLED but allready updating`, roots)
-        //         return
-        //     }
-        //     this.updating = true
-        //     try {
-        //         await this.findOrMakeRoots(roots)
-        //     } catch (e) {
-        //         console.log("Error while updating board list: ",e)
-        //     }
-        //     this.updating = false
-        // })
-    }
-
-    commitType(commit: Commit) : string {
-        const meta:any = decode(commit.meta)
-        return meta.type
-    }
-
-    async findOrMakeRoots(): Promise<any> {
-
-        const roots = await toPromise(this.synStore.allRoots)
-        const records: RecordBag<Commit> = new RecordBag(roots.map(er => er.record))
-        const entries = records.entryMap.entries()
-        console.log(`Found ${records.entryMap.size} root entries`)
-        if (records.entryMap.size == 0) { 
-            console.log(`Found no root entries, creating`)
-            this.boardList = await BoardList.Create(this.synStore);
-        } else {
-            let boardListRoot
-            let boardsRoot
-                    
-            Array.from(entries).forEach(async ([hash, commit], i) => {
-                const commitType = this.commitType(commit)
-                const rootCommit = records.entryRecords[i]
-                if (commitType === CommitTypeBoardList) {
-                    if (!boardListRoot) {
-                        console.log("Found a board list root:", encodeHashToBase64(rootCommit.entryHash))
-                        boardListRoot = rootCommit
-                    } else {
-                        console.log("Found a board list root, but have allready joined:", encodeHashToBase64(boardListRoot.entryHash))
-                    }
-                }
-                if (commitType === CommitTypeBoard) {
-                    if (!boardsRoot) {
-                        console.log("Found a board root:", encodeHashToBase64(rootCommit.entryHash))
-                        boardsRoot = rootCommit
-                    } else {
-                        console.log("Found a board root, but have allread stored: ", encodeHashToBase64(boardsRoot.entryHash))
-                    }
-                }
-            });
-            if (boardListRoot && boardsRoot) {
-                this.boardList = await BoardList.Join(this.synStore, boardListRoot, boardsRoot)
-            } else {
-                console.log("Missing root, found: ", boardListRoot, boardsRoot )
-            }
-
-        }
-    }
-
-    async loadBoards() : Promise<any> {
-        console.log("fetching all roots...")
-        try {
-            await this.findOrMakeRoots()
-        } catch (e) {
-            console.log("Error Fetching Roots:", e)
-        }
+        this.boardList = new BoardList(profilesStore, this.synStore) 
     }
 
     getCardGroupName(cardId: uuidv1, state: BoardState) : string  {

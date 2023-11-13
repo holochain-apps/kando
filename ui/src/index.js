@@ -13,7 +13,7 @@ export { default as BoardMenu} from './BoardMenu.svelte';
 export { default as Folk} from './Folk.svelte';
 export { default as NewBoardDialog} from './NewBoardDialog.svelte';
 export { default as EditBoardDialog} from './EditBoardDialog.svelte';
-export { default as SortSelector} from './SortSelector.svelte';
+export { default as SortSelector} from './LabelSelector.svelte';
 export { default as CardEditor} from './CardEditor.svelte';
 export { default as CardEditor} from './CardEditor.svelte';
 export { default as Toolbar } from './Toolbar.svelte';

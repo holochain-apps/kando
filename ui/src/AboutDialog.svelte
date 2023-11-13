@@ -51,14 +51,14 @@
             }
             const board = await store.boardList.makeBoard(b)
             store.setUIprops({showMenu:false})
-            store.setActiveBoard(board.hashB64())
+            store.setActiveBoard(board.hash)
         }, false);
         reader.readAsText(file);
     };
 </script>
 
 
-<sl-dialog label="KanDo!: UI v0.5.3 for DNA v0.4.x" bind:this={dialog} width={600} >
+<sl-dialog label="KanDo!: UI v0.6.0 for DNA v0.5.x" bind:this={dialog} width={600} >
     <div class="about">
         <p>KanDo! is a demonstration Holochain app built by the Holochain Foundation.</p>
         <p> <b>Developers:</b>

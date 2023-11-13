@@ -34,7 +34,7 @@
   </div>
   <div class="items"><Search></Search></div>
   <div class="items">
-    <Folk profilesStore={profilesStore}></Folk>
+    <Folk></Folk>
     <a href="https://github.com/holochain-apps/kando/issues" title="Report a problem in our GitHub repo" target="_blank">
       <div class="nav-button"><Fa color="#fff" icon={faBug} size=2x style={bugColor} /></div>
     </a>

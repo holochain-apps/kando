@@ -1,7 +1,6 @@
 <script lang="ts">
     import { getContext } from "svelte";
-    import { KanDoStore } from "./kanDoStore";
-    import type { EntryHashB64 } from '@holochain/client';
+    import { encodeHashToBase64, type EntryHash } from '@holochain/client';
     import {faSearch } from '@fortawesome/free-solid-svg-icons';
     import Fa from 'svelte-fa';
     import '@shoelace-style/shoelace/dist/components/select/select.js';
@@ -12,49 +11,57 @@
     import '@shoelace-style/shoelace/dist/components/menu-item/menu-item.js';
     import '@shoelace-style/shoelace/dist/components/menu-label/menu-label.js';
     import type { v1 as uuidv1 } from "uuid";
-    import type { BoardRecord } from './boardList';
-    import { get } from 'svelte/store';
+    import { toPromise } from "@holochain-open-dev/stores";
+    import type { BoardState, BoardStateData } from "./board";
+    import type { KanDoStore } from "./kanDoStore";
+
 
     type FoundCard = {
-        board: BoardRecord,
+        hash: EntryHash,
+        state: BoardState,
         card: uuidv1,
         title: string,
     }
     let foundCards: Array<FoundCard> = []
-    let foundBoards: Array<BoardRecord> = []
+    let foundBoards: Array<BoardStateData> = []
+    $: foundCards
+    $: foundBoards
 
     const { getStore } :any = getContext('kdStore');
-
     const store:KanDoStore = getStore();
-    $: boardList = store.boardList.stateStore()
-    $: activeHash = store.boardList.activeBoardHash;
-    $: state = store.boardList.getReadableBoardState($activeHash);
+    $: activeHashB64 = store.boardList.activeBoardHashB64;
 
-    const selectBoard = (hash: EntryHashB64) => {
+    const selectBoard = (hash: EntryHash) => {
         store.setActiveBoard(hash)
     }
 
+    const doSearch = async (text:string) => {
+        const fb: BoardStateData[] = []
+        const fs: FoundCard[] = []
 
-    const doSearch = (text:string) => {
-        foundBoards = []
-        foundCards = []
         showSearchResults = true
-        if (text == "") return
-        const searchText = text.toLocaleLowerCase()
-        $boardList.boards.forEach(b=> {
-            if (b.name.toLocaleLowerCase().includes(searchText)) foundBoards.push(b)
-            const board = store.boardList.getReadableBoardState(b.hash)
-            const boardState = get(board)
-            boardState.cards.forEach((c)=>{
-                if (c.props.title.toLocaleLowerCase().includes(searchText) || c.props.description.toLocaleLowerCase().includes(searchText)) {
-                    foundCards.push({
-                        board: b,
-                        card: c.id,
-                        title: c.props.title,
-                    })
-                }
-            })
-        })
+        if (text != "") {
+            const searchText = text.toLocaleLowerCase()
+            const all = await toPromise(store.boardList.allBoards)
+            for (const [hash, asyncBoardData] of Array.from(all.entries()) ) {
+                const state = asyncBoardData.latestState
+
+                if (state.name.toLocaleLowerCase().includes(searchText) 
+                    ) fb.push({hash,state:state})
+                state.cards.forEach((c)=>{
+                    if (c.props.title.toLocaleLowerCase().includes(searchText)
+                    || c.props.description.toLocaleLowerCase().includes(searchText)
+                    ) {
+                        fs.push({
+                            hash,
+                            state,
+                            card: c.id,
+                            title: c.props.title,
+                        })
+                    }
+                })
+            }
+        }
     }
     const clearSearch = () => {
         searchInput.value = ""
@@ -87,16 +94,16 @@
             {#each foundCards as found}
                 <sl-menu-item
                     on:mousedown={(e)=>{
-                        if (found.board.hash != $activeHash) {
-                            selectBoard(found.board.hash)
+                        if (encodeHashToBase64(found.hash) != $activeHashB64) {
+                            selectBoard(found.hash)
                         }
                         store.boardList.setActiveCard(found.card)
                         clearSearch()
                     }}
                 >
                 <div style="margin-left:10px;display:flex;flex-direction: column;">
-                    <span>{found.title} in {store.getCardGroupName(found.card, $state)}</span>
-                    <span style="font-size:70%;color:gray;line-heigth:50%;">Board: {found.board.name}</span>
+                    <span>{found.title} in {store.getCardGroupName(found.card, found.state)}</span>
+                    <span style="font-size:70%;color:gray;line-heigth:50%;">Board: {found.state.name}</span>
                 </div>
                 </sl-menu-item>
             {/each}
@@ -107,14 +114,14 @@
             {#each foundBoards as found}
                 <sl-menu-item
                     on:mousedown={(e)=>{
-                        if (found.hash != $activeHash) {
+                        if (encodeHashToBase64(found.hash) != $activeHashB64) {
                             selectBoard(found.hash)
                         }
                         clearSearch()
                     }}
                 >
                 <div style="margin-left:10px;">
-                    {found.name} 
+                    {found.state.name} 
                 </div>
                 </sl-menu-item>
             {/each}

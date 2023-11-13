@@ -13,28 +13,27 @@
     import { faPlus, faGripVertical, faTrash, faFileExport} from '@fortawesome/free-solid-svg-icons';
     import { cloneDeep } from "lodash";
     import type { KanDoStore } from './kanDoStore';
-    import type { EntryHashB64 } from '@holochain/client';
+    import { encodeHashToBase64, type EntryHash } from '@holochain/client';
 
     const { getStore } :any = getContext('kdStore');
 
     const store:KanDoStore = getStore();
     $: uiProps = store.uiProps
 
+    $: activeBoard = store.boardList.activeBoard;
+    $: state = $activeBoard ? $activeBoard.readableState() : undefined
+
     export let handleSave
     export let handleDelete = undefined
     export let cancelEdit
 
-
-    let boardHash:EntryHashB64|undefined = undefined
+    let boardHash:EntryHash|undefined = undefined
     let text = ''
     let props:BoardProps = {bgUrl: ""}
     let groups: Array<Group> = []
     let labelDefs: Array<LabelDef> = []
     let categoryDefs: Array<CategoryDef> = []
     let nameInput
-
-
-    $: state = store.boardList.getReadableBoardState(boardHash);
 
     const exportBoard = (state: BoardState) => {
         const prefix = "kando"
@@ -70,7 +69,7 @@
       nameInput.focus()
     }
 
-    export const  edit = async (hash: EntryHashB64)=> {
+    export const  edit = async (hash: EntryHash)=> {
       boardHash = hash
       const board: Board | undefined = await store.boardList.getBoard(boardHash)
       if (board) {
@@ -279,7 +278,7 @@
       <div class="title-text">Background Image:</div> <sl-input class='textarea' maxlength="255" value={props.bgUrl} on:input={e=>props.bgUrl = e.target.value} />
     </div>
     <div>
-      <sl-checkbox bind:this={showArchived} checked={$uiProps.showArchived[boardHash]}>Show Archived Cards</sl-checkbox>
+      <sl-checkbox bind:this={showArchived} checked={$uiProps.showArchived[encodeHashToBase64(boardHash)]}>Show Archived Cards</sl-checkbox>
     </div>
     {/if}
     <div class='controls'>
