@@ -37,7 +37,7 @@
 
     const doSearch = async (text:string) => {
         const fb: BoardStateData[] = []
-        const fs: FoundCard[] = []
+        const fc: FoundCard[] = []
 
         showSearchResults = true
         if (text != "") {
@@ -52,7 +52,7 @@
                     if (c.props.title.toLocaleLowerCase().includes(searchText)
                     || c.props.description.toLocaleLowerCase().includes(searchText)
                     ) {
-                        fs.push({
+                        fc.push({
                             hash,
                             state,
                             card: c.id,
@@ -62,6 +62,9 @@
                 })
             }
         }
+        foundBoards = fb
+        foundCards = fc
+
     }
     const clearSearch = () => {
         searchInput.value = ""
@@ -81,7 +84,6 @@
         placeholder="Search"
         pill
         on:sl-input={(e)=>doSearch(e.target.value)}
-        on:sl-blur={(e)=>showSearchResults=false}
         on:sl-focus={(e)=>doSearch(e.target.value)}
     >
     <span slot="prefix"style="margin-left:10px;"><Fa icon={faSearch}></Fa></span>

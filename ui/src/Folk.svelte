@@ -33,7 +33,7 @@
     <Fa color="#fff" icon={faUserGroup} size=2x/></div>
 {#if !isWeContext()}
     <div class="nav-button " on:click={editAvatar} title={myName ? myName:"Edit Avatar"}>
-        <Avatar size={30} agentPubKey={store.myAgentPubKey} placeholder={true} showNickname={false}/>
+        <Avatar size={28} agentPubKey={store.myAgentPubKey} placeholder={true} showNickname={false}/>
     </div>
 {/if}
 

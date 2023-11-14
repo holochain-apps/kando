@@ -58,7 +58,7 @@
         height: 100%;
         align-items: center;
     }
-    .avatar-row agent-avatar{
-        margin-right: 0.5em;       
+    .avatar-row .nickname{
+        margin-left: 0.5em;
     }
 </style>
