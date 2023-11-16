@@ -90,11 +90,12 @@
 
   // this is a way to get the add column to show up if there are 
   // no groups (besides the archive group)
-  // TODO figure out to to get it to focus
   $: hashChanged = (_hash) => {
     if ($state.groups.length == 1) {
       addingColumn = true
-      columnNameElem.value=""; columnNameElem.focus()
+      if (columnNameElem) {
+        columnNameElem.value=""; 
+      }
     } else {
       addingColumn = false
     }
@@ -394,8 +395,8 @@
         </div>
       {/if}
 
-      <sl-button class="board-button settings" on:click={()=> editBoardDialog.open(activeBoard.hash)} title="Settings">
-        <Fa icon={faCog} size="1x"/>
+      <sl-button class="board-button settings" on:click={()=> editBoardDialog.open(cloneDeep(activeBoard.hash))} title="Settings">
+        <Fa icon={faCog} size="1x" style="background: transparent;"/>
       </sl-button>
       <sl-button  class="board-button" on:click={closeBoard} title="Close">
         <Fa icon={faClose} />
@@ -635,6 +636,10 @@
   .right-items {
     display: flex;
     align-items: center;
+  }
+
+  sl-button.board-button::part(base) {
+    background-color: transparent;
   }
 
   .right-items .board-button::part(base) {

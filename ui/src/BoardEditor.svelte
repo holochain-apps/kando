@@ -147,16 +147,12 @@
 </script>
 
   <div class='board-editor'>
-    <div class="edit-title">
-      <div class="title-text">Title:</div> <sl-input class='textarea' maxlength="60" bind:this={nameInput}  on:input={e=>text= e.target.value}></sl-input>
+    <div class="edit-title setting">
+      <div class="title-text">Title</div> <sl-input class='textarea' maxlength="60" bind:this={nameInput}  on:input={e=>text= e.target.value}></sl-input>
     </div>
     {#if boardHash}
-    <div class="edit-groups unselectable">
-      <div class="title-text">Columns:
-        <sl-button circle size="small" on:click={() => addGroup()}>
-          <Fa icon={faPlus}/>
-        </sl-button>
-      </div>
+    <div class="edit-groups unselectable setting">
+      <div class="title-text">Columns</div>
       <DragDropList
         id="groups"
         type={VerticalDropZone}
@@ -174,25 +170,15 @@
           </sl-button>
         </div>
       </DragDropList>
-    </div>
-    <div class="edit-label-defs unselectable">
-      <div class="title-text">
-        Labels:
 
-        <sl-button circle size="small"  on:click={() => addLabelDef()}>
-          <Fa icon={faPlus}/>
-        </sl-button>
+      <div class="add-item" on:click={() => addGroup()}>
+        <Fa icon={faPlus}/>
+        <span>Add Column</span>
       </div>
-      <sl-dialog label="Choose Emoji" bind:this={emojiDialog}>
-          <emoji-picker on:emoji-click={(e)=>  {
-            labelDefs[showEmojiPicker].emoji = e.detail.unicode
-            console.log(e.detail)
-            showEmojiPicker = undefined
-            emojiDialog.hide()
-          }
-          }></emoji-picker>
-    
-      </sl-dialog>
+    </div>
+
+    <div class="edit-label-defs unselectable setting">
+      <div class="title-text">Labels</div>
       <DragDropList
         id="labelDefs"
         type={VerticalDropZone}
@@ -213,16 +199,23 @@
             <Fa icon={faTrash}/>
           </sl-button>
         </div>
-      </DragDropList> 
-    </div>
-    <div class="edit-category-defs unselectable">
-      <div class="title-text">
-        Categories:
-
-        <sl-button circle size="small" on:click={() => addCategoryDef()}>
-          <Fa icon={faPlus}/>
-        </sl-button>
+      </DragDropList>
+      <div class="add-item" on:click={() => addLabelDef()}>
+        <Fa icon={faPlus}/>
+        <span>Add Label</span>
       </div>
+      <sl-dialog label="Choose Emoji" bind:this={emojiDialog}>
+        <emoji-picker on:emoji-click={(e)=>  {
+          labelDefs[showEmojiPicker].emoji = e.detail.unicode
+          console.log(e.detail)
+          showEmojiPicker = undefined
+          emojiDialog.hide()
+        }
+        }></emoji-picker>
+      </sl-dialog>
+    </div>
+    <div class="edit-category-defs unselectable setting">
+      <div class="title-text">Categories</div>
       <sl-dialog label="Choose Color" bind:this={colorDialog}>
 
           <ColorPicker label=" " bind:hex
@@ -273,9 +266,14 @@
           </sl-button>
         </div>
       </DragDropList> 
+      <div class="add-item" on:click={() => addCategoryDef()}>
+        <Fa icon={faPlus}/>
+        <span>Add Category</span>
+      </div>
     </div>
-    <div class="edit-title">
-      <div class="title-text">Background Image:</div> <sl-input class='textarea' maxlength="255" value={props.bgUrl} on:input={e=>props.bgUrl = e.target.value} />
+    <div class="edit-title setting">
+      <div class="title-text">Background Image</div>
+      <sl-input class='textarea' maxlength="255" value={props.bgUrl} on:input={e=>props.bgUrl = e.target.value} placeholder="Paste the URL of an image"/>
     </div>
     <div>
       <sl-checkbox bind:this={showArchived} checked={$uiProps.showArchived[encodeHashToBase64(boardHash)]}>Show Archived Cards</sl-checkbox>
@@ -319,6 +317,22 @@
     font-weight: normal;
   }
 
+  .setting {
+    background-color: white;
+    margin-bottom: 15px;
+    box-shadow: 0px 2px 3px rgba(35, 32, 74, 0.15);
+    font-size: 12px;
+    line-height: 16px;
+    color: #23204A;
+    border-radius: 5px;
+    display:flex;
+    flex-direction:column;
+    padding: 10px;
+    transition: all .25s ease;
+    height: 0;
+    height: auto;
+  }
+
   .controls {
     display: flex;
     flex-direction: row;
@@ -351,7 +365,10 @@
     flex-direction: row;
     align-items: center;
     font-weight: normal;
-    font-size: 120%;
+    font-weight: bold;
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: rgba(86, 94, 109, 1.0);
   }
   .unselectable {
     -webkit-touch-callout: none;
@@ -360,7 +377,32 @@
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
-}
+  }
+  .add-item {
+    background-color: white;
+    margin: 0px 10px 10px 10px;
+    box-shadow: 0px 4px 8px rgba(35, 32, 74, 0.25);
+    border-top: 1px solid #e0e0e0;
+    font-size: 16px;
+    line-height: 16px;
+    color: rgba(86, 94, 109, 1.0);
+    border-radius: 5px;
+    display:flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    transition: all .25s ease;
+    height: 0;
+    height: auto;
+    margin-top: 10px;
+  }
+
+  .add-item span {
+    display: block;
+    margin-left: 5px;
+    color: rgba(86, 94, 109, 1.0);
+  }
 .modal {
   background-color: var(--light-text-color);
   border: 1px solid var(--border-color);
