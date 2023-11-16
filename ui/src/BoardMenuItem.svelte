@@ -13,14 +13,18 @@
   export let boardHash: EntryHash
   export let boardType: BoardType
 
+  let width = 10
+
   $: boardData = store.boardList.boardData2.get(boardHash)
 
 </script>
-<div class="wrapper" on:click={()=>{dispatch("select")}}>
+<div class="wrapper" on:click={()=>{dispatch("select")}} >
     {#if $boardData.status == "complete"}
       <div class="board-name">{$boardData.value.latestState.name}</div>
       {#if boardType == BoardType.active}
-        <Participants board={$boardData.value.board}></Participants>
+      <div style="width:100%; display:flex; justify-content:flex-end" bind:clientWidth={width}>
+        <Participants board={$boardData.value.board} max={Math.floor(width/30)}></Participants>
+      </div>
       {/if}
     {:else if $boardData.status == "pending"}
       <sl-skeleton

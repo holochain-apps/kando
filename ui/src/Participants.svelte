@@ -4,7 +4,7 @@
   import type { Board } from "./board";
 
   export let board: Board
-
+  export let max = 5
   $: participants = board ? board.sessionParticipants() : undefined
 
   export let size:number = 24;
@@ -13,11 +13,14 @@
 <div class="wrapper"
     class:bordered={false}  >
     {#if $participants && $participants.status=="complete"}
-
-        {#each Array.from($participants.value) as agentPubKey}
-          <Avatar size={size} agentPubKey={agentPubKey} showNickname={false} />
-        {/each}
-
+    {@const folks = Array.from($participants.value).slice(0,max)}
+    {@const extra = $participants.value.length - folks.length}
+      {#each folks as agentPubKey}
+        <Avatar size={size} agentPubKey={agentPubKey} showNickname={false} />
+      {/each}
+      {#if extra != 0}
+        + {extra} more
+      {/if}
     {/if}
 </div>
 <style>

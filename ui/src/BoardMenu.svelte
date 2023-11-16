@@ -8,8 +8,8 @@
     import AboutDialog from "./AboutDialog.svelte";
     import KDLogoIcon from "./icons/KDLogoIcon.svelte";
     import { faCog } from "@fortawesome/free-solid-svg-icons";
-  import BoardMenuItem from "./BoardMenuItem.svelte";
-  import { BoardType } from "./boardList";
+    import BoardMenuItem from "./BoardMenuItem.svelte";
+    import { BoardType } from "./boardList";
     export let wide = false
 
     let newBoardDialog
