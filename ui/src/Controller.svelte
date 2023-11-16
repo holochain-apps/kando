@@ -55,7 +55,7 @@
       </div>
       <div class="workspace" style="display:flex">
       {#if $uiProps.showMenu && $boardCount.status == "complete"}
-       {#if $boardCount.value > 0 && $activeBoardHash === undefined}
+        {#if $activeBoardHash === undefined}
          <div class="board-menu" >
             <BoardMenu wide={true}></BoardMenu>
           </div>

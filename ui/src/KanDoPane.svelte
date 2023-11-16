@@ -92,7 +92,13 @@
   // no groups (besides the archive group)
   // TODO figure out to to get it to focus
   $: hashChanged = (_hash) => {
-    addingColumn = $state.groups.length == 1
+    if ($state.groups.length == 1) {
+      addingColumn = true
+      columnNameElem.value=""; columnNameElem.focus()
+    } else {
+      addingColumn = false
+    }
+
   }
   $: x = hashChanged($activeHashB64)
 
