@@ -45,14 +45,14 @@
   }
 
   const { getStore } :any = getContext("kdStore");
-  let kdStore: KanDoStore = getStore();
+  let store: KanDoStore = getStore();
 
   export let activeBoard: Board
 
-  $: uiProps = kdStore.uiProps
+  $: uiProps = store.uiProps
   $: participants = activeBoard.participants()
-  $: activeCard = kdStore.boardList.activeCard;
-  $: activeHashB64 = kdStore.boardList.activeBoardHashB64;
+  $: activeCard = store.boardList.activeCard;
+  $: activeHashB64 = store.boardList.activeBoardHashB64;
   $: state = activeBoard.readableState()
   $: items = $state ? $state.cards : undefined;
   $: sortCards = (items) => items // no sort algorithm for now
@@ -130,7 +130,7 @@
 
   const cardDetails = (id: uuidv1) => {
 
-    kdStore.boardList.setActiveCard(id)
+    store.boardList.setActiveCard(id)
     //cardDetailsDialog.open(id)
   };
 
@@ -149,7 +149,7 @@
     const comment:Comment = {
       id: uuidv1(),
       text,
-      agent: kdStore.myAgentPubKeyB64,
+      agent: store.myAgentPubKeyB64,
       timestamp: new Date().getTime()
     }
 
@@ -191,8 +191,8 @@
   };
 
   const closeBoard = () => {
-    kdStore.boardList.closeActiveBoard();
-    kdStore.setUIprops({showMenu:true})
+    store.boardList.closeActiveBoard();
+    store.setUIprops({showMenu:true})
   };
   let editBoardDialog
   let dragOn = true
@@ -334,7 +334,7 @@
   }
 
   const close = ()=> {
-    kdStore.boardList.setActiveCard(undefined)
+    store.boardList.setActiveCard(undefined)
   }
 
   const cardColor = (props) => {
@@ -373,6 +373,20 @@
       <LabelSelector setOption={setFilterOption} option={filterOption} />
     </div>
     <div class="right-items">
+      {#if $participants}
+        <div class="participants">
+          <div style="display:flex; flex-direction: row">
+            <Avatar agentPubKey={store.myAgentPubKey} showNickname={false} size={30} />
+
+            {#each Array.from($participants.entries()) as [agentPubKey, sessionData]}
+            <div class:idle={Date.now()-sessionData.lastSeen >30000}>
+              <Avatar agentPubKey={agentPubKey} showNickname={false} size={30} />
+            </div>
+            {/each}
+
+          </div>
+        </div>
+      {/if}
 
       <sl-button class="board-button settings" on:click={()=> editBoardDialog.open(activeBoard.hash)} title="Settings">
         <Fa icon={faCog} size="1x"/>

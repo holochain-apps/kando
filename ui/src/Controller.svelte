@@ -12,28 +12,28 @@
     export let client : AppAgentClient
     export let profilesStore : ProfilesStore
 
-    let kdStore: KanDoStore = new KanDoStore (
+    let store: KanDoStore = new KanDoStore (
         profilesStore,
         client,
         roleName,
       );
-    let synStore: SynStore = kdStore.synStore
+    let synStore: SynStore = store.synStore
   
-    $: activeBoardHash = kdStore.boardList.activeBoardHash
-    $: activeBoard = kdStore.boardList.activeBoard
+    $: activeBoardHash = store.boardList.activeBoardHash
+    $: activeBoard = store.boardList.activeBoard
 
     setContext('synStore', {
       getStore: () => synStore,
     });
   
     setContext('kdStore', {
-      getStore: () => kdStore,
+      getStore: () => store,
     });
     const DEFAULT_KD_BG_IMG = "none"
     //const DEFAULT_KD_BG_IMG = "https://img.freepik.com/free-photo/studio-background-concept-abstract-empty-light-gradient-purple-studio-room-background-product-plain-studio-background_1258-54461.jpg"
     const NO_BOARD_IMG = "none"
-    $: uiProps = kdStore.uiProps
-    $: boardCount = kdStore.boardList.boardCount
+    $: uiProps = store.uiProps
+    $: boardCount = store.boardList.boardCount
 
     $: bgUrl = DEFAULT_KD_BG_IMG  // FIXME$activeBoard ?   ($activeBoard.state.props && $boardState.props.bgUrl) ? $boardState.props.bgUrl : DEFAULT_KD_BG_IMG 
     $: bgImage = `background-image: url("`+ bgUrl+`");`
@@ -47,7 +47,6 @@
     <div class="flex-scrollable-container">
       <div class='app'>
 
-      {#if kdStore}
       <div class="wrapper">
 
       <div class="header">
@@ -77,9 +76,6 @@
         {/if}
         </div>
         </div>
-      {:else}
-        <div class="loading"><div class="loader"></div></div>
-      {/if}
       <div class="background">
         <div class="background-overlay"></div>
         <div class="background-image"

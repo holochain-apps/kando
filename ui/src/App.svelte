@@ -82,7 +82,9 @@
 
 <style>
 .welcome-text {
-  margin-bottom: 40px;
+  margin: 40px;
+  border-radius: 20px;
+  background-color: #3498db ;
 }
 .create-profile {
   padding-top: 100px;

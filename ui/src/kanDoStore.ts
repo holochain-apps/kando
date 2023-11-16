@@ -47,7 +47,6 @@ export class KanDoStore {
     timeAgo = new TimeAgo('en-US')
     service: KanDoService;
     boardList: BoardList;
-    createdBoards: Array<EntryHash> = []
     updating = false
     synStore: SynStore;
     client: AppAgentClient;
