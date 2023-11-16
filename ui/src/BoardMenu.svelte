@@ -25,7 +25,6 @@
 
     const bgUrl = "none"
 
-
     const closeActiveCard = ()=> {
         store.boardList.setActiveCard(undefined)
     }
