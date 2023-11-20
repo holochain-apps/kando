@@ -208,11 +208,18 @@
     editingDescription=true; 
     editDesc = `${props.description}`
   }
+
   const cancelEditDescription = () => {
     editingDescription=false; 
     editDesc = ``
   }
-
+  
+  const doFocus = (node) => {
+    // otherwise we get an error from the shoelace element
+    setTimeout(() => {
+      node.focus()
+    }, 50);
+  }
 
   let editingTitle = false
   let editingDescription = false
@@ -226,6 +233,9 @@
   let checklistElement
   let addingChecklistItem = -1
   let checklistItemElement
+
+  let editDescriptionElement
+
 </script>
 <sl-drawer class="edit-card" bind:this={dialog}
   style="--size:500px"
@@ -276,21 +286,24 @@
       </div>
       <div class="belongs-to">In column <strong>{store.getCardGroupName(cardId, $state)}</strong></div>
       {#if editingDescription}
-        <sl-textarea rows=10 class='textarea' value={editDesc} 
-          on:sl-input={e=>editDesc = e.target.value}
+        <sl-textarea id="edit-desc" use:doFocus bind:this={editDescriptionElement} rows=10 class='textarea' value={editDesc}
+          on:sl-input={e=>{
+            editDesc = e.target.value
+          }}
+          on:sl-blur={()=> {
+            props.description = editDesc
+            handleSave(props)
+            editingDescription=false
+          }}
+          on:keydown={(e)=> {
+            if (e.keyCode == 27) {
+              editDescriptionElement.blur()
+              e.stopPropagation()
+            }
+        }}
+
+
           ></sl-textarea>
-          <div style="display:flex;justify-content:flex-end;margin-top:10px">
-            <sl-button size="small" style="margin-left:5px" on:click={()=>cancelEditDescription()}>
-              Cancel
-            </sl-button>
-            <sl-button size="small" style="margin-left:5px" variant="primary" 
-              on:click={()=>{
-                props.description = editDesc
-                handleSave(props)
-                editingDescription=false}}>
-              Save
-            </sl-button>
-          </div>
       {:else}
           {#if props.description}
         <div style="display:flex;flex-direction: column">
@@ -395,7 +408,7 @@
           </div>
         {:else}
           <div class="checklist add-checklist">
-            <sl-input class="add-checklist-input" bind:this={checklistElement} placeholder="New checklist title"
+            <sl-input use:doFocus class="add-checklist-input" bind:this={checklistElement} placeholder="New checklist title"
               on:sl-input={(e)=>{
                 checklistTitle = e.target.value
               }}
