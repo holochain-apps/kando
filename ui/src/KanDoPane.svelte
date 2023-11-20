@@ -88,16 +88,22 @@
     }
   }
 
+  let prevHash = ""
+
   // this is a way to get the add column to show up if there are 
   // no groups (besides the archive group)
-  $: hashChanged = (_hash) => {
-    if ($state.groups.length == 1) {
-      addingColumn = true
-      if (columnNameElem) {
-        columnNameElem.value=""; 
+  $: hashChanged = (hash) => {
+    if (hash != prevHash) {
+      prevHash = hash
+      if ($state.groups.length == 1) {
+        addingColumn = true
+        if (columnNameElem) {
+          columnNameElem.value=""; 
+        }
+      } else {
+        addingColumn = false
+        console.log("HERE haschanged")
       }
-    } else {
-      addingColumn = false
     }
 
   }
@@ -321,6 +327,7 @@
   }
 
   $: addingColumn = false
+  $: xx = 0
   let newColumnName = ""
   let columnNameElem 
 
@@ -368,6 +375,14 @@
     }
     return result    
   }
+
+  const doFocus = (node) => {
+    // otherwise we get an error from the shoelace element
+    setTimeout(() => {
+      node.focus()
+    }, 50);
+  }
+
   
 </script>
 <div class="board">
@@ -558,16 +573,17 @@
         <div  class:hidden={addingColumn} class="column-wrap">
           <div class="column">
             <div class="add-column column-item"
-              on:click={()=>{newColumnName = ""; addingColumn = true;columnNameElem.value=""; columnNameElem.focus()}}
+              on:click={()=>{newColumnName = ""; xx+=1; addingColumn = true;columnNameElem.value=""; console.log("FISH", addingColumn)}}
             >Add Column +</div>
           </div>
         </div>
         <div class:hidden={!addingColumn} class="column-wrap">
           <div class="column">
             <div class="add-column editing-column-name"
-              on:click={()=>{addingColumn = true; }}
+              on:click={()=>{{addingColumn = true; console.log("FISH2", addingColumn)}}}
             >
               <sl-input class="column-name-input"
+                use:doFocus
                 bind:this={columnNameElem} 
                 placeholder="column name" 
                 on:keydown={(e)=> {
