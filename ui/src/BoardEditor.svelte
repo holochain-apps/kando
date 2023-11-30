@@ -12,10 +12,10 @@
     import Fa from 'svelte-fa'
     import { faPlus, faGripVertical, faTrash, faFileExport} from '@fortawesome/free-solid-svg-icons';
     import { cloneDeep } from "lodash";
-    import type { KanDoStore } from './kanDoStore';
+    import type { KanDoStore } from './store';
     import { encodeHashToBase64, type EntryHash } from '@holochain/client';
 
-    const { getStore } :any = getContext('kdStore');
+    const { getStore } :any = getContext('store');
 
     const store:KanDoStore = getStore();
     $: uiProps = store.uiProps

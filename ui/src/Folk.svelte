@@ -3,14 +3,14 @@
     import ParticipantsDialog from './ParticipantsDialog.svelte';
     import AvatarDialog from './AvatarDialog.svelte';
     import { getContext, onMount } from "svelte";
-    import type { KanDoStore } from "./kanDoStore";
+    import type { KanDoStore } from "./store";
     import Avatar from './Avatar.svelte';
     import { get } from 'svelte/store';    
     import Fa from 'svelte-fa'
     import { faUserGroup } from '@fortawesome/free-solid-svg-icons';
   import { isWeContext } from '@lightningrodlabs/we-applet';
 
-    const { getStore } :any = getContext('kdStore');
+    const { getStore } :any = getContext('store');
     const store:KanDoStore = getStore();
     //@ts-ignore
     $: myProfile = get(store.profilesStore.myProfile).value

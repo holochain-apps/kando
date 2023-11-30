@@ -1,7 +1,7 @@
 <script lang="ts">
   import EmojiIcon from './icons/EmojiIcon.svelte'
   import { getContext } from "svelte";
-  import type { KanDoStore } from "./kanDoStore";
+  import type { KanDoStore } from "./store";
 
   export let setOption
   export let option
@@ -13,7 +13,7 @@
       setOption(o)
     }
   }
-  const { getStore } :any = getContext("kdStore");
+  const { getStore } :any = getContext("store");
   let store: KanDoStore = getStore();
 
   $: activeBoard = store.boardList.activeBoard;

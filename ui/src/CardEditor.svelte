@@ -8,10 +8,10 @@
   import { cloneDeep } from "lodash";
   import type { v1 as uuidv1 } from "uuid";
   import { getContext } from "svelte";
-  import type { KanDoStore } from "./kanDoStore";
+  import type { KanDoStore } from "./store";
   import { encodeHashToBase64 } from "@holochain/client";
 
-  const { getStore } :any = getContext("kdStore");
+  const { getStore } :any = getContext("store");
   let store: KanDoStore = getStore();
   $: allProfiles = store.profilesStore.allProfiles
 

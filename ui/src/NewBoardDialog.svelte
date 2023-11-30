@@ -1,6 +1,6 @@
 <script lang="ts">
     import BoardEditor from './BoardEditor.svelte';
-    import type { KanDoStore } from './kanDoStore';
+    import type { KanDoStore } from './store';
     import { getContext } from 'svelte';
     import type { BoardProps, CategoryDef, Group, LabelDef } from './board';
     import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
@@ -11,7 +11,7 @@
     let editCategoryDefs = []
     let dialog: SlDialog
     
-    const { getStore } :any = getContext('kdStore');
+    const { getStore } :any = getContext('store');
 
     const store:KanDoStore = getStore();
 

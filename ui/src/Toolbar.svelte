@@ -5,9 +5,9 @@
   import Fa from "svelte-fa";
   import Search from './Search.svelte';
   import { getContext } from "svelte";
-  import type { KanDoStore } from "./kanDoStore";
+  import type { KanDoStore } from "./store";
 
-  const { getStore } :any = getContext("kdStore");
+  const { getStore } :any = getContext("store");
   let store: KanDoStore = getStore();
 
   $: uiProps = store.uiProps

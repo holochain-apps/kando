@@ -1,7 +1,7 @@
 <script lang="ts">
     import Toolbar from './Toolbar.svelte'
     import KanDoPane from './KanDoPane.svelte'
-    import { KanDoStore } from './kanDoStore'
+    import { KanDoStore } from './store'
     import { setContext } from 'svelte';
     import type { AppAgentClient } from '@holochain/client';
     import type { SynStore } from '@holochain-syn/store';
@@ -26,7 +26,7 @@
       getStore: () => synStore,
     });
   
-    setContext('kdStore', {
+    setContext('store', {
       getStore: () => store,
     });
     const DEFAULT_KD_BG_IMG = "none"

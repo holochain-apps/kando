@@ -1,6 +1,6 @@
 <script lang="ts">
     import BoardEditor from './BoardEditor.svelte';
-    import type { KanDoStore } from './kanDoStore';
+    import type { KanDoStore } from './store';
     import { getContext, onMount } from 'svelte';
     import { isEqual } from 'lodash'
     import { encodeHashToBase64, type EntryHash, type EntryHashB64 } from '@holochain/client';
@@ -23,7 +23,7 @@
         dialog.show()
     }
 
-    const { getStore } :any = getContext('kdStore');
+    const { getStore } :any = getContext('store');
 
     const store:KanDoStore = getStore();
 

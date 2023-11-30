@@ -4,7 +4,7 @@
   import CardDetails from "./CardDetails.svelte";
   import EmojiIcon from "./icons/EmojiIcon.svelte";
   //import { sortBy } from "lodash/fp";
-  import type { KanDoStore } from "./kanDoStore";
+  import type { KanDoStore } from "./store";
   import LabelSelector from "./LabelSelector.svelte";
   import { Marked, Renderer } from "@ts-stack/markdown";
   import { v1 as uuidv1 } from "uuid";
@@ -44,7 +44,7 @@
     filterOption = newOption;
   }
 
-  const { getStore } :any = getContext("kdStore");
+  const { getStore } :any = getContext("store");
   let store: KanDoStore = getStore();
 
   export let activeBoard: Board

@@ -9,7 +9,7 @@
   import { cloneDeep, isEqual } from "lodash";
   import { v1 as uuidv1 } from "uuid";
   import { getContext } from 'svelte';
-  import type { KanDoStore } from './kanDoStore';
+  import type { KanDoStore } from './store';
   import Avatar from './Avatar.svelte';
   import { decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
   import { faEdit, faTrash, faPlus, faArchive, faClose, faPaperPlane, faCancel } from '@fortawesome/free-solid-svg-icons';
@@ -31,7 +31,7 @@
     smartypants: false
   });
   
-  const { getStore } :any = getContext("kdStore");
+  const { getStore } :any = getContext("store");
   let store: KanDoStore = getStore();
   $: activeBoard = store.boardList.activeBoard;
   $: state = $activeBoard.readableState()

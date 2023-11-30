@@ -3,11 +3,11 @@
     import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
     import { faFileImport } from '@fortawesome/free-solid-svg-icons';
     import Fa from 'svelte-fa';
-    import type { KanDoStore } from "./kanDoStore";
+    import type { KanDoStore } from "./store";
     import { v1 as uuidv1 } from "uuid";
 
 
-    const { getStore } :any = getContext('kdStore');
+    const { getStore } :any = getContext('store');
 
     const store:KanDoStore = getStore();
 

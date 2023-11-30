@@ -1,6 +1,6 @@
 <script lang="ts">
     import { getContext } from "svelte";
-    import type { KanDoStore } from "./kanDoStore";
+    import type { KanDoStore } from "./store";
     import type {  EntryHash } from '@holochain/client';
     import NewBoardDialog from './NewBoardDialog.svelte';
     import { faSquarePlus } from '@fortawesome/free-solid-svg-icons';
@@ -14,7 +14,7 @@
 
     let newBoardDialog
 
-    const { getStore } :any = getContext('kdStore');
+    const { getStore } :any = getContext('store');
 
     const store:KanDoStore = getStore();
 

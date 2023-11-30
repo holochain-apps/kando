@@ -13,7 +13,7 @@
     import type { v1 as uuidv1 } from "uuid";
     import { toPromise } from "@holochain-open-dev/stores";
     import type { BoardState, BoardStateData } from "./board";
-    import type { KanDoStore } from "./kanDoStore";
+    import type { KanDoStore } from "./store";
 
 
     type FoundCard = {
@@ -27,7 +27,7 @@
     $: foundCards
     $: foundBoards
 
-    const { getStore } :any = getContext('kdStore');
+    const { getStore } :any = getContext('store');
     const store:KanDoStore = getStore();
     $: activeHashB64 = store.boardList.activeBoardHashB64;
 
