@@ -14,7 +14,7 @@
   import { decodeHashFromBase64 } from "@holochain/client";
   import { cloneDeep, isEqual } from "lodash";
   import Fa from "svelte-fa";
-  import { faArrowRight, faCheck, faClose, faCog, faComments, faEdit, faPlus } from "@fortawesome/free-solid-svg-icons";
+  import { faArrowRight, faArrowTurnDown, faCheck, faClose, faCog, faComments, faEdit, faPlus } from "@fortawesome/free-solid-svg-icons";
   import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
   import ClickEdit from "./ClickEdit.svelte";
   import { onVisible } from "./util";
@@ -204,9 +204,16 @@
   };
 
   const closeBoard = () => {
-    store.boardList.closeActiveBoard();
+    store.boardList.closeActiveBoard(false);
     store.setUIprops({showMenu:true})
   };
+
+  const leaveBoard = () => {
+    store.boardList.closeActiveBoard(true);
+    store.setUIprops({showMenu:true})
+  };
+
+
   let editBoardDialog
   let dragOn = true
   let draggingHandled = true
@@ -410,6 +417,9 @@
         </div>
       {/if}
 
+      <sl-button  class="board-button" on:click={leaveBoard} title="Leave">
+        <Fa icon={faArrowTurnDown} />
+      </sl-button>
       <sl-button class="board-button settings" on:click={()=> editBoardDialog.open(cloneDeep(activeBoard.hash))} title="Settings">
         <Fa icon={faCog} size="1x" style="background: transparent;"/>
       </sl-button>

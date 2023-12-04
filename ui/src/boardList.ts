@@ -3,7 +3,7 @@ import { LazyHoloHashMap, type EntryRecord } from "@holochain-open-dev/utils";
 import { derived, get, writable, type Readable, type Writable } from "svelte/store";
 import { boardGrammar, type BoardDelta, type BoardGrammar, type BoardState } from "./board";
 import { type AgentPubKey, type EntryHash, type EntryHashB64, encodeHashToBase64 } from "@holochain/client";
-import {toPromise, type AsyncReadable, pipe, joinAsync, asyncDerived, sliceAndJoin} from '@holochain-open-dev/stores'
+import {toPromise, type AsyncReadable, pipe, joinAsync, asyncDerived, sliceAndJoin, alwaysSubscribed} from '@holochain-open-dev/stores'
 import { DocumentStore, SynStore, WorkspaceStore } from "@holochain-syn/core";
 import type { ProfilesStore } from "@holochain-open-dev/profiles";
 
@@ -45,7 +45,7 @@ export class BoardList {
         const latestState = pipe(board, 
             board => board.workspace.latestSnapshot
             )
-        return pipe(joinAsync([board, latestState]), ([board, latestState]) => {return {board,latestState}})
+        return alwaysSubscribed(pipe(joinAsync([board, latestState]), ([board, latestState]) => {return {board,latestState}}))
     })
 
     agentBoardHashes: LazyHoloHashMap<AgentPubKey, AsyncReadable<Array<BoardAndLatestState>>> = new LazyHoloHashMap(agent =>
@@ -142,11 +142,14 @@ export class BoardList {
         await this.synStore.client.tagDocument(documentHash, BoardType.active)
     }
 
-    async closeActiveBoard() {
+    async closeActiveBoard(leave: boolean) {
         const hash = get(this.activeBoardHash)
         if (hash) {
-            const board = await this.getBoard(hash)
-            if (board) await board.leave()
+            if (leave) {
+                const board = await this.getBoard(hash)
+                if (board) await board.leave()
+                else console.log("Board Not Found!")
+            }
             this.setActiveBoard(undefined)
         }
     }
