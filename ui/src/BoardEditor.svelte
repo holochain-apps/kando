@@ -10,7 +10,7 @@
     import '@shoelace-style/shoelace/dist/components/checkbox/checkbox.js';
     import sanitize from "sanitize-filename";
     import Fa from 'svelte-fa'
-    import { faPlus, faGripVertical, faTrash, faFileExport} from '@fortawesome/free-solid-svg-icons';
+    import { faPlus, faGripVertical, faTrash, faFileExport, faSpinner} from '@fortawesome/free-solid-svg-icons';
     import { cloneDeep } from "lodash";
     import type { KanDoStore } from './store';
     import { encodeHashToBase64, type EntryHash } from '@holochain/client';
@@ -143,7 +143,9 @@
    let emojiDialog,colorDialog
    let showColorPicker :number|undefined = undefined
    let hex
+   $: valuesValid = text != ""
    let showArchived
+   let saving = false
 </script>
 
   <div class='board-editor'>
@@ -293,8 +295,24 @@
       <sl-button on:click={cancelEdit} class="board-control">
         Cancel
       </sl-button>
-      <sl-button class="board-control" on:click={() => handleSave(text, groups, labelDefs, categoryDefs, props, showArchived? showArchived.checked:false)} variant="primary">
-        Save
+
+      <sl-button class="board-control"
+        variant="primary"
+        disabled={!valuesValid || saving} 
+        style="margin-left:10px; width:70px;" on:click={async () => {
+          saving = true
+          await handleSave(text, groups, labelDefs, categoryDefs, props, showArchived? showArchived.checked:false)
+          saving = false
+          }} >
+          
+        <span >
+          {#if saving}
+            <Fa class="spinning" icon={faSpinner}></Fa>
+          {:else}
+            Save
+          {/if}
+        </span>
+        
       </sl-button>
     </div>
  </div>
