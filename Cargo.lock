@@ -792,8 +792,7 @@ checksum = "290f1a1d9242c78d09ce40a5e87e7554ee637af1351968159f4952f028f75604"
 [[package]]
 name = "hc_zome_profiles_coordinator"
 version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2bae0ee9f90bdaa1fb3f0888817fd37447e8fd1ebf2b494cf81b1270188d75b2"
+source = "git+https://github.com/holochain-open-dev/profiles?branch=for-hdk-v0.2.3#229a0b11a310b64a6b16fd010914aa09de07ec3c"
 dependencies = [
  "derive_more",
  "hc_zome_profiles_integrity",
@@ -804,8 +803,7 @@ dependencies = [
 [[package]]
 name = "hc_zome_profiles_integrity"
 version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "536920780e20fffc9757a8f762f235b64fe1bb847d0bf494a927e22aa530be58"
+source = "git+https://github.com/holochain-open-dev/profiles?branch=for-hdk-v0.2.3#229a0b11a310b64a6b16fd010914aa09de07ec3c"
 dependencies = [
  "derive_more",
  "hdi",
