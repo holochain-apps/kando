@@ -6,6 +6,7 @@
   //import { sortBy } from "lodash/fp";
   import type { KanDoStore } from "./store";
   import LabelSelector from "./LabelSelector.svelte";
+  import ParticipantsDialog from './ParticipantsDialog.svelte';
   import { Marked, Renderer } from "@ts-stack/markdown";
   import { v1 as uuidv1 } from "uuid";
   import { type Card, Group, UngroupedId, type CardProps, type BoardState, type Comment, type Checklist, type Checklists, Board } from "./board";
@@ -14,7 +15,8 @@
   import { decodeHashFromBase64 } from "@holochain/client";
   import { cloneDeep, isEqual } from "lodash";
   import Fa from "svelte-fa";
-  import { faArrowRight, faArrowTurnDown, faCheck, faClose, faCog, faComments, faEdit, faPlus } from "@fortawesome/free-solid-svg-icons";
+  import { faUserGroup, faArrowRight, faArrowTurnDown, faCheck, faClose, faCog, faComments, faEdit, faPlus } from "@fortawesome/free-solid-svg-icons";
+  import '@shoelace-style/shoelace/dist/components/dropdown/dropdown.js';
   import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
   import ClickEdit from "./ClickEdit.svelte";
   import { onVisible } from "./util";
@@ -390,13 +392,30 @@
     }, 50);
   }
 
-  
+  let participantsDialog
+
 </script>
 <div class="board">
     <EditBoardDialog bind:this={editBoardDialog}></EditBoardDialog>
   <div class="top-bar">
     <div class="left-items">
-      <h5 class="board-name">{$state.name}</h5>
+      <sl-button  class="board-button close" on:click={closeBoard} title="Close">
+        <Fa icon={faClose} />
+      </sl-button>
+      <sl-dropdown class="board-options board-menu" skidding=15>
+        <sl-button slot="trigger"   class="board-button settings" caret>{$state.name}</sl-button>
+        <sl-menu>
+          <sl-menu-item on:click={()=>{participantsDialog.open()}} class="participants">
+                <Fa icon={faUserGroup} /> <span>Participants</span>
+          </sl-menu-item>
+          <sl-menu-item on:click={()=> editBoardDialog.open(cloneDeep(activeBoard.hash))} class="board-settings" >
+              <Fa icon={faCog} size="1x" style="background: transparent;"/> <span>Settings</span>
+          </sl-menu-item>
+          <sl-menu-item  on:click={leaveBoard} class="leave-board" >
+              <Fa icon={faArrowTurnDown} /> <span>Leave board</span>
+          </sl-menu-item>
+        </sl-menu>
+      </sl-dropdown>
     </div>
     <div class="filter-by">
       <LabelSelector setOption={setFilterOption} option={filterOption} />
@@ -417,15 +436,6 @@
         </div>
       {/if}
 
-      <sl-button  class="board-button" on:click={leaveBoard} title="Leave">
-        <Fa icon={faArrowTurnDown} />
-      </sl-button>
-      <sl-button class="board-button settings" on:click={()=> editBoardDialog.open(cloneDeep(activeBoard.hash))} title="Settings">
-        <Fa icon={faCog} size="1x" style="background: transparent;"/>
-      </sl-button>
-      <sl-button  class="board-button" on:click={closeBoard} title="Close">
-        <Fa icon={faClose} />
-      </sl-button>
     </div>
   </div>
   {#if $state}
@@ -620,6 +630,7 @@
         </div>
       </div>
   {/if}
+  <ParticipantsDialog bind:this={participantsDialog} />
   <div class="bottom-fade"></div>
 </div>
 <style>
@@ -668,6 +679,16 @@
     background-color: transparent;
   }
 
+  .board-button.close {
+    margin-left: 0;
+    margin-right: 5px;
+  }
+
+  .board-button.close::part(base) {
+    font-size: 20px;
+    line-height: 36px;
+  }
+
   .right-items .board-button::part(base) {
     font-size: 24px;
   }
@@ -677,7 +698,32 @@
   }
 
   .board-button.settings {
-    opacity: .7;
+    width: auto;
+    margin-left: 0;
+  }
+  .board-options .board-settings {
+    width: 100%;
+  }
+  .board-options .board-settings span, .board-options .leave-board span, .board-options .participants span {
+    font-size: 16px;
+    font-weight: bold;
+  }
+
+  .board-button.settings:hover {
+    transform: scale(1.1);
+  }
+
+  .board-button.settings::part(base) {
+    width: auto;
+    font-size: 18px;
+    font-weight: bold;
+    color: rgba(86, 92, 108, 1.0);
+  }
+
+  .board-button.settings::part(label) {
+    padding: 0 0 0 0;
+    height: 36px;
+    line-height: 36px;
   }
 
   .board-button.settings:hover {
@@ -720,12 +766,10 @@
   }
 
   .card-edit .board-button:hover {
-    padding: 10px 15px;
-    margin: -10px 0px;
+
   }
   .card-edit .board-button:active {
     padding: 5px 10px;
-    margin: -10px 0px -10px 0;
     box-shadow: 0px 8px 10px rgba(53, 39, 211, 0.35);
   }
 
@@ -768,7 +812,7 @@
 
   .column-title, .add-column {
     font-weight: bold;
-    font-size: 18px;
+    font-size: 16px;
     padding: 10px;
     border-radius: 0 0 5px 5px;
     position: sticky;
@@ -960,8 +1004,7 @@
   }
 
   .card-edit .board-button {
-    margin-bottom: -20px;
-    margin-top: -10px;
+    padding: 10px 15px;
     opacity: 0;
     transition: all .25s ease;
   }

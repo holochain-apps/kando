@@ -25,12 +25,10 @@
     {#if $activeHash}
       {#if $uiProps.showMenu}
         <span style="display:flex;align-items:center;cursor:pointer" on:click={()=>{store.setUIprops({showMenu:false})}}><div class="close"  title="Hide Board Menu"><Fa icon={faClose} size=2x /></div></span>
-
       {:else}
         <div class="nav-button open" on:click={()=>{store.setUIprops({showMenu:true})}}  title="Show Board Menu"><Fa color="#fff" icon={faBars} size=2x /></div>
       {/if}
     {/if}
-    
   </div>
   <div class="items"><Search></Search></div>
   <div class="items">

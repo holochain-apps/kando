@@ -231,7 +231,7 @@
         padding: 15px;
         width: 300px;
         background: linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 1) 100%);
-        margin: 0 -5px 0 -5px;
+        margin: 0 -10px 0 -5px;
         box-shadow: 0px 4px 14px rgba(35, 32, 74, 0.8);
         z-index: 100;
     }
