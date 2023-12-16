@@ -18,14 +18,14 @@
         roleName,
       );
     let synStore: SynStore = store.synStore
-  
+
     $: activeBoardHash = store.boardList.activeBoardHash
     $: activeBoard = store.boardList.activeBoard
 
     setContext('synStore', {
       getStore: () => synStore,
     });
-  
+
     setContext('store', {
       getStore: () => store,
     });
@@ -35,11 +35,11 @@
     $: uiProps = store.uiProps
     $: boardCount = store.boardList.boardCount
 
-    $: bgUrl = DEFAULT_KD_BG_IMG  // FIXME$activeBoard ?   ($activeBoard.state.props && $boardState.props.bgUrl) ? $boardState.props.bgUrl : DEFAULT_KD_BG_IMG 
+    $: bgUrl = DEFAULT_KD_BG_IMG  // FIXME$activeBoard ?   ($activeBoard.state.props && $boardState.props.bgUrl) ? $boardState.props.bgUrl : DEFAULT_KD_BG_IMG
     $: bgImage = `background-image: url("`+ bgUrl+`");`
     let menuVisible = false
   </script>
-  
+
   <svelte:head>
     <script src='https://kit.fontawesome.com/80d72fa568.js' crossorigin='anonymous'></script>
   </svelte:head>
@@ -50,7 +50,7 @@
       <div class="wrapper">
 
       <div class="header">
-        <Toolbar 
+        <Toolbar
           profilesStore={profilesStore}/>
       </div>
       <div class="workspace" style="display:flex">
@@ -70,7 +70,7 @@
         </div>
       {/if}
 
-        
+
         {#if $activeBoardHash !== undefined}
           <KanDoPane activeBoard={$activeBoard}/>
         {/if}
@@ -79,7 +79,7 @@
       <div class="background">
         <div class="background-overlay"></div>
         <div class="background-image"
-              style={`background-image: url(${bgUrl}`}></div>
+              style={`background-image: url(${bgUrl});`}></div>
       </div>
     </div>
   </div>
