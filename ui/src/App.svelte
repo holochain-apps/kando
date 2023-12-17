@@ -15,7 +15,7 @@
   const adminPort = import.meta.env.VITE_ADMIN_PORT
   const url = `ws://localhost:${appPort}`;
 
-  let client: AppAgentWebsocket  
+  let client: AppAgentWebsocket
   let profilesStore : ProfilesStore|undefined = undefined
 
   let connected = false
@@ -36,7 +36,7 @@
         console.log("appPort and Id is", appPort, appId)
         client = await AppAgentWebsocket.connect(new URL(url), appId)
         profilesClient = new ProfilesClient(client, appId);
-    } 
+    }
     else {
       const weClient = await WeClient.connect();
 
@@ -71,13 +71,15 @@
         on:profile-created={()=>{}}
       ></create-profile>
     </div>
+  {:else if $prof.status=="error"}
+   Error when loading profile: {$prof.error}
   {:else}
     <Controller  client={client} profilesStore={profilesStore} roleName={roleName}></Controller>
   {/if}
 
 </profiles-context>
 {:else}
-<div class="loading"><div class="loader"></div></div> 
+<div class="loading"><div class="loader"></div></div>
 {/if}
 
 <style>
