@@ -2,8 +2,7 @@
     import '@shoelace-style/shoelace/dist/components/button/button.js';
     import '@shoelace-style/shoelace/dist/components/input/input.js';
     import { onMount } from "svelte";
-    import Fa from 'svelte-fa'
-    import { faCancel, faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
+    import SvgIcon from "./SvgIcon.svelte"
     import { onVisible } from './util';
 
     export let handleSave
@@ -60,7 +59,7 @@
                 {saveButtonText}
             </sl-button>
             <sl-button on:mousedown={doCancel}>
-                <Fa icon={faCancel}/>
+                <SvgIcon icon=faCancel/>
             </sl-button>
         {/if}
     </div>
@@ -68,15 +67,15 @@
         
     >
         
-        <span  on:click={(e)=>{
+        <span style="cursor:pointer" on:click={(e)=>{
             e.stopPropagation();
             isEditing = true;
-        }}> {text} <Fa icon={faEdit} style="opacity: .3; height: .875rem; margin-left: 3px; position: relative; top: -.15rem"/></span >
+        }}> {text} <SvgIcon icon=faEdit size=14px style="opacity: .3; height: .875rem; margin-left: 3px; position: relative; top: -.15rem"/></span >
         {#if handleDelete} 
-            <span  on:click={(e)=>{
+            <span style="cursor:pointer" on:click={(e)=>{
                 e.stopPropagation();
                 handleDelete()
-            }}><Fa icon={faTrash} style="opacity: .3; height: .875rem; margin-left: 3px; position: relative; top: -.15rem"/></span >
+            }}><SvgIcon icon=faTrash size=14px style="opacity: .3; height: .875rem; margin-left: 3px; position: relative; top: -.15rem"/></span >
         {/if}        
     </div>
 </div>

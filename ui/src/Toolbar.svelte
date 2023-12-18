@@ -1,11 +1,10 @@
 <script lang="ts">
   import Folk from "./Folk.svelte";
   import type { ProfilesStore } from "@holochain-open-dev/profiles";
-  import { faBug, faBars, faClose} from "@fortawesome/free-solid-svg-icons";
-  import Fa from "svelte-fa";
   import Search from './Search.svelte';
   import { getContext } from "svelte";
   import type { KanDoStore } from "./store";
+  import SvgIcon from "./SvgIcon.svelte";
 
   const { getStore } :any = getContext("store");
   let store: KanDoStore = getStore();
@@ -15,18 +14,15 @@
 
   export let profilesStore: ProfilesStore|undefined
 
-  $:bugColor = "color: #5536f9"
-
-
 </script>
 
 <div class='toolbar'>
   <div class="items">
     {#if $activeHash}
       {#if $uiProps.showMenu}
-        <span style="display:flex;align-items:center;cursor:pointer" on:click={()=>{store.setUIprops({showMenu:false})}}><div class="close"  title="Hide Board Menu"><Fa icon={faClose} size=2x /></div></span>
+        <span style="display:flex;align-items:center;cursor:pointer" on:click={()=>{store.setUIprops({showMenu:false})}}><div class="close"  title="Hide Board Menu"><SvgIcon icon="faClose" size="20px" color="#fff" /></div></span>
       {:else}
-        <div class="nav-button open" on:click={()=>{store.setUIprops({showMenu:true})}}  title="Show Board Menu"><Fa color="#fff" icon={faBars} size=2x /></div>
+        <div class="nav-button open" on:click={()=>{store.setUIprops({showMenu:true})}}  title="Show Board Menu"><SvgIcon size="20px" icon="faBars" color="#fff" /></div>
       {/if}
     {/if}
   </div>
@@ -34,7 +30,7 @@
   <div class="items">
     <Folk></Folk>
     <a href="https://github.com/holochain-apps/kando/issues" title="Report a problem in our GitHub repo" target="_blank">
-      <div class="nav-button"><Fa color="#fff" icon={faBug} size=2x style={bugColor} /></div>
+      <div class="nav-button"><SvgIcon color="#fff" icon="faBug" size=20px /></div>
     </a>
   </div>
 </div>

@@ -1,8 +1,7 @@
 <script lang="ts">
     import { getContext } from "svelte";
     import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
-    import { faFileImport } from '@fortawesome/free-solid-svg-icons';
-    import Fa from 'svelte-fa';
+    import SvgIcon from "./SvgIcon.svelte";
     import type { KanDoStore } from "./store";
     import { v1 as uuidv1 } from "uuid";
 
@@ -58,7 +57,7 @@
 </script>
 
 
-<sl-dialog label="KanDo!: UI v0.6.1 for DNA v0.5.1" bind:this={dialog} width={600} >
+<sl-dialog label="KanDo!: UI v0.6.2 for DNA v0.5.1" bind:this={dialog} width={600} >
     <div class="about">
         <p>KanDo! is a demonstration Holochain app built by the Holochain Foundation.</p>
         <p> <b>Developers:</b>
@@ -67,7 +66,7 @@
             a library that makes it really easy to build this kind of real-time collaboaration into Holochain apps.
         </p>
     <p class="small">Copyright © 2023 Holochain Foundation.  This software is distributed under the MIT License</p>
-    <div class="new-board" on:click={()=>{fileinput.click();}} title="Import Board"><Fa icon={faFileImport} size=2x style="margin-left: 15px;"/><span>Import Board </span></div>
+    <div class="new-board" on:click={()=>{fileinput.click();}} title="Import Board"><SvgIcon color="#fff" icon=faFileImport size=20px style="margin-left: 15px;"/><span>Import Board </span></div>
     <input style="display:none" type="file" accept=".json" on:change={(e)=>onFileSelected(e)} bind:this={fileinput} >
     </div>
 </sl-dialog>

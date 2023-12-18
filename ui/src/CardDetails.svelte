@@ -12,11 +12,10 @@
   import type { KanDoStore } from './store';
   import Avatar from './Avatar.svelte';
   import { decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
-  import { faEdit, faTrash, faPlus, faArchive, faClose, faPaperPlane, faCancel } from '@fortawesome/free-solid-svg-icons';
   import type { Checklist, ChecklistItem, Comment } from "./board";
 
   import { Marked, Renderer } from "@ts-stack/markdown";
-  import Fa from 'svelte-fa';
+  import SvgIcon from "./SvgIcon.svelte";
   import ClickEdit from './ClickEdit.svelte';
 
   Marked.setOptions
@@ -271,16 +270,16 @@
         <div class="card-controls">
             {#if handleDelete}
               <div class="details-button delete-button" title="Delete this card" on:click={()=>handleDelete(cardId)}>
-                <Fa icon={faTrash} style="width: 16px; height: 16px;"/>
+                <SvgIcon icon=faTrash size="18px"/>
               </div>
             {/if}
             {#if handleArchive}
               <div class="details-button archive-button" title="Archive this card" on:click={()=>{close();handleArchive()}}>
-                <Fa icon={faArchive} style="width: 16px; height: 16px;"/>
+                <SvgIcon icon=faArchive size="18px"/>
               </div>
             {/if}
           <div class="details-button" title="Close this card" on:click={(e)=>{close()}}>
-            <Fa icon={faClose} style="width: 24px; height: 24px;"/>
+            <SvgIcon icon=faClose size="18px"/>
           </div>
         </div>
       </div>
@@ -306,12 +305,12 @@
           ></sl-textarea>
       {:else}
           {#if props.description}
-        <div style="display:flex;flex-direction: column">
-          <div class="details" on:click={(e)=>editDescription()}>{@html Marked.parse(props.description)}</div>
-        </div>
+            <div style="display:flex;flex-direction: column">
+              <div class="details" style="cursor:pointer" on:click={(e)=>editDescription()}>{@html Marked.parse(props.description)}</div>
+            </div>
           {:else}
           <div style="display:flex;flex-direction: column">
-            <div class="details" style="opacity: .7" on:click={(e)=>editDescription()}>Add a description... <Fa icon={faEdit} style="width: 12px; height: 12px;"/></div>
+            <div class="details" style="opacity: .7;cursor:pointer" on:click={(e)=>editDescription()}>Add a description... <SvgIcon icon=faEdit size=12px/></div>
           </div>
           {/if}
       {/if}
@@ -342,7 +341,7 @@
                 <span class="delete-item"  on:click={(e)=>{
                   e.stopPropagation();
                   deleteChecklistItem(cardId,list,itemIdx)
-                 }}><Fa icon={faTrash} style="opacity: .3; height: .875rem; margin-left: 3px; position: relative; top: -.15rem"/></span >
+                 }}><SvgIcon icon=faTrash size=12px style="opacity: .3;  margin-left: 3px; position: relative; top: -.15rem"/></span >
                 
             </div>
             {/each}
@@ -352,7 +351,7 @@
                     addingChecklistItem=idx}}>
                   
                   <div>
-                    <span class="add-item-icon"><Fa icon={faPlus}/></span>
+                    <span class="add-item-icon"><SvgIcon icon=faPlus/></span>
                     Add item
                   </div>
               </div>
@@ -388,13 +387,13 @@
                       addChecklistItem(cardId, list, checklistItemElement.value)
                       checklistItemElement.focus()
                     }}>
-                      <Fa icon={faPlus}/>
+                      <SvgIcon icon=faPlus/>
                   </sl-button>
                   <sl-button 
                     on:mousedown={()=>{
                     addingChecklistItem = -1
                   }}>
-                      <Fa icon={faCancel}/>
+                      <SvgIcon icon=faCancel/>
                   </sl-button>
                 </div>
               </div>
@@ -404,7 +403,7 @@
         {/if}
         {#if !addingChecklist}
           <div class="checklist">
-            <div style="opacity: .7" on:click={(e)=>addingChecklist=true}>Add a checklist... <Fa icon={faEdit} style="width: 12px; height: 12px;"/></div>
+            <div style="opacity: .7" on:click={(e)=>addingChecklist=true}>Add a checklist... <SvgIcon icon=faEdit size="12px"/></div>
           </div>
         {:else}
           <div class="checklist add-checklist">
@@ -434,13 +433,13 @@
               on:mousedown={()=>{
                 addChecklist(cardId, checklistElement.value, Object.keys(card.checklists).length)
               }}>
-                <Fa icon={faPlus}/>
+                <SvgIcon icon=faPlus/>
             </sl-button>
             <sl-button 
               on:mousedown={()=>{
               addingChecklist = false
             }}>
-                <Fa icon={faCancel}/>
+                <SvgIcon icon=faCancel/>
             </sl-button>
           </div>
         {/if}
@@ -541,14 +540,14 @@
             on:mousedown={()=>{
               addComment(cardId, commentElement.value)
             }}>
-              <Fa icon={faPaperPlane}/>
+              <SvgIcon icon=faPaperPlane size="20px"/>
           </sl-button>
           <sl-button 
             on:mousedown={()=>{
             commentingFocused = false
             commentElement.value = ""
           }}>
-              <Fa icon={faCancel}/>
+              <SvgIcon icon=faCancel size="20px"/>
           </sl-button>
         {/if}
 
@@ -567,12 +566,12 @@
                     <div class="comment-control"
                       on:click={()=>editComment(cardId, comment)}
                       >
-                      <Fa icon={faEdit} style="width: 12px; height: 12px;"/>
+                      <SvgIcon icon=faEdit size=12px/>
                     </div>
                     <div class="comment-control"
                       on:click={()=>deleteComment(cardId, comment.id)}
                       >
-                      <Fa icon={faTrash} style="width: 12px; height: 12px;"/>
+                      <SvgIcon icon=faTrash size=12px/>
                     </div>
                   </div>
                   {/if}

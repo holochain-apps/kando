@@ -9,8 +9,7 @@
     import '@shoelace-style/shoelace/dist/components/input/input.js';
     import '@shoelace-style/shoelace/dist/components/checkbox/checkbox.js';
     import sanitize from "sanitize-filename";
-    import Fa from 'svelte-fa'
-    import { faPlus, faGripVertical, faTrash, faFileExport, faSpinner} from '@fortawesome/free-solid-svg-icons';
+    import SvgIcon from "./SvgIcon.svelte"
     import { cloneDeep } from "lodash";
     import type { KanDoStore } from './store';
     import { encodeHashToBase64, type EntryHash } from '@holochain/client';
@@ -165,16 +164,16 @@
         itemClass="unselectable"
         >
         <div class="group">
-          <div class="grip" ><Fa icon={faGripVertical}/></div>
+          <div class="grip" ><SvgIcon icon=faGripVertical/></div>
           <sl-input class='textarea' value={groups[index].name} on:input={e=>groups[index].name = e.target.value}></sl-input>
           <sl-button size="small"  on:click={deleteGroup(index)}>
-          <Fa icon={faTrash}/>
+          <SvgIcon icon=faTrash/>
           </sl-button>
         </div>
       </DragDropList>
 
       <div class="add-item" on:click={() => addGroup()}>
-        <Fa icon={faPlus}/>
+        <SvgIcon icon=faPlus/>
         <span>Add Column</span>
       </div>
     </div>
@@ -191,19 +190,19 @@
         itemClass="unselectable"
         >
         <div class="label-def">
-          <div class="grip" ><Fa icon={faGripVertical}/></div>
+          <div class="grip" ><SvgIcon icon=faGripVertical/></div>
           <sl-button on:click={()=>{showEmojiPicker = index;emojiDialog.show()}} >
             <span style="font-size:180%">{labelDefs[index].emoji}</span>
           </sl-button>
           <sl-input class='textarea' value={labelDefs[index].toolTip} title="label name"
           on:input={e=>labelDefs[index].toolTip = e.target.value}> </sl-input>
           <sl-button size="small"  on:click={deleteLabelDef(index)} >
-            <Fa icon={faTrash}/>
+            <SvgIcon icon=faTrash/>
           </sl-button>
         </div>
       </DragDropList>
       <div class="add-item" on:click={() => addLabelDef()}>
-        <Fa icon={faPlus}/>
+        <SvgIcon icon=faPlus/>
         <span>Add Label</span>
       </div>
       <sl-dialog label="Choose Emoji" bind:this={emojiDialog}>
@@ -255,7 +254,7 @@
         itemClass="unselectable"
         >
         <div class="category-def">
-          <div class="grip" ><Fa icon={faGripVertical}/></div>
+          <div class="grip" ><SvgIcon icon=faGripVertical/></div>
           <sl-button icon on:click={()=>{
             hex = categoryDefs[index].color
             showColorPicker = index;colorDialog.show()}} >
@@ -264,12 +263,12 @@
           <sl-input class='textarea' style="margin-left:10px" value={categoryDefs[index].name} title="category name"
           on:input={e=>categoryDefs[index].name = e.target.value}></sl-input>
           <sl-button size="small" on:click={deleteCategoryDef(index)} >
-            <Fa icon={faTrash}/>
+            <SvgIcon icon=faTrash/>
           </sl-button>
         </div>
       </DragDropList> 
       <div class="add-item" on:click={() => addCategoryDef()}>
-        <Fa icon={faPlus}/>
+        <SvgIcon icon=faPlus/>
         <span>Add Category</span>
       </div>
     </div>
@@ -284,7 +283,7 @@
     <div class='controls'>
       {#if boardHash}
         <sl-button class="board-control" on:click={() => exportBoard($state)} title="Export">
-          <Fa icon={faFileExport} /> Export
+          <SvgIcon icon=faFileExport /> Export
         </sl-button>
       {/if}
       {#if handleDelete}
@@ -307,7 +306,7 @@
           
         <span >
           {#if saving}
-            <Fa class="spinning" icon={faSpinner}></Fa>
+            <div class="spinning"><SvgIcon icon=faSpinner></SvgIcon></div>
           {:else}
             Save
           {/if}
