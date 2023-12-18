@@ -225,7 +225,7 @@
       },
       "locked": {
         "lastModified": 1701325733,
-        "narHash": "sha256-KobH9fqWhkxYYTO/c7MCjnVuiL2+na/wYH/FaxoQueY=",
+        "narHash": "sha256-KobH9fqWhkxYYTO/c7MCjnVuiL2+na/wYH/SvgIconxoQueY=",
         "owner": "holochain",
         "repo": "holochain",
         "rev": "e0f514381e42f6071263babd22e3a03ae8acf0d8",
@@ -247,7 +247,7 @@
       "locked": {
         "dir": "versions/0_2",
         "lastModified": 1701325733,
-        "narHash": "sha256-KobH9fqWhkxYYTO/c7MCjnVuiL2+na/wYH/FaxoQueY=",
+        "narHash": "sha256-KobH9fqWhkxYYTO/c7MCjnVuiL2+na/wYH/SvgIconxoQueY=",
         "owner": "holochain",
         "repo": "holochain",
         "rev": "e0f514381e42f6071263babd22e3a03ae8acf0d8",

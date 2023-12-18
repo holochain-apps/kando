@@ -1,8 +1,7 @@
 <script lang="ts">
     import { getContext } from "svelte";
     import { encodeHashToBase64, type EntryHash } from '@holochain/client';
-    import {faSearch } from '@fortawesome/free-solid-svg-icons';
-    import Fa from 'svelte-fa';
+    import SvgIcon from "./SvgIcon.svelte";
     import '@shoelace-style/shoelace/dist/components/select/select.js';
     import '@shoelace-style/shoelace/dist/components/option/option.js';
     import '@shoelace-style/shoelace/dist/components/input/input.js';
@@ -86,7 +85,7 @@
         on:sl-input={(e)=>doSearch(e.target.value)}
         on:sl-focus={(e)=>doSearch(e.target.value)}
     >
-    <span slot="prefix"style="margin-left:10px;"><Fa icon={faSearch}></Fa></span>
+    <span slot="prefix"style="margin-left:10px;"><SvgIcon color="#fff" size="16px" icon=faSearch/></span>
     </sl-input>
     {#if showSearchResults && (foundBoards.length>0 || foundCards.length>0)}
     <sl-menu class="search-results"

@@ -39,10 +39,6 @@
     $: bgImage = `background-image: url("`+ bgUrl+`");`
     let menuVisible = false
   </script>
-
-  <svelte:head>
-    <script src='https://kit.fontawesome.com/80d72fa568.js' crossorigin='anonymous'></script>
-  </svelte:head>
   <div class="flex-scrollable-parent">
     <div class="flex-scrollable-container">
       <div class='app'>

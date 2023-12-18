@@ -3,11 +3,9 @@
     import type { KanDoStore } from "./store";
     import type {  EntryHash } from '@holochain/client';
     import NewBoardDialog from './NewBoardDialog.svelte';
-    import { faSquarePlus } from '@fortawesome/free-solid-svg-icons';
-    import Fa from 'svelte-fa';
+    import SvgIcon from "./SvgIcon.svelte";
     import AboutDialog from "./AboutDialog.svelte";
     import KDLogoIcon from "./icons/KDLogoIcon.svelte";
-    import { faCog } from "@fortawesome/free-solid-svg-icons";
     import BoardMenuItem from "./BoardMenuItem.svelte";
     import { BoardType } from "./boardList";
     export let wide = false
@@ -48,7 +46,7 @@
 <div class="board-menu"
     class:wide={wide} >
     <div style="display:flex;flex-direction: row;">
-    <div class="new-board" on:click={()=>newBoardDialog.open()} title="New Board"><Fa icon={faSquarePlus} size=2x style="margin-left: 15px;"/><span>New Board</span></div>
+    <div class="new-board" on:click={()=>newBoardDialog.open()} title="New Board"><SvgIcon color="white" size=25px icon=faSquarePlus style="margin-left: 15px;"/><span>New Board</span></div>
     </div>
     {#if $activeBoards.status == "complete" && $activeBoards.value.length > 0}
         <h3 class="type-header">Active Boards</h3>
@@ -110,7 +108,7 @@
         class:slideOut={$uiProps.showMenu == false}
         on:click={()=>aboutDialog.open()}>   
         <div class="logo" title="About KanDo!"><KDLogoIcon /></div>
-        <Fa icon={faCog} class="cog" size="1.5x" color="#fff"/>
+        <div class="cog"><SvgIcon icon=faCog size="20px" color="#fff"/></div>
     </div>
 </div>
 

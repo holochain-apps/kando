@@ -17,6 +17,5 @@ export { default as SortSelector} from './LabelSelector.svelte';
 export { default as CardEditor} from './CardEditor.svelte';
 export { default as CardEditor} from './CardEditor.svelte';
 export { default as Toolbar } from './Toolbar.svelte';
-export { default as EmojiIcon } from './icons/EmojiIcon.svelte';
-export { default as TSLogoIcon } from './icons/TSLogoIcon.svelte';
+export { default as EmojiIcon } from './EmojiIcon.svelte';
 export { default as KDLogoIcon } from './icons/KDLogoIcon.svelte';

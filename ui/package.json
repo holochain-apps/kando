@@ -22,8 +22,6 @@
     "@mdi/js": "^7.1.96",
     "@ts-stack/markdown": "^1.4.0",
     "lodash": "^4.17.21",
-    "svelte-fa": "^3.0.3",
-    "@fortawesome/free-solid-svg-icons": "^6.3.0",
     "svelte-materialify": "^0.3.11",
     "svelte-multiselect": "^8.2.0",
     "uuid": "^8.3.2",

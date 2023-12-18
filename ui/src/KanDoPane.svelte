@@ -2,24 +2,23 @@
   import { getContext, onMount } from "svelte";
   import CardEditor from "./CardEditor.svelte";
   import CardDetails from "./CardDetails.svelte";
-  import EmojiIcon from "./icons/EmojiIcon.svelte";
+  import EmojiIcon from "./EmojiIcon.svelte";
   //import { sortBy } from "lodash/fp";
   import type { KanDoStore } from "./store";
   import LabelSelector from "./LabelSelector.svelte";
   import ParticipantsDialog from './ParticipantsDialog.svelte';
   import { Marked, Renderer } from "@ts-stack/markdown";
   import { v1 as uuidv1 } from "uuid";
-  import { type Card, Group, UngroupedId, type CardProps, type BoardState, type Comment, type Checklist, type Checklists, Board } from "./board";
+  import { type Card, Group, UngroupedId, type CardProps, type Comment, type Checklists, Board } from "./board";
   import EditBoardDialog from "./EditBoardDialog.svelte";
   import Avatar from "./Avatar.svelte";
   import { decodeHashFromBase64 } from "@holochain/client";
   import { cloneDeep, isEqual } from "lodash";
-  import Fa from "svelte-fa";
-  import { faUserGroup, faArrowRight, faArrowTurnDown, faCheck, faClose, faCog, faComments, faEdit, faPlus } from "@fortawesome/free-solid-svg-icons";
   import '@shoelace-style/shoelace/dist/components/dropdown/dropdown.js';
   import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
   import ClickEdit from "./ClickEdit.svelte";
   import { onVisible } from "./util";
+  import SvgIcon from "./SvgIcon.svelte";
 
   onMount(async () => {
         onVisible(columnNameElem,()=>{
@@ -104,7 +103,6 @@
         }
       } else {
         addingColumn = false
-        console.log("HERE haschanged")
       }
     }
 
@@ -348,6 +346,7 @@
     const newGroups = cloneDeep($state.groups)
     newGroups.push(new Group(newColumnName))
     newColumnName = ""
+    columnNameElem.value=""
     activeBoard.requestChanges([
       {
         type: "set-groups",
@@ -400,19 +399,19 @@
   <div class="top-bar">
     <div class="left-items">
       <sl-button  class="board-button close" on:click={closeBoard} title="Close">
-        <Fa icon={faClose} />
+        <SvgIcon icon=faClose />
       </sl-button>
       <sl-dropdown class="board-options board-menu" skidding=15>
         <sl-button slot="trigger"   class="board-button settings" caret>{$state.name}</sl-button>
         <sl-menu>
           <sl-menu-item on:click={()=>{participantsDialog.open()}} class="participants">
-                <Fa icon={faUserGroup} /> <span>Participants</span>
+                <SvgIcon icon=faUserGroup /> <span>Participants</span>
           </sl-menu-item>
           <sl-menu-item on:click={()=> editBoardDialog.open(cloneDeep(activeBoard.hash))} class="board-settings" >
-              <Fa icon={faCog} size="1x" style="background: transparent;"/> <span>Settings</span>
+              <SvgIcon icon=faCog  style="background: transparent;"/> <span>Settings</span>
           </sl-menu-item>
           <sl-menu-item  on:click={leaveBoard} class="leave-board" >
-              <Fa icon={faArrowTurnDown} /> <span>Leave board</span>
+              <SvgIcon icon=faArrowTurnDown /> <span>Leave board</span>
           </sl-menu-item>
         </sl-menu>
       </sl-dropdown>
@@ -525,7 +524,7 @@
                   cardId!=draggedItemId && 
                   dragOrder == i && 
                   (!dragWithSelf || $state.grouping[columnId][dragOrder-1] != draggedItemId) }
-                 <div> <Fa icon={faArrowRight} /> </div>
+                 <div> <SvgIcon icon=faArrowRight /> </div>
                 {/if}
                 <div 
                   class="card"
@@ -556,7 +555,7 @@
                     <div class="card-edit" style="display:flex;justify-content:space-between">
                       <div class="card-title">{props.title}</div>
                       <div class="board-button">
-                        <Fa icon={faEdit}/>
+                        <SvgIcon icon=faEdit size=12px/>
                       </div>
 
                     </div>
@@ -571,10 +570,10 @@
                     {/if}
                     <div class="comments-checklist">
                       {#if checklists && Object.keys(checklists).length>0}
-                        <div class="checklist-count"><Fa icon={faCheck} /> {checkedChecklistItems(checklists)} / {totalChecklistItems(checklists)}</div>
+                        <div class="checklist-count"><SvgIcon color="rgba(86, 94, 109, 1.0)" size=11px icon=faCheck /> {checkedChecklistItems(checklists)} / {totalChecklistItems(checklists)}</div>
                       {/if}
                       {#if comments && Object.keys(comments).length>0}
-                        <div class="comment-count"><Fa icon={faComments} />: {Object.keys(comments).length}</div>
+                        <div class="comment-count"><SvgIcon icon=faComments />: {Object.keys(comments).length}</div>
                       {/if}
                     </div>
                   </div>
@@ -583,7 +582,7 @@
             {/if}
           {/each}
           {#if dragTarget == columnId && dragOrder == $state.grouping[columnId].length}
-            <div> <Fa icon={faArrowRight} />  </div>
+            <div> <SvgIcon icon=faArrowRight />  </div>
           {/if}
               <div class="add-card" on:click={newCard(columnId)}><span class="add-icon">+</span><span>Add Card</span></div>
           </div>
@@ -593,7 +592,7 @@
         <div  class:hidden={addingColumn} class="column-wrap">
           <div class="column">
             <div class="add-column column-item"
-              on:click={()=>{newColumnName = ""; xx+=1; addingColumn = true;columnNameElem.value=""; console.log("FISH", addingColumn)}}
+              on:click={()=>{newColumnName = ""; xx+=1; addingColumn = true;columnNameElem.value=""; }}
             >Add Column +</div>
           </div>
         </div>
@@ -622,7 +621,7 @@
                   addingColumn = false  // sl-change will cause newGroup to be callsed
               }}>
                 <div style="display: flex;">
-                  <div class="new-column-icon"><Fa icon={faPlus} style="font-size: 18px;"/></div>
+                  <div class="new-column-icon"><SvgIcon icon=faPlus style="font-size: 18px;"/></div>
                 </div>
               </sl-button>
             </div>
@@ -737,8 +736,8 @@
   }
   
   .board-button {
-    width: 36px;
-    height: 36px;
+    width: 30px;
+    height: 30px;
     background: #FFFFFF;
     border: 1px solid rgba(35, 32, 74, 0.1);
     box-shadow: 0px 4px 4px rgba(66, 66, 66, 0.1);
