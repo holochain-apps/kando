@@ -2,7 +2,7 @@
   import Controller from './Controller.svelte'
   import { AppAgentWebsocket, AdminWebsocket } from '@holochain/client';
   import '@shoelace-style/shoelace/dist/themes/light.css';
-  import { WeClient, isWeContext } from '@lightningrodlabs/we-applet';
+  import { WeClient, isWeContext, initializeHotReload } from '@lightningrodlabs/we-applet';
   import { ProfilesClient, ProfilesStore } from '@holochain-open-dev/profiles';
   import "@holochain-open-dev/profiles/dist/elements/profiles-context.js";
   import "@holochain-open-dev/profiles/dist/elements/profile-prompt.js";
@@ -23,6 +23,13 @@
 
   async function initialize() : Promise<void> {
     let profilesClient
+    if ((import.meta as any).env.DEV) {
+      try {
+        await initializeHotReload();
+      } catch (e) {
+        console.warn("Could not initialize applet hot-reloading. This is only expected to work in a We context in dev mode.")
+      }
+    }
     if (!isWeContext()) {
         console.log("adminPort is", adminPort)
         if (adminPort) {
