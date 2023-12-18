@@ -4,6 +4,10 @@
     import SvgIcon from "./SvgIcon.svelte";
     import type { KanDoStore } from "./store";
     import { v1 as uuidv1 } from "uuid";
+    import {toPromise} from '@holochain-open-dev/stores'
+    import type { BoardAndLatestState } from "./boardList";
+    import { cloneDeep } from "lodash";
+    import type { BoardState } from "./board";
 
 
     const { getStore } :any = getContext('store');
@@ -54,10 +58,19 @@
         }, false);
         reader.readAsText(file);
     };
+    const createBoardFrom = async (oldBoard: BoardAndLatestState) => {
+        const newBoard = cloneDeep(oldBoard.latestState) as BoardState
+        newBoard.cards = []
+        Object.keys(newBoard.grouping).forEach(key=>newBoard.grouping[key] = [])
+        newBoard.name = `copy of ${newBoard.name}`
+        const board = await store.boardList.makeBoard(newBoard)
+            store.setUIprops({showMenu:false})
+            store.setActiveBoard(board.hash)
+    }
 </script>
 
 
-<sl-dialog label="KanDo!: UI v0.6.3 for DNA v0.5.1" bind:this={dialog} width={600} >
+<sl-dialog label="KanDo!: UI v0.6.4 for DNA v0.5.1" bind:this={dialog} width={600} >
     <div class="about">
         <p>KanDo! is a demonstration Holochain app built by the Holochain Foundation.</p>
         <p> <b>Developers:</b>
@@ -67,6 +80,27 @@
         </p>
     <p class="small">Copyright © 2023 Holochain Foundation.  This software is distributed under the MIT License</p>
     <div class="new-board" on:click={()=>{fileinput.click();}} title="Import Board"><SvgIcon color="#fff" icon=faFileImport size=20px style="margin-left: 15px;"/><span>Import Board </span></div>
+
+    {#await toPromise(store.boardList.allBoards)}
+        Loading
+    {:then boards}
+    <sl-dropdown skidding=15>
+        <sl-button slot="trigger" caret><SvgIcon icon=faClone size=20px style="margin-right: 10px"/><span>Duplicate Board </span></sl-button>
+        <sl-menu>
+                {#each Array.from(boards.entries()) as [key,board]}
+                    <sl-menu-item on:click={()=>{
+                        createBoardFrom(board)
+                    }} >
+                        {board.latestState.name}
+                    </sl-menu-item>
+                {/each}
+
+        </sl-menu>
+    </sl-dropdown>
+    {:catch err}
+        Error: {err}
+    {/await}
+
     <input style="display:none" type="file" accept=".json" on:change={(e)=>onFileSelected(e)} bind:this={fileinput} >
     </div>
 </sl-dialog>
@@ -89,10 +123,12 @@
         height: 50px;
         background: #243076;
         border: 1px solid #4A559D;
+        margin-top: 5px;
         color: #fff;
         display: flex;
         align-items: center;
         border-radius: 5px;
+        cursor: pointer;
     }
 
     .new-board span {

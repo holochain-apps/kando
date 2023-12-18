@@ -46,7 +46,7 @@
 <div class="board-menu"
     class:wide={wide} >
     <div style="display:flex;flex-direction: row;">
-    <div class="new-board" on:click={()=>newBoardDialog.open()} title="New Board"><SvgIcon color="white" size=25px icon=faSquarePlus style="margin-left: 15px;"/><span>New Board</span></div>
+    <div class="new-board" on:click={()=>newBoardDialog.open()} title="New Board"><SvgIcon color="white" size=25px icon=faSquarePlus style="margin-top:5px; margin-left: 15px;"/><span>New Board</span></div>
     </div>
     {#if $activeBoards.status == "complete" && $activeBoards.value.length > 0}
         <h3 class="type-header">Active Boards</h3>
