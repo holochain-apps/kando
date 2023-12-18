@@ -2,7 +2,7 @@
   import { getContext, onMount } from "svelte";
   import CardEditor from "./CardEditor.svelte";
   import CardDetails from "./CardDetails.svelte";
-  import EmojiIcon from "./icons/EmojiIcon.svelte";
+  import EmojiIcon from "./EmojiIcon.svelte";
   //import { sortBy } from "lodash/fp";
   import type { KanDoStore } from "./store";
   import LabelSelector from "./LabelSelector.svelte";
@@ -103,7 +103,6 @@
         }
       } else {
         addingColumn = false
-        console.log("HERE haschanged")
       }
     }
 
@@ -347,6 +346,7 @@
     const newGroups = cloneDeep($state.groups)
     newGroups.push(new Group(newColumnName))
     newColumnName = ""
+    columnNameElem.value=""
     activeBoard.requestChanges([
       {
         type: "set-groups",

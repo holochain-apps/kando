@@ -164,16 +164,16 @@
         itemClass="unselectable"
         >
         <div class="group">
-          <div class="grip" ><SvgIcon icon=faGripVertical/></div>
+          <div class="grip" ><SvgIcon icon=faGripVertical size=12px/></div>
           <sl-input class='textarea' value={groups[index].name} on:input={e=>groups[index].name = e.target.value}></sl-input>
           <sl-button size="small"  on:click={deleteGroup(index)}>
-          <SvgIcon icon=faTrash/>
+          <SvgIcon icon=faTrash size=12px/>
           </sl-button>
         </div>
       </DragDropList>
 
       <div class="add-item" on:click={() => addGroup()}>
-        <SvgIcon icon=faPlus/>
+        <SvgIcon icon=faPlus size=12px/>
         <span>Add Column</span>
       </div>
     </div>
@@ -190,19 +190,19 @@
         itemClass="unselectable"
         >
         <div class="label-def">
-          <div class="grip" ><SvgIcon icon=faGripVertical/></div>
+          <div class="grip" ><SvgIcon icon=faGripVertical size=12px/></div>
           <sl-button on:click={()=>{showEmojiPicker = index;emojiDialog.show()}} >
             <span style="font-size:180%">{labelDefs[index].emoji}</span>
           </sl-button>
           <sl-input class='textarea' value={labelDefs[index].toolTip} title="label name"
           on:input={e=>labelDefs[index].toolTip = e.target.value}> </sl-input>
           <sl-button size="small"  on:click={deleteLabelDef(index)} >
-            <SvgIcon icon=faTrash/>
+            <SvgIcon icon=faTrash size=12px/>
           </sl-button>
         </div>
       </DragDropList>
       <div class="add-item" on:click={() => addLabelDef()}>
-        <SvgIcon icon=faPlus/>
+        <SvgIcon icon=faPlus size=12px/>
         <span>Add Label</span>
       </div>
       <sl-dialog label="Choose Emoji" bind:this={emojiDialog}>
@@ -254,7 +254,7 @@
         itemClass="unselectable"
         >
         <div class="category-def">
-          <div class="grip" ><SvgIcon icon=faGripVertical/></div>
+          <div class="grip" ><SvgIcon icon=faGripVertical size=12px/></div>
           <sl-button icon on:click={()=>{
             hex = categoryDefs[index].color
             showColorPicker = index;colorDialog.show()}} >
@@ -263,12 +263,12 @@
           <sl-input class='textarea' style="margin-left:10px" value={categoryDefs[index].name} title="category name"
           on:input={e=>categoryDefs[index].name = e.target.value}></sl-input>
           <sl-button size="small" on:click={deleteCategoryDef(index)} >
-            <SvgIcon icon=faTrash/>
+            <SvgIcon icon=faTrash size=12px/>
           </sl-button>
         </div>
       </DragDropList> 
       <div class="add-item" on:click={() => addCategoryDef()}>
-        <SvgIcon icon=faPlus/>
+        <SvgIcon icon=faPlus size=12px/>
         <span>Add Category</span>
       </div>
     </div>

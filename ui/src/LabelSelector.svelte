@@ -1,5 +1,5 @@
 <script lang="ts">
-  import EmojiIcon from './icons/EmojiIcon.svelte'
+  import EmojiIcon from './EmojiIcon.svelte'
   import { getContext } from "svelte";
   import type { KanDoStore } from "./store";
 
