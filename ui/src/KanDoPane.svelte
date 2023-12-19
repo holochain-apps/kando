@@ -19,6 +19,7 @@
   import ClickEdit from "./ClickEdit.svelte";
   import { onVisible } from "./util";
   import SvgIcon from "./SvgIcon.svelte";
+  import { exportBoard } from "./export";
 
   onMount(async () => {
         onVisible(columnNameElem,()=>{
@@ -410,6 +411,15 @@
           <sl-menu-item on:click={()=> editBoardDialog.open(cloneDeep(activeBoard.hash))} class="board-settings" >
               <SvgIcon icon=faCog  style="background: transparent;"/> <span>Settings</span>
           </sl-menu-item>
+          <sl-menu-item on:click={() => exportBoard($state)} title="Export" class="board-export" >
+            <SvgIcon icon=faFileExport /> <span>Export</span>
+          </sl-menu-item>
+          <sl-menu-item on:click={() => {
+            store.boardList.archiveBoard(activeBoard.hash)
+            store.setUIprops({showMenu: true})
+            }} title="Archive" class="board-archive" >
+            <SvgIcon icon=faArchive /> <span>Archive</span>
+          </sl-menu-item>
           <sl-menu-item  on:click={leaveBoard} class="leave-board" >
               <SvgIcon icon=faArrowTurnDown /> <span>Leave board</span>
           </sl-menu-item>
@@ -703,7 +713,7 @@
   .board-options .board-settings {
     width: 100%;
   }
-  .board-options .board-settings span, .board-options .leave-board span, .board-options .participants span {
+  .board-options .board-settings span, .board-export span, .board-archive span, .board-options .leave-board span, .board-options .participants span {
     font-size: 16px;
     font-weight: bold;
   }

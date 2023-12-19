@@ -70,18 +70,6 @@
         }
         close()
     }
-    const archiveBoard = () => {
-        store.boardList.archiveBoard(boardHash)
-        const recent = get(store.uiProps).recent
-        const boardHashB64 = encodeHashToBase64(boardHash)
-        const idx = recent.findIndex((h)=> h === boardHashB64)
-        if (idx >= 0) {
-            recent.splice(idx,1)
-            store.setUIprops({recent})
-        }
-        store.setUIprops({showMenu: true})
-        close()
-    }
     const close = ()=>{
         dialog.hide()
         boardHash=undefined
@@ -99,5 +87,5 @@ on:sl-request-close={(event)=>{
     if (event.detail.source === 'overlay') {
     event.preventDefault();    
 }}}>
-    <BoardEditor bind:this={boardEditor} handleSave={updateBoard} handleDelete={archiveBoard} cancelEdit={close}/>
+    <BoardEditor bind:this={boardEditor} handleSave={updateBoard} cancelEdit={close}/>
 </sl-dialog>

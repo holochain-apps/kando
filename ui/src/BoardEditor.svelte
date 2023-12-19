@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { Group, LabelDef, type BoardProps, type BoardState, CategoryDef, UngroupedId, Board } from './board';
+    import { Group, LabelDef, type BoardProps, CategoryDef, UngroupedId, Board } from './board';
     import { getContext, onMount } from 'svelte';
   	import DragDropList, { VerticalDropZone, reorder, type DropEvent } from 'svelte-dnd-list';
     import ColorPicker from 'svelte-awesome-color-picker';
@@ -8,7 +8,6 @@
     import '@shoelace-style/shoelace/dist/components/button/button.js';
     import '@shoelace-style/shoelace/dist/components/input/input.js';
     import '@shoelace-style/shoelace/dist/components/checkbox/checkbox.js';
-    import sanitize from "sanitize-filename";
     import SvgIcon from "./SvgIcon.svelte"
     import { cloneDeep } from "lodash";
     import type { KanDoStore } from './store';
@@ -18,9 +17,6 @@
 
     const store:KanDoStore = getStore();
     $: uiProps = store.uiProps
-
-    $: activeBoard = store.boardList.activeBoard;
-    $: state = $activeBoard ? $activeBoard.readableState() : undefined
 
     export let handleSave
     export let handleDelete = undefined
@@ -33,26 +29,6 @@
     let labelDefs: Array<LabelDef> = []
     let categoryDefs: Array<CategoryDef> = []
     let nameInput
-
-    const exportBoard = (state: BoardState) => {
-        const prefix = "kando"
-        const fileName = sanitize(`${prefix}_export_${state.name}.json`)
-        download(fileName, JSON.stringify(state))
-        alert(`Your board was exported to your Downloads folder as: '${fileName}'`)
-    }
-
-    const download = (filename: string, text: string) => {
-      var element = document.createElement('a');
-      element.setAttribute('href', 'data:text/json;charset=utf-8,' + encodeURIComponent(text));
-      element.setAttribute('download', filename);
-
-      element.style.display = 'none';
-      document.body.appendChild(element);
-
-      element.click();
-
-      document.body.removeChild(element);
-    }
 
     export const reset = () => {
       text = ''
@@ -281,11 +257,6 @@
     </div>
     {/if}
     <div class='controls'>
-      {#if boardHash}
-        <sl-button class="board-control" on:click={() => exportBoard($state)} title="Export">
-          <SvgIcon icon=faFileExport /> Export
-        </sl-button>
-      {/if}
       {#if handleDelete}
         <sl-button class="board-control" on:click={handleDelete}>
           Archive
