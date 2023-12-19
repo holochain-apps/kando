@@ -6,7 +6,6 @@
   //import { sortBy } from "lodash/fp";
   import type { KanDoStore } from "./store";
   import LabelSelector from "./LabelSelector.svelte";
-  import ParticipantsDialog from './ParticipantsDialog.svelte';
   import { Marked, Renderer } from "@ts-stack/markdown";
   import { v1 as uuidv1 } from "uuid";
   import { type Card, Group, UngroupedId, type CardProps, type Comment, type Checklists, Board } from "./board";
@@ -392,7 +391,6 @@
     }, 50);
   }
 
-  let participantsDialog
 
 </script>
 <div class="board">
@@ -639,7 +637,6 @@
         </div>
       </div>
   {/if}
-  <ParticipantsDialog bind:this={participantsDialog} />
   <div class="bottom-fade"></div>
 </div>
 <style>
