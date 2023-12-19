@@ -398,28 +398,25 @@
   <div class="top-bar">
     <div class="left-items">
       <sl-button  class="board-button close" on:click={closeBoard} title="Close">
-        <SvgIcon icon=faClose />
+        <SvgIcon icon=faClose size="16px"/>
       </sl-button>
       <sl-dropdown class="board-options board-menu" skidding=15>
         <sl-button slot="trigger"   class="board-button settings" caret>{$state.name}</sl-button>
-        <sl-menu>
-          <sl-menu-item on:click={()=>{participantsDialog.open()}} class="participants">
-                <SvgIcon icon=faUserGroup /> <span>Participants</span>
-          </sl-menu-item>
+        <sl-menu className="settings-menu">
           <sl-menu-item on:click={()=> editBoardDialog.open(cloneDeep(activeBoard.hash))} class="board-settings" >
-              <SvgIcon icon=faCog  style="background: transparent;"/> <span>Settings</span>
+              <SvgIcon icon="faCog"  style="background: transparent; opacity: .5; position: relative; top: -2px;" size="14px"/> <span>Settings</span>
           </sl-menu-item>
           <sl-menu-item on:click={() => exportBoard($state)} title="Export" class="board-export" >
-            <SvgIcon icon=faFileExport /> <span>Export</span>
+            <SvgIcon icon="faFileExport"  style="background: transparent; opacity: .5; position: relative; top: -2px;" size="14px" /> <span>Export</span>
           </sl-menu-item>
           <sl-menu-item on:click={() => {
             store.boardList.archiveBoard(activeBoard.hash)
             store.setUIprops({showMenu: true})
             }} title="Archive" class="board-archive" >
-            <SvgIcon icon=faArchive /> <span>Archive</span>
+            <SvgIcon icon="faArchive" style="background: transparent; opacity: .5; position: relative; top: -2px;" size="14px" /> <span>Archive</span>
           </sl-menu-item>
           <sl-menu-item  on:click={leaveBoard} class="leave-board" >
-              <SvgIcon icon=faArrowTurnDown /> <span>Leave board</span>
+              <SvgIcon icon="faArrowTurnDown" style="background: transparent; opacity: .5; position: relative; top: -2px;" size="12px" /> <span>Leave board</span>
           </sl-menu-item>
         </sl-menu>
       </sl-dropdown>
@@ -691,7 +688,7 @@
   }
 
   .board-button.close::part(base) {
-    font-size: 20px;
+    font-size: 16px;
     line-height: 36px;
   }
 
@@ -709,10 +706,16 @@
   }
   .board-options .board-settings {
     width: 100%;
+    position: relative;
   }
   .board-options .board-settings span, .board-export span, .board-archive span, .board-options .leave-board span, .board-options .participants span {
     font-size: 16px;
     font-weight: bold;
+  }
+
+  .settings-menu {
+    position: relative;
+    left: -10px;
   }
 
   .board-button.settings:hover {
@@ -764,6 +767,14 @@
   .board-button:active {
     box-shadow: 0px 8px 10px rgba(53, 39, 211, 0.35);
     transform: scale(1.1);
+  }
+
+  sl-menu-item::part(checked-icon) {
+    display: none;
+  }
+
+  sl-menu-item::part(base) {
+    padding-left: 8px;
   }
 
   .card-edit {

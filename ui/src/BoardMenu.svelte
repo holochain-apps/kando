@@ -2,7 +2,7 @@
     import { getContext } from "svelte";
     import type { KanDoStore } from "./store";
     import type {  EntryHash } from '@holochain/client';
-    import ParticipantsDialog from './ParticipantsDialog.svelte';
+    import GroupParticipants from './GroupParticipants.svelte';
     import NewBoardDialog from './NewBoardDialog.svelte';
     import SvgIcon from "./SvgIcon.svelte";
     import AboutDialog from "./AboutDialog.svelte";
@@ -41,14 +41,13 @@
 
     let aboutDialog
 
-    let participantsDialog
 </script>
 
 <AboutDialog bind:this={aboutDialog} />
 <div class="board-menu"
     class:wide={wide} >
 
-    <ParticipantsDialog bind:this={participantsDialog} />
+    <GroupParticipants/>
     <div style="display:flex;flex-direction: row;">
     <div class="new-board" on:click={()=>newBoardDialog.open()} title="New Board"><SvgIcon color="white" size=25px icon=faSquarePlus style="margin-top:5px; margin-left: 15px;"/><span>New Board</span></div>
     </div>
