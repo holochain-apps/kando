@@ -8,6 +8,7 @@
     import { boardGrammar, Board, type BoardState } from "./board";
     import { deserializeExport, exportBoards } from "./export";
     import { DocumentStore, WorkspaceStore } from "@holochain-syn/core";
+    import { encodeHashToBase64 } from "@holochain/client";
 
 
     const { getStore } :any = getContext('store');
@@ -30,8 +31,10 @@
                 for (const b of importedBoardStates) {
                     boards.push(await store.boardList.makeBoard(b))
                 }
-                store.setUIprops({showMenu:false})
-                store.setActiveBoard(boards[0].hash)
+                if (importedBoardStates.length == 1) {
+                    store.setUIprops({showMenu:false})
+                    store.setActiveBoard(boards[0].hash)
+                }
             }
             importing = false
         }, false);
@@ -50,9 +53,13 @@
         const hashes = await toPromise(asyncDerived(store.synStore.documentsByTag.get(BoardType.active),x=>Array.from(x.keys())))
         const docs = hashes.map(hash=>new DocumentStore(store.synStore, boardGrammar, hash))
         for (const docStore of docs) {
-            const workspaces = await toPromise(docStore.allWorkspaces)
-            const workspaceStore = new WorkspaceStore(docStore, Array.from(workspaces.keys())[0])
-            boardStates.push(await toPromise(workspaceStore.latestSnapshot))
+            try {
+                const workspaces = await toPromise(docStore.allWorkspaces)
+                const workspaceStore = new WorkspaceStore(docStore, Array.from(workspaces.keys())[0])
+                boardStates.push(await toPromise(workspaceStore.latestSnapshot))
+            } catch(e) {
+                console.log("Error getting snapshot for ", encodeHashToBase64(docStore.documentHash), e)
+            }
         }
         exportBoards(boardStates)
         exporting = false
@@ -62,7 +69,7 @@
 </script>
 
 
-<sl-dialog label="KanDo!: UI v0.6.5 for DNA v0.5.1" bind:this={dialog} width={600} >
+<sl-dialog label="KanDo!: UI v0.6.6 for DNA v0.5.1" bind:this={dialog} width={600} >
     <div class="about">
         <p>KanDo! is a demonstration Holochain app built by the Holochain Foundation.</p>
         <p> <b>Developers:</b>
