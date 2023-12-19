@@ -1,12 +1,11 @@
-import { Board } from "./board";
 import { LazyHoloHashMap } from "@holochain-open-dev/utils";
 import { derived, get, writable, type Readable, type Writable } from "svelte/store";
-import { boardGrammar, type BoardDelta, type BoardGrammar, type BoardState } from "./board";
 import { type AgentPubKey, type EntryHash, type EntryHashB64, encodeHashToBase64 } from "@holochain/client";
 import {toPromise, type AsyncReadable, pipe, joinAsync, asyncDerived, sliceAndJoin, alwaysSubscribed} from '@holochain-open-dev/stores'
-import { DocumentStore, SynStore, WorkspaceStore } from "@holochain-syn/core";
+import { SynStore, WorkspaceStore } from "@holochain-syn/core";
 import type { ProfilesStore } from "@holochain-open-dev/profiles";
 import { cloneDeep } from "lodash";
+import { Board, type BoardDelta, type BoardState } from "./board";
 
 export enum BoardType {
     active = "active",
@@ -33,11 +32,9 @@ export class BoardList {
     activeBoardHash: Writable<EntryHash| undefined> = writable(undefined)
     activeBoardHashB64: Readable<string| undefined> = derived(this.activeBoardHash, s=> s ? encodeHashToBase64(s): undefined)
     boardCount: AsyncReadable<number>
-    documents: LazyHoloHashMap<EntryHash, DocumentStore<BoardGrammar>> = new LazyHoloHashMap( documentHash =>
-         new DocumentStore(this.synStore, boardGrammar, documentHash))
 
     boardData2 = new LazyHoloHashMap( documentHash => {
-        const docStore = this.documents.get(documentHash)
+        const docStore = this.synStore.documents.get(documentHash)
 
         const board = pipe(docStore.allWorkspaces,
             workspaces => 
@@ -51,7 +48,7 @@ export class BoardList {
 
     agentBoardHashes: LazyHoloHashMap<AgentPubKey, AsyncReadable<Array<BoardAndLatestState>>> = new LazyHoloHashMap(agent =>
         pipe(this.activeBoardHashes,
-            documentHashes => joinAsync(documentHashes.map(documentHash=>this.documents.get(documentHash).allAuthors)),
+            documentHashes => joinAsync(documentHashes.map(documentHash=>this.synStore.documents.get(documentHash).allAuthors)),
             (documentsAuthors, documentHashes) => {
                 const agentBoardHashes: AsyncReadable<BoardAndLatestState>[] = []
                 const b64 = encodeHashToBase64(agent)

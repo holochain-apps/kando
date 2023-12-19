@@ -5,7 +5,7 @@
     import type { KanDoStore } from "./store";
     import {asyncDerived, toPromise} from '@holochain-open-dev/stores'
     import { BoardType } from "./boardList";
-    import { boardGrammar, Board, type BoardState } from "./board";
+    import type { Board, BoardState } from "./board";
     import { deserializeExport, exportBoards } from "./export";
     import { DocumentStore, WorkspaceStore } from "@holochain-syn/core";
     import { encodeHashToBase64 } from "@holochain/client";
@@ -51,7 +51,7 @@
         exporting = true
 
         const hashes = await toPromise(asyncDerived(store.synStore.documentsByTag.get(BoardType.active),x=>Array.from(x.keys())))
-        const docs = hashes.map(hash=>new DocumentStore(store.synStore, boardGrammar, hash))
+        const docs = hashes.map(hash=>new DocumentStore(store.synStore, hash))
         for (const docStore of docs) {
             try {
                 const workspaces = await toPromise(docStore.allWorkspaces)
@@ -69,7 +69,7 @@
 </script>
 
 
-<sl-dialog label="KanDo!: UI v0.6.6 for DNA v0.5.1" bind:this={dialog} width={600} >
+<sl-dialog label="KanDo!: UI v0.7.0 for DNA v0.6.0" bind:this={dialog} width={600} >
     <div class="about">
         <p>KanDo! is a demonstration Holochain app built by the Holochain Foundation.</p>
         <p> <b>Developers:</b>
