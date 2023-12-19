@@ -3,11 +3,11 @@
     import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
     import SvgIcon from "./SvgIcon.svelte";
     import type { KanDoStore } from "./store";
-    import { v1 as uuidv1 } from "uuid";
-    import {toPromise} from '@holochain-open-dev/stores'
-    import type { BoardAndLatestState } from "./boardList";
-    import { cloneDeep } from "lodash";
-    import type { BoardState } from "./board";
+    import {asyncDerived, toPromise} from '@holochain-open-dev/stores'
+    import { BoardType } from "./boardList";
+    import { boardGrammar, Board, type BoardState } from "./board";
+    import { deserializeExport, exportBoards } from "./export";
+    import { DocumentStore, WorkspaceStore } from "@holochain-syn/core";
 
 
     const { getStore } :any = getContext('store');
@@ -24,49 +24,41 @@
         let reader = new FileReader();
 
         reader.addEventListener("load", async () => {
-            const b = JSON.parse(reader.result as string)
-            for (const [idx, card] of b.cards.entries()) {
-                if (!card.comments) {
-                    card.comments = {}
-                } else if ( typeof(card.comments.length) === "number") {
-                    // array of comments, convert to object
-                    const comments = {}
-                    for (const c  of card.comments) {
-                        comments[c.id] = c
-                    }
-                    card.comments = comments
+            const importedBoardStates = deserializeExport(reader.result as string)
+            if ( importedBoardStates.length > 0) {
+                const boards:Array<Board> = []
+                for (const b of importedBoardStates) {
+                    boards.push(await store.boardList.makeBoard(b))
                 }
-                if (!card.checklists) {
-                    card.checklists = {}
-                } else if (typeof(card.checklists.length) === "number") {
-                    // array of checklists, convert to object
-                    const checklists = {}
-                    let i = 0
-                    for (const l of card.checklists) {
-                        l.id = uuidv1()
-                        l.timestamp = new Date().getTime()
-                        l.order = i
-                        checklists[l.id] = l
-                        i += 1
-                    }
-                    card.checklists = checklists
-                }
+                store.setUIprops({showMenu:false})
+                store.setActiveBoard(boards[0].hash)
             }
-            const board = await store.boardList.makeBoard(b)
-            store.setUIprops({showMenu:false})
-            store.setActiveBoard(board.hash)
+            importing = false
         }, false);
+        importing = true
         reader.readAsText(file);
     };
-    const createBoardFrom = async (oldBoard: BoardAndLatestState) => {
-        const newBoard = cloneDeep(oldBoard.latestState) as BoardState
-        newBoard.cards = []
-        Object.keys(newBoard.grouping).forEach(key=>newBoard.grouping[key] = [])
-        newBoard.name = `copy of ${newBoard.name}`
-        const board = await store.boardList.makeBoard(newBoard)
-            store.setUIprops({showMenu:false})
-            store.setActiveBoard(board.hash)
+    const createBoardFrom = async (oldBoard: BoardState) => {
+        const board = await store.boardList.cloneBoard(oldBoard)
+        store.setUIprops({showMenu:false})
+        store.setActiveBoard(board.hash)
     }
+    const exportAllBoards = async () => {
+        const boardStates = []
+        exporting = true
+
+        const hashes = await toPromise(asyncDerived(store.synStore.documentsByTag.get(BoardType.active),x=>Array.from(x.keys())))
+        const docs = hashes.map(hash=>new DocumentStore(store.synStore, boardGrammar, hash))
+        for (const docStore of docs) {
+            const workspaces = await toPromise(docStore.allWorkspaces)
+            const workspaceStore = new WorkspaceStore(docStore, Array.from(workspaces.keys())[0])
+            boardStates.push(await toPromise(workspaceStore.latestSnapshot))
+        }
+        exportBoards(boardStates)
+        exporting = false
+    }
+    let importing = false
+    let exporting = false
 </script>
 
 
@@ -79,7 +71,23 @@
             a library that makes it really easy to build this kind of real-time collaboaration into Holochain apps.
         </p>
     <p class="small">Copyright © 2023 Holochain Foundation.  This software is distributed under the MIT License</p>
-    <div class="new-board" on:click={()=>{fileinput.click();}} title="Import Board"><SvgIcon color="#fff" icon=faFileImport size=20px style="margin-left: 15px;"/><span>Import Board </span></div>
+    {#if importing}
+        <div class="export-import" title="Import Boards">
+            <div class="spinning" style="margin:auto"><SvgIcon icon=faSpinner color="#fff"></SvgIcon></div>
+        </div>
+    {:else}
+        <div class="export-import" on:click={()=>{fileinput.click();}} title="Import Boards">
+            <SvgIcon color="#fff" icon=faFileImport size=20px style="margin-left: 15px;"/><span>Import Boards </span>
+        </div>
+    {/if}
+    {#if exporting}
+        <div class="export-import" title="Import Boards">
+            <div class="spinning" style="margin:auto"><SvgIcon icon=faSpinner  color="#fff"></SvgIcon></div>
+        </div>
+    {:else}
+        <div class="export-import" on:click={()=>{exportAllBoards()}} title="Export All Boards"><SvgIcon color="#fff" icon=faFileExport size=20px style="margin-left: 15px;"/><span>Export All Boards</span></div>
+    {/if}
+
 
     {#await toPromise(store.boardList.allBoards)}
         Loading
@@ -89,7 +97,7 @@
         <sl-menu>
                 {#each Array.from(boards.entries()) as [key,board]}
                     <sl-menu-item on:click={()=>{
-                        createBoardFrom(board)
+                        createBoardFrom(board.latestState)
                     }} >
                         {board.latestState.name}
                     </sl-menu-item>
@@ -116,7 +124,7 @@
      .small {
         font-size: 80%;
      }
-     .new-board {
+     .export-import {
         box-sizing: border-box;
         position: relative;
         width: 100%;
@@ -131,7 +139,7 @@
         cursor: pointer;
     }
 
-    .new-board span {
+    .export-import span {
         color: #fff;
         display: block;
         padding: 0 15px;

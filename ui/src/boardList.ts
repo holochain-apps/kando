@@ -1,11 +1,12 @@
 import { Board } from "./board";
-import { LazyHoloHashMap, type EntryRecord } from "@holochain-open-dev/utils";
+import { LazyHoloHashMap } from "@holochain-open-dev/utils";
 import { derived, get, writable, type Readable, type Writable } from "svelte/store";
 import { boardGrammar, type BoardDelta, type BoardGrammar, type BoardState } from "./board";
 import { type AgentPubKey, type EntryHash, type EntryHashB64, encodeHashToBase64 } from "@holochain/client";
 import {toPromise, type AsyncReadable, pipe, joinAsync, asyncDerived, sliceAndJoin, alwaysSubscribed} from '@holochain-open-dev/stores'
 import { DocumentStore, SynStore, WorkspaceStore } from "@holochain-syn/core";
 import type { ProfilesStore } from "@holochain-open-dev/profiles";
+import { cloneDeep } from "lodash";
 
 export enum BoardType {
     active = "active",
@@ -152,6 +153,14 @@ export class BoardList {
             }
             this.setActiveBoard(undefined)
         }
+    }
+
+    async cloneBoard(board: BoardState) : Promise<Board>  {
+        const newBoard = cloneDeep(board) as BoardState
+        newBoard.cards = []
+        Object.keys(newBoard.grouping).forEach(key=>newBoard.grouping[key] = [])
+        newBoard.name = `copy of ${newBoard.name}`
+        return this.makeBoard(newBoard)
     }
 
     async makeBoard(options: BoardState, fromHash?: EntryHashB64) : Promise<Board> {
