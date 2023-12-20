@@ -48,12 +48,10 @@
     class:wide={wide} >
 
     <GroupParticipants/>
-    <div style="display:flex;flex-direction: row;">
-    <div class="new-board" on:click={()=>newBoardDialog.open()} title="New Board"><SvgIcon color="white" size=25px icon=faSquarePlus style="margin-top:5px; margin-left: 15px;"/><span>New Board</span></div>
-    </div>
     {#if $activeBoards.status == "complete" && $activeBoards.value.length > 0}
-        <h3 class="type-header">Active Boards</h3>
+        <h3 class="type-header">Boards</h3>
         <div class="boards-section">
+            <div class="new-board" on:click={()=>newBoardDialog.open()} title="New Board"><SvgIcon color="white" size=25px icon=faSquarePlus style="margin-top:5px; margin-left: 15px;"/><span>New Board</span></div>
             {#each $activeBoards.value as hash}
                 <div
                     on:click={()=>selectBoard(hash)}
@@ -193,6 +191,7 @@
         font-size: 16px;
         font-weight: bold;
         transition: all .25s ease;
+        top: 3px;
         padding: 15px 0;
         box-shadow: 0px 4px 8px rgba(35, 32, 74, 0);
     }

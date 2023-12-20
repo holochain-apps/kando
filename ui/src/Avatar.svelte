@@ -11,6 +11,7 @@
   export let agentPubKey: AgentPubKey
   export let size = 32
   export let namePosition = "row"
+  export let nameColor = "rgba(86, 94, 109, 1.0)"
   export let showAvatar = true
   export let showNickname = true
   export let placeholder = false
@@ -38,7 +39,7 @@
             {/if}
         {/if}
         {#if showNickname}
-            <div class="nickname">{ nickname }</div>
+            <div class="nickname" style="color: {nameColor}">{ nickname }</div>
         {/if}
     {/if}
 </div>
