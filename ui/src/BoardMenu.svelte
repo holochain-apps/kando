@@ -48,18 +48,20 @@
     class:wide={wide} >
 
     <GroupParticipants/>
-    <h3 class="type-header">Boards</h3>
-    <div class="boards-section">
-        <div class="new-board" on:click={()=>newBoardDialog.open()} title="New Board"><SvgIcon color="white" size=25px icon=faSquarePlus style="margin-left: 15px;"/><span>New Board</span></div>
-        {#each $activeBoards.value as hash}
-            <div
-                on:click={()=>selectBoard(hash)}
-                class="board" >
-                <BoardMenuItem boardType={BoardType.active} boardHash={hash}></BoardMenuItem>
-                <div class="board-bg" style="background-image: url({bgUrl});"></div>
-            </div>
-        {/each}
-    </div>
+        <h3 class="type-header">Boards</h3>
+        <div class="boards-section">
+            <div class="new-board" on:click={()=>newBoardDialog.open()} title="New Board"><SvgIcon color="white" size=25px icon=faSquarePlus style="margin-top:5px; margin-left: 15px;"/><span>New Board</span></div>
+            {#if $activeBoards.status == "complete" && $activeBoards.value.length > 0}
+                {#each $activeBoards.value as hash}
+                    <div
+                        on:click={()=>selectBoard(hash)}
+                        class="board" >
+                        <BoardMenuItem boardType={BoardType.active} boardHash={hash}></BoardMenuItem>
+                        <div class="board-bg" style="background-image: url({bgUrl});"></div>
+                    </div>
+                {/each}
+            {/if}
+        </div>
     <!-- {#if $uiProps.recent.length > 0 || activeBoards}
         <h3 class="type-header">Active Boards</h3>
         <div class="boards-section">
