@@ -5,7 +5,7 @@
     import type { KanDoStore } from "./store";
     import {asyncDerived, toPromise} from '@holochain-open-dev/stores'
     import { BoardType } from "./boardList";
-    import type { Board, BoardState } from "./board";
+    import type { Board, BoardEphemeralState, BoardState } from "./board";
     import { deserializeExport, exportBoards } from "./export";
     import { DocumentStore, WorkspaceStore } from "@holochain-syn/core";
     import { encodeHashToBase64 } from "@holochain/client";
@@ -51,7 +51,7 @@
         exporting = true
 
         const hashes = await toPromise(asyncDerived(store.synStore.documentsByTag.get(BoardType.active),x=>Array.from(x.keys())))
-        const docs = hashes.map(hash=>new DocumentStore(store.synStore, hash))
+        const docs = hashes.map(hash=>new DocumentStore<BoardState, BoardEphemeralState>(store.synStore, hash))
         for (const docStore of docs) {
             try {
                 const workspaces = await toPromise(docStore.allWorkspaces)
@@ -97,21 +97,21 @@
 
 
     {#await toPromise(store.boardList.allBoards)}
-        Loading
+        <div class="spinning" ><SvgIcon icon=faSpinner  color="#fff"></SvgIcon></div>
     {:then boards}
-    <sl-dropdown skidding=15>
-        <sl-button slot="trigger" caret><SvgIcon icon=faClone size=20px style="margin-right: 10px"/><span>Duplicate Board </span></sl-button>
-        <sl-menu>
-                {#each Array.from(boards.entries()) as [key,board]}
-                    <sl-menu-item on:click={()=>{
-                        createBoardFrom(board.latestState)
-                    }} >
-                        {board.latestState.name}
-                    </sl-menu-item>
-                {/each}
+        <sl-dropdown skidding=15>
+            <sl-button class="export-import" slot="trigger" caret><SvgIcon icon=faClone size=20px style="margin-right: 10px"/><span>New Board From </span></sl-button>
+            <sl-menu>
+                    {#each Array.from(boards.entries()) as [key,board]}
+                        <sl-menu-item on:click={()=>{
+                            createBoardFrom(board.latestState)
+                        }} >
+                            {board.latestState.name}
+                        </sl-menu-item>
+                    {/each}
 
-        </sl-menu>
-    </sl-dropdown>
+            </sl-menu>
+        </sl-dropdown>
     {:catch err}
         Error: {err}
     {/await}

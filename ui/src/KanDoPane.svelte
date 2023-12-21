@@ -204,15 +204,12 @@
   };
 
   const closeBoard = () => {
-    store.boardList.closeActiveBoard(false);
-    store.setUIprops({showMenu:true})
+    store.closeActiveBoard(false);
   };
 
   const leaveBoard = () => {
-    store.boardList.closeActiveBoard(true);
-    store.setUIprops({showMenu:true})
+    store.closeActiveBoard(true);
   };
-
 
   let editBoardDialog
   let dragOn = true
@@ -393,7 +390,7 @@
 
 
 </script>
-<div class="board">
+<div class="board"  style={$state.props.bgUrl ? `opacity: .7;background-size:cover; background-image: url(${$state.props.bgUrl})`: ""}>
     <EditBoardDialog bind:this={editBoardDialog}></EditBoardDialog>
   <div class="top-bar">
     <div class="left-items">
@@ -410,8 +407,7 @@
             <SvgIcon icon="faFileExport"  style="background: transparent; opacity: .5; position: relative; top: -2px;" size="14px" /> <span>Export</span>
           </sl-menu-item>
           <sl-menu-item on:click={() => {
-            store.boardList.archiveBoard(activeBoard.hash)
-            store.setUIprops({showMenu: true})
+            store.archiveBoard(activeBoard.hash)
             }} title="Archive" class="board-archive" >
             <SvgIcon icon="faArchive" style="background: transparent; opacity: .5; position: relative; top: -2px;" size="14px" /> <span>Archive</span>
           </sl-menu-item>

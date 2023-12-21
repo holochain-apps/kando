@@ -110,10 +110,11 @@ export class BoardList {
     async setActiveCard(cardId: string | undefined) {
         this.activeCard.update((n) => {return cardId} )
     }
-    async setActiveBoard(hash: EntryHash | undefined) {
-        if (hash) {
-            const board = (await toPromise(this.boardData2.get(hash))).board
 
+    async setActiveBoard(hash: EntryHash | undefined) : Promise<Board | undefined> {
+        let board: Board | undefined = undefined
+        if (hash) {
+            board = (await toPromise(this.boardData2.get(hash))).board
             if (board) {
                 await board.join()
                 console.log("joined")
@@ -125,14 +126,19 @@ export class BoardList {
             this.activeBoard.update((n) => {return undefined} )
         }
         this.activeBoardHash.update((n) => {return hash} )
+
+        return board
     }
 
-    async archiveBoard(documentHash: EntryHash) {
+    async archiveBoard(documentHash: EntryHash) : Promise<boolean> {
+        let wasActive = false
         await this.synStore.client.removeDocumentTag(documentHash, BoardType.active)
         await this.synStore.client.tagDocument(documentHash, BoardType.archived)
         if (encodeHashToBase64(get(this.activeBoardHash)) == encodeHashToBase64(documentHash)) {
             await this.setActiveBoard(undefined)
+            wasActive = true
         }
+        return wasActive
     }
 
     async unarchiveBoard(documentHash: EntryHash) {

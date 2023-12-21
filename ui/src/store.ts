@@ -63,17 +63,29 @@ export class KanDoStore {
         })
     }
 
-    setActiveBoard(hash:EntryHash) {
-        const hashB64 = encodeHashToBase64(hash)
-        const recent = get(this.uiProps).recent
-        const idx = recent.findIndex(h=>h===hashB64)
-        if (idx >=0) {
-            recent.splice(idx,1)
+    async setActiveBoard(hash: EntryHash | undefined) {
+        const board = await this.boardList.setActiveBoard(hash)
+        // let bgUrl = ""
+        // if (board) {
+        //     const state = board.state()
+        //     if (state) {
+        //         bgUrl = state.props.bgUrl
+        //     }
+        // }
+        this.setUIprops({showMenu:false/*, bgUrl*/})
+    }
+
+    async closeActiveBoard(leave: boolean) {
+        await this.boardList.closeActiveBoard(leave)
+        this.setUIprops({showMenu:true, bgUrl:""})
+    }
+
+
+    async archiveBoard(documentHash: EntryHash) {
+        const wasActive = this.boardList.archiveBoard(documentHash)
+        if (wasActive ) {
+            this.setUIprops({showMenu:true, bgUrl:""})
         }
-        recent.unshift(hashB64)
-        recent.splice(6);
-        this.setUIprops({recent})
-        this.boardList.setActiveBoard(hash)
     }
 
     get myAgentPubKey(): AgentPubKey {

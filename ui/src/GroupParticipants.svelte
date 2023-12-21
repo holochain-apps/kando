@@ -41,7 +41,7 @@
                                 <span style="font-size: 12px; opacity: .7;">Contributor to</span>
                                 {#each $agentBoards.value.get(agentPubKey) as board}
                                     <div class="board" on:click={()=>{
-                                        store.boardList.setActiveBoard(board.board.hash)
+                                        store.setActiveBoard(board.board.hash)
                                         close()
                                     }}>{board.latestState.name}</div>
                                 {/each}
