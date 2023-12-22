@@ -17,6 +17,7 @@
   import { Marked, Renderer } from "@ts-stack/markdown";
   import SvgIcon from "./SvgIcon.svelte";
   import ClickEdit from './ClickEdit.svelte';
+  import { hrlB64WithContextToRaw, hrlWithContextToB64 } from './util';
 
   Marked.setOptions
   ({
@@ -45,7 +46,7 @@
   $: selectedAvatarsForSelect = selectedAvatars.join(" ")
   $: allProfiles = store.profilesStore.allProfiles
 
-  const DEFAULT_PROPS = {title:"", description:"", category: "", agents:[], labels:[]}
+  const DEFAULT_PROPS = {title:"", description:"", category: "", agents:[], labels:[], attachments:[]}
 
   //let props:CardProps = DEFAULT_PROPS
   let cardId:uuidv1 = ""
@@ -234,6 +235,21 @@
   let checklistItemElement
 
   let editDescriptionElement
+
+  const addAttachment = async () => {
+    const hrl = await store.weClient.userSelectHrl()
+    if (hrl) {
+      if (props.attachments === undefined) {
+        props.attachments = []
+      }
+      props.attachments.push(hrlWithContextToB64(hrl))
+      handleSave(props)
+    }
+  }
+  const removeAttachment = (idx: number) => {
+    props.attachments.splice(idx,1)
+    handleSave(props)
+  }
 
 </script>
 <sl-drawer class="edit-card" bind:this={dialog}
@@ -482,6 +498,41 @@
 
     </div>
     {/if}
+    {#if store.weClient}
+      <div style="margin-left:10px; margin-bottom:5px;">
+        <button class="control" on:click={()=>addAttachment()} >          
+          <SvgIcon icon="faPaperclip" size="12px"/> Add Attachment
+        </button>
+      </div>
+      {#if props.attachments}
+        <div style="display:flex;flex-direction:row;flex-wrap:wrap">
+          {#each props.attachments as attachment, i}
+            {#await store.weClient.entryInfo(hrlB64WithContextToRaw(attachment).hrl)}
+              <sl-button size="small" loading></sl-button>
+            {:then { entryInfo }}
+              <sl-button  size="small"
+                on:click={()=>{
+                    const hrl = hrlB64WithContextToRaw(attachment)
+                    store.weClient.openHrl(hrl.hrl, hrl.context)
+                  }}
+                style="display:flex;flex-direction:row;margin-right:5px;margin-left:10px"><sl-icon src={entryInfo.icon_src} slot="prefix"></sl-icon>
+                {entryInfo.name}
+              </sl-button>
+              <sl-button circle size="small"
+                on:click={()=>{
+                  removeAttachment(i)
+                  }}
+                >
+                <SvgIcon icon="faTrash" size="12px"></SvgIcon>
+              </sl-button> 
+            {:catch error}
+              Oops. something's wrong.
+            {/await}
+          {/each}
+        </div>
+      {/if}
+    {/if}
+
     <sl-dialog bind:this={commentDialog}>
       <sl-textarea bind:this={commentTextElem}></sl-textarea>
       <div style="display:flex;justify-content:flex-end;margin-top:5px;">

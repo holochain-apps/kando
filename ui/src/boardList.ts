@@ -108,11 +108,7 @@ export class BoardList {
     }
 
     async setActiveCard(cardId: string | undefined) {
-        this.activeCard.update((n) => {
-            console.log("old card", n)
-            console.log("active card", cardId)
-
-            return cardId} )
+        this.activeCard.update((n) => {return cardId} )
     }
 
     async setActiveBoard(hash: EntryHash | undefined) : Promise<Board | undefined> {

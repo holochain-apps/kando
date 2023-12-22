@@ -16,6 +16,7 @@ import type { v1 as uuidv1 } from "uuid";
 import { get, writable, type Writable } from "svelte/store";
 import type { ProfilesStore } from '@holochain-open-dev/profiles';
 import type { BoardState } from './board';
+import type { WeClient } from '@lightningrodlabs/we-applet';
 
 
 TimeAgo.addDefaultLocale(en)
@@ -93,6 +94,7 @@ export class KanDoStore {
     }
 
     constructor(
+        public weClient : WeClient,
         public profilesStore: ProfilesStore,
         protected clientIn: AppAgentClient,
         protected roleName: RoleName,

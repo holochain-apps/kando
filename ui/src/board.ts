@@ -3,6 +3,7 @@ import { get, type Readable } from "svelte/store";
 import { v1 as uuidv1 } from "uuid";
 import { type AgentPubKey, type EntryHash, type EntryHashB64, encodeHashToBase64, type AgentPubKeyB64, type Timestamp } from "@holochain/client";
 import { BoardType } from "./boardList";
+import type { HrlB64WithContext } from "@lightningrodlabs/we-applet";
 
 export class LabelDef {
     type: uuidv1
@@ -24,6 +25,7 @@ export type CardProps = {
   category: uuidv1,
   agents: Array<EntryHashB64>,
   labels: Array<uuidv1>,
+  attachments: Array<HrlB64WithContext>
 }
 
 export type Comment = {

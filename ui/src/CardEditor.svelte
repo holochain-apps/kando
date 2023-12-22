@@ -24,7 +24,7 @@
   export let categories: Array<CategoryDef>
   export let title
 
-  const DEFAULT_PROPS = {title:"", description:"", category: "", agents:[], labels:[]}
+  const DEFAULT_PROPS = {title:"", description:"", category: "", agents:[], labels:[], attachments: []}
 
   let props:CardProps = DEFAULT_PROPS
   let cardId:uuidv1 = ""

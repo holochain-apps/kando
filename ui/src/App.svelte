@@ -8,6 +8,7 @@
   import "@holochain-open-dev/profiles/dist/elements/profile-prompt.js";
   import "@holochain-open-dev/profiles/dist/elements/create-profile.js";
   import KDLogoIcon from "./icons/KDLogoIcon.svelte";
+  import { appletServices } from './we';
 
   const appId = import.meta.env.VITE_APP_ID ? import.meta.env.VITE_APP_ID : 'kando'
   const roleName = 'kando'
@@ -16,6 +17,7 @@
   const url = `ws://localhost:${appPort}`;
 
   let client: AppAgentWebsocket
+  let weClient: WeClient
   let profilesStore : ProfilesStore|undefined = undefined
 
   let connected = false
@@ -45,7 +47,7 @@
         profilesClient = new ProfilesClient(client, appId);
     }
     else {
-      const weClient = await WeClient.connect();
+      weClient = await WeClient.connect(appletServices);
 
       if (
         !(weClient.renderInfo.type === "applet-view")
@@ -81,7 +83,7 @@
   {:else if $prof.status=="error"}
    Error when loading profile: {$prof.error}
   {:else}
-    <Controller  client={client} profilesStore={profilesStore} roleName={roleName}></Controller>
+    <Controller  client={client} weClient={weClient} profilesStore={profilesStore} roleName={roleName}></Controller>
   {/if}
 
 </profiles-context>
