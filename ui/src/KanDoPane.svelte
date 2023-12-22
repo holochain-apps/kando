@@ -389,7 +389,7 @@
 
 
 </script>
-<div class="board"  style={$state.props.bgUrl ? `opacity: .7;background-size:cover; background-image: url(${$state.props.bgUrl})`: ""}>
+<div class="board"  style={$state.props.bgUrl ? `background-size:cover; background-image: url(${encodeURI($state.props.bgUrl)})`: ""}>
     <EditBoardDialog bind:this={editBoardDialog}></EditBoardDialog>
   <div class="top-bar">
     <div class="left-items">
