@@ -69,7 +69,7 @@
 </script>
 
 
-<sl-dialog label="KanDo!: UI v0.7.1 for DNA v0.6.0" bind:this={dialog} width={600} >
+<sl-dialog label="KanDo!: UI v0.7.2 for DNA v0.6.0" bind:this={dialog} width={600} >
     <div class="about">
         <p>KanDo! is a demonstration Holochain app built by the Holochain Foundation.</p>
         <p> <b>Developers:</b>
@@ -100,7 +100,7 @@
         <div class="spinning" ><SvgIcon icon=faSpinner  color="#fff"></SvgIcon></div>
     {:then boards}
         <sl-dropdown skidding=15>
-            <sl-button class="export-import" slot="trigger" caret><SvgIcon icon=faClone size=20px style="margin-right: 10px"/><span>New Board From </span></sl-button>
+            <sl-button slot="trigger" caret><SvgIcon icon=faClone size=20px style="margin-right: 10px"/><span>New Board From </span></sl-button>
             <sl-menu>
                     {#each Array.from(boards.entries()) as [key,board]}
                         <sl-menu-item on:click={()=>{

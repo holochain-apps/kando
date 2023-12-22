@@ -142,7 +142,6 @@
   };
 
   const cardDetails = (id: uuidv1) => {
-
     store.boardList.setActiveCard(id)
     //cardDetailsDialog.open(id)
   };

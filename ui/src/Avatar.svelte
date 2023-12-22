@@ -19,7 +19,7 @@
   $: agentPubKey
   $: agentPubKeyB64 = encodeHashToBase64(agentPubKey)
   $: profile = store.profilesStore.profiles.get(agentPubKey)
-  $: nickname = $profile.status=="complete" ? $profile.value.entry.nickname : agentPubKeyB64.slice(0,8)+"..."
+  $: nickname = $profile.status=="complete" && $profile.value ? $profile.value.entry.nickname : agentPubKeyB64.slice(5,9)+"..."
   
 </script>
 
