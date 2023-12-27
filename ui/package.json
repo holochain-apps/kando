@@ -3,13 +3,10 @@
   "version": "0.1.0",
   "scripts": {
     "start": "vite --clearScreen false --port $UI_PORT",
-    "start:we": "vite -c we-applet-vite.config.ts --clearScreen false --port $UI_PORT",
     "build": "vite build",
-    "build:we": "vite build -c we-applet-vite.config.ts",
     "build-check": "npm run check && vite build",
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "package": "rm -f dist.zip && npm run build && cd dist && bestzip ../dist.zip *",
-    "package:we": "rm -f dist.zip && npm run build:we && cd dist && bestzip ../dist.zip *"
   },
   "dependencies": {
     "@holochain-open-dev/elements": "^0.8.4",
