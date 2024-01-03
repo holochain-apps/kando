@@ -66,6 +66,9 @@
     }
     let importing = false
     let exporting = false
+
+    $: allBoards = store.boardList.allBoards
+
 </script>
 
 
@@ -96,25 +99,24 @@
     {/if}
 
 
-    {#await toPromise(store.boardList.allBoards)}
+    {#if $allBoards.status == "pending"}
         <div class="spinning" ><SvgIcon icon=faSpinner  color="#fff"></SvgIcon></div>
-    {:then boards}
+    {:else if $allBoards.status == "complete"}
         <sl-dropdown skidding=15>
             <sl-button slot="trigger" caret><SvgIcon icon=faClone size=20px style="margin-right: 10px"/><span>New Board From </span></sl-button>
             <sl-menu>
-                    {#each Array.from(boards.entries()) as [key,board]}
-                        <sl-menu-item on:click={()=>{
-                            createBoardFrom(board.latestState)
-                        }} >
-                            {board.latestState.name}
-                        </sl-menu-item>
-                    {/each}
-
+                {#each Array.from($allBoards.value.entries()) as [key,board]}
+                    <sl-menu-item on:click={()=>{
+                        createBoardFrom(board.latestState)
+                    }} >
+                        {board.latestState.name}
+                    </sl-menu-item>
+                {/each}
             </sl-menu>
         </sl-dropdown>
-    {:catch err}
-        Error: {err}
-    {/await}
+    {:else if $allBoards.status == "error"}
+        Error: {$allBoards.error}
+    {/if}
 
     <input style="display:none" type="file" accept=".json" on:change={(e)=>onFileSelected(e)} bind:this={fileinput} >
     </div>

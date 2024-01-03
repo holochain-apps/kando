@@ -817,7 +817,7 @@ dependencies = [
 [[package]]
 name = "hc_zome_syn_coordinator"
 version = "0.1.0"
-source = "git+https://github.com/holochain/syn?branch=main#1f45341b1d29597bda9328eda490e5325475b5b4"
+source = "git+https://github.com/holochain/syn?branch=main#025496c927cdb2d5d22424617b36173b4fdcd52f"
 dependencies = [
  "derive_more",
  "hc_zome_syn_integrity",
@@ -829,7 +829,7 @@ dependencies = [
 [[package]]
 name = "hc_zome_syn_integrity"
 version = "0.1.0"
-source = "git+https://github.com/holochain/syn?branch=main#1f45341b1d29597bda9328eda490e5325475b5b4"
+source = "git+https://github.com/holochain/syn?branch=main#025496c927cdb2d5d22424617b36173b4fdcd52f"
 dependencies = [
  "derive_more",
  "hdi",

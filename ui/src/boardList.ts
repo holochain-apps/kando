@@ -94,7 +94,7 @@ export class BoardList {
             ([boards,archived]) => [...boards, ...archived]
             )
         this.allBoards = pipe(asyncJoined,
-            docHashes => sliceAndJoin(this.boardData2, docHashes)
+            docHashes => sliceAndJoin(this.boardData2, docHashes, {errors: "filter_out"})
         )
         this.boardCount =  asyncDerived(joined,
             ([boards,archived]) => boards.length + archived.length
