@@ -7,6 +7,7 @@ import {
     encodeHashToBase64,
     type EntryHashB64,
     type AgentPubKey,
+    decodeHashFromBase64,
   } from '@holochain/client';
 import { SynStore,  SynClient, type Commit } from '@holochain-syn/core';
 import { BoardList } from './boardList';
@@ -17,6 +18,7 @@ import { get, writable, type Writable } from "svelte/store";
 import type { ProfilesStore } from '@holochain-open-dev/profiles';
 import type { BoardState } from './board';
 import type { WeClient } from '@lightningrodlabs/we-applet';
+import { HoloHashMap } from '@holochain-open-dev/utils';
 
 
 TimeAgo.addDefaultLocale(en)
@@ -40,7 +42,7 @@ export class KanDoService {
 export interface UIProps {
     showArchived: {[key: string]: boolean},
     showMenu: boolean,
-    recent: Array<EntryHashB64>
+    tips: HoloHashMap<EntryHash,EntryHash>
   }
 
 export class KanDoStore {
@@ -51,11 +53,22 @@ export class KanDoStore {
     updating = false
     synStore: SynStore;
     client: AppAgentClient;
-    uiProps: Writable<UIProps> = writable({
-        showArchived: {},
-        showMenu: true,
-        recent: []
-    })
+    uiProps: Writable<UIProps> 
+
+    updateTip(boardHash: EntryHash) {
+        const boardData = get(this.boardList.boardData2.get(boardHash))
+        if (boardData.status == "complete") {
+            localStorage.setItem(encodeHashToBase64(boardHash), encodeHashToBase64(boardData.value.tip))
+            this.setTip(boardHash, boardData.value.tip)
+        }
+    }
+
+    setTip(boardHash:EntryHash, tip: EntryHash) {
+        this.uiProps.update((n) => {
+            n.tips.set(boardHash,tip)
+            return n
+        })
+    }
 
     setUIprops(props:{}) {
         this.uiProps.update((n) => {
@@ -108,7 +121,18 @@ export class KanDoStore {
           this.zomeName
         );
         this.synStore = new SynStore(new SynClient(this.client,this.roleName,this.zomeName))
-        this.boardList = new BoardList(profilesStore, this.synStore) 
+        this.boardList = new BoardList(profilesStore, this.synStore)
+        this.uiProps = writable({
+            showArchived: {},
+            showMenu: true,
+            tips: new HoloHashMap,
+        })
+        for (let i = 0; i < localStorage.length; i++){
+            const boardHashB64 = localStorage.key(i)
+            const tipB64 = localStorage.getItem(boardHashB64)
+            this.setTip(decodeHashFromBase64(boardHashB64), decodeHashFromBase64(tipB64))
+        }
+
     }
 
     getCardGroupName(cardId: uuidv1, state: BoardState) : string  {

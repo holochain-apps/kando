@@ -20,6 +20,7 @@ export interface TypedHash {
 export interface BoardAndLatestState {
     board: Board,
     latestState: BoardState,
+    tip: EntryHash,
 }
 
 export class BoardList {
@@ -43,7 +44,11 @@ export class BoardList {
         const latestState = pipe(board, 
             board => board.workspace.latestSnapshot
             )
-        return alwaysSubscribed(pipe(joinAsync([board, latestState]), ([board, latestState]) => {return {board,latestState}}))
+        const tip = pipe(board,
+            board => board.workspace.tip
+            )
+    
+        return alwaysSubscribed(pipe(joinAsync([board, latestState, tip]), ([board, latestState, tip]) => {return {board,latestState, tip: tip.entryHash}}))
     })
 
     agentBoardHashes: LazyHoloHashMap<AgentPubKey, AsyncReadable<Array<BoardAndLatestState>>> = new LazyHoloHashMap(agent =>

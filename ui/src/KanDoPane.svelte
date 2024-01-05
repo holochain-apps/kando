@@ -202,12 +202,14 @@
     return props.labels.includes(type) ? 1 : 0
   };
 
-  const closeBoard = () => {
-    store.closeActiveBoard(false);
+  const closeBoard = async () => {
+    await store.closeActiveBoard(false);
+    store.updateTip(activeBoard.hash)
   };
 
-  const leaveBoard = () => {
-    store.closeActiveBoard(true);
+  const leaveBoard = async () => {
+    await store.closeActiveBoard(true);
+    store.updateTip(activeBoard.hash)
   };
 
   let editBoardDialog
