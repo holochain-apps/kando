@@ -79,15 +79,12 @@ export class KanDoStore {
         this.synStore = new SynStore(new SynClient(this.client,this.roleName,this.zomeName))
         this.boardList = new BoardList(profilesStore, this.synStore)
         this.boardList.activeBoard.subscribe((board)=>{
-            console.log("BOARD",board)
             if (this.unsub) {
-                console.log("unsubing")
                 this.unsub()
                 this.unsub = undefined
             }
             if (board != undefined) {
                 this.unsub = board.workspace.tip.subscribe((tip)=>{
-                    console.log("TIP", tip)
                     if (tip.status == "complete") {
                         this._updateSeenTip(board.hash, tip.value.entryHash)
                     }
@@ -110,21 +107,12 @@ export class KanDoStore {
 
     }
 
-    updateSeenTip(boardHash: EntryHash) {
-        return
-        const boardData = get(this.boardList.boardData2.get(boardHash))
-        if (boardData.status == "complete") {
-            this._updateSeenTip(boardHash, boardData.value.tip)
-        }
-    }
-
     _updateSeenTip(boardHash: EntryHash, tip:EntryHash) {
         localStorage.setItem(`${SeenType.Tip}:${encodeHashToBase64(boardHash)}`, encodeHashToBase64(tip))
         this.setSeenTip(boardHash, tip)
     }
 
     setSeenTip(boardHash:EntryHash, tip: EntryHash) {
-        console.log("setting tip to", encodeHashToBase64(tip))
         this.uiProps.update((n) => {
             n.tips.set(boardHash,tip)
             return n
