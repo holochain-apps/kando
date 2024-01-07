@@ -55,7 +55,19 @@
 
   export const open = (id: uuidv1)=>{
     cardId = id
+    updateLatestComment()
     dialog.show()
+  }
+
+  const updateLatestComment = () => {
+    const card =  $state.cards.find(c=>c.id == cardId)
+    if (card) {
+      const comments = Object.values(card.comments).sort((a,b)=> a.timestamp - b.timestamp)
+      const latest = comments[comments.length-1]
+      if (latest) {
+        store.updateLatestComment($activeBoard.hash, cardId, latest.timestamp)
+      }
+    }
   }
 
   let inputElement
@@ -95,6 +107,7 @@
 
   const close = ()=> {
     store.boardList.setActiveCard(undefined)
+    updateLatestComment()
   }
 
   const handleArchive = () => {
@@ -154,12 +167,15 @@
       timestamp: new Date().getTime()
     }
     requestChanges([{ type: "add-card-comment", id, comment}])
+    updateLatestComment()
   }
   const updateComment = (id: uuidv1, commentId:uuidv1, text: string) => {
     requestChanges([{ type: "update-card-comment", id, commentId, text}]);
+    updateLatestComment()
   }
   const deleteComment = (id: uuidv1, commentId:uuidv1) => {
     requestChanges([{ type: "delete-card-comment", id, commentId}]);
+    updateLatestComment()
   }
 
   const addChecklist = (id: uuidv1, title: string, order: number) => {

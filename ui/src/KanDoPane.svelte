@@ -11,7 +11,7 @@
   import { type Card, Group, UngroupedId, type CardProps, type Comment, type Checklists, Board } from "./board";
   import EditBoardDialog from "./EditBoardDialog.svelte";
   import Avatar from "./Avatar.svelte";
-  import { decodeHashFromBase64 } from "@holochain/client";
+  import { decodeHashFromBase64, type Timestamp } from "@holochain/client";
   import { cloneDeep, isEqual } from "lodash";
   import '@shoelace-style/shoelace/dist/components/dropdown/dropdown.js';
   import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
@@ -387,6 +387,14 @@
     }, 50);
   }
 
+  const isLatestComment = (commentsUnsorted: Array<Comment>, timestamp:Timestamp) : boolean => {
+    const comments = commentsUnsorted.sort((a,b)=> b.timestamp - a.timestamp)
+    const latest = comments[0]
+      if (latest)
+      return latest.timestamp == timestamp
+    return true
+  }
+
 
 </script>
 <div class="board"  style={$state.props.bgUrl ? `background-size:cover; background-image: url(${encodeURI($state.props.bgUrl)})`: ""}>
@@ -569,11 +577,16 @@
                       {/each}
                     {/if}
                     <div class="comments-checklist">
-                      {#if checklists && Object.keys(checklists).length>0}
-                        <div class="checklist-count"><SvgIcon color="rgba(86, 94, 109, 1.0)" size=11px icon=faCheck /> {checkedChecklistItems(checklists)} / {totalChecklistItems(checklists)}</div>
-                      {/if}
                       {#if comments && Object.keys(comments).length>0}
-                        <div class="comment-count"><SvgIcon icon=faComments />: {Object.keys(comments).length}</div>
+                        <div class="comment-count">
+                          <div class:unread-comment={!isLatestComment(Object.values(comments), store.getLatestComment(activeBoard.hash, cardId))}></div>
+                          <SvgIcon icon=faComments />: {Object.keys(comments).length}
+                        </div>
+                      {/if}
+                      {#if checklists && Object.keys(checklists).length>0}
+                        <div class="checklist-count">
+                          <SvgIcon color="rgba(86, 94, 109, 1.0)" size=11px icon=faCheck /> {checkedChecklistItems(checklists)} / {totalChecklistItems(checklists)}
+                        </div>
                       {/if}
                     </div>
                   </div>
@@ -599,7 +612,7 @@
         <div class:hidden={!addingColumn} class="column-wrap">
           <div class="column">
             <div class="add-column editing-column-name"
-              on:click={()=>{{addingColumn = true; console.log("FISH2", addingColumn)}}}
+              on:click={()=>{{addingColumn = true;}}}
             >
               <sl-input class="column-name-input"
                 use:doFocus
@@ -1055,6 +1068,16 @@
     justify-content: space-between;
   }
 
+  .unread-comment {
+    background-color: red;
+    width:8px;
+    height: 8px;
+    border-radius: 50%;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+
+  }
   .comments-checklist {
     display: flex;
     position: relative;
@@ -1062,7 +1085,7 @@
   }
   
   .comment-count {
-    margin-left: 15px;
+    margin-right: 15px;
   }
 
   .labels {
@@ -1089,4 +1112,5 @@
   .hidden {
     display: none;
   }
+
 </style>

@@ -8,6 +8,7 @@ import {
     type EntryHashB64,
     type AgentPubKey,
     decodeHashFromBase64,
+    type Timestamp,
   } from '@holochain/client';
 import { SynStore,  SynClient, type Commit } from '@holochain-syn/core';
 import { BoardList } from './boardList';
@@ -48,7 +49,8 @@ export enum SeenType {
 export interface UIProps {
     showArchived: {[key: string]: boolean},
     showMenu: boolean,
-    tips: HoloHashMap<EntryHash,EntryHash>
+    tips: HoloHashMap<EntryHash,EntryHash>,
+    latestComment: {[key: string]: Timestamp}
   }
 
 export class KanDoStore {
@@ -86,7 +88,7 @@ export class KanDoStore {
             if (board != undefined) {
                 this.unsub = board.workspace.tip.subscribe((tip)=>{
                     if (tip.status == "complete") {
-                        this._updateSeenTip(board.hash, tip.value.entryHash)
+                        this.updateSeenTip(board.hash, tip.value.entryHash)
                     }
                 })
             }
@@ -95,19 +97,24 @@ export class KanDoStore {
             showArchived: {},
             showMenu: true,
             tips: new HoloHashMap,
+            latestComment: {}
         })
         for (let i = 0; i < localStorage.length; i+=1){
             const key = localStorage.key(i)
-            const [type, boardHashB64] = key.split(":")
+            const [type, boardHashB64, cardId] = key.split(":")
             if (type == SeenType.Tip) {
                 const tipB64 = localStorage.getItem(key)
                 this.setSeenTip(decodeHashFromBase64(boardHashB64), decodeHashFromBase64(tipB64))
+            } else if (type == SeenType.Comment) {
+                console.log("found Comment latest", key)
+                const timestampStr = localStorage.getItem(key)
+                this.setLatestComment(decodeHashFromBase64(boardHashB64),cardId, parseInt(timestampStr))
             }
         }
 
     }
 
-    _updateSeenTip(boardHash: EntryHash, tip:EntryHash) {
+    updateSeenTip(boardHash: EntryHash, tip:EntryHash) {
         localStorage.setItem(`${SeenType.Tip}:${encodeHashToBase64(boardHash)}`, encodeHashToBase64(tip))
         this.setSeenTip(boardHash, tip)
     }
@@ -117,6 +124,22 @@ export class KanDoStore {
             n.tips.set(boardHash,tip)
             return n
         })
+    }
+
+    updateLatestComment(boardHash: EntryHash, cardId:uuidv1, timestamp:Timestamp) {
+        localStorage.setItem(`${SeenType.Comment}:${encodeHashToBase64(boardHash)}:${cardId}`, `${timestamp}`)
+        this.setLatestComment(boardHash,cardId,timestamp)
+    }
+
+    setLatestComment(boardHash: EntryHash, cardId:uuidv1, timestamp:Timestamp) {
+        this.uiProps.update((n) => {
+            n.latestComment[`${encodeHashToBase64(boardHash)}:${cardId}`] = timestamp
+            return n
+        })
+    }
+
+    getLatestComment(boardHash: EntryHash, cardId:uuidv1) : Timestamp {
+        return get(this.uiProps).latestComment[`${encodeHashToBase64(boardHash)}:${cardId}`]
     }
 
     setUIprops(props:{}) {
