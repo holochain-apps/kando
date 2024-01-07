@@ -14,11 +14,12 @@ import { BoardList } from './boardList';
 import TimeAgo from "javascript-time-ago"
 import en from 'javascript-time-ago/locale/en'
 import type { v1 as uuidv1 } from "uuid";
-import { get, writable, type Writable } from "svelte/store";
+import { get, writable, type Unsubscriber, type Writable } from "svelte/store";
 import type { ProfilesStore } from '@holochain-open-dev/profiles';
 import type { BoardState } from './board';
 import type { WeClient } from '@lightningrodlabs/we-applet';
 import { HoloHashMap } from '@holochain-open-dev/utils';
+import { pipe } from '@holochain-open-dev/stores';
 
 
 TimeAgo.addDefaultLocale(en)
@@ -39,6 +40,11 @@ export class KanDoService {
     }
 }
 
+export enum SeenType {
+    Tip="t",
+    Comment="c",
+}
+
 export interface UIProps {
     showArchived: {[key: string]: boolean},
     showMenu: boolean,
@@ -53,17 +59,72 @@ export class KanDoStore {
     updating = false
     synStore: SynStore;
     client: AppAgentClient;
-    uiProps: Writable<UIProps> 
+    uiProps: Writable<UIProps>
+    unsub: Unsubscriber
 
-    updateTip(boardHash: EntryHash) {
+    constructor(
+        public weClient : WeClient,
+        public profilesStore: ProfilesStore,
+        protected clientIn: AppAgentClient,
+        protected roleName: RoleName,
+        protected zomeName: string = ZOME_NAME
+    ) {
+        this.client = clientIn
+        this.myAgentPubKeyB64 = encodeHashToBase64(this.client.myPubKey);
+        this.service = new KanDoService(
+          this.client,
+          this.roleName,
+          this.zomeName
+        );
+        this.synStore = new SynStore(new SynClient(this.client,this.roleName,this.zomeName))
+        this.boardList = new BoardList(profilesStore, this.synStore)
+        this.boardList.activeBoard.subscribe((board)=>{
+            console.log("BOARD",board)
+            if (this.unsub) {
+                console.log("unsubing")
+                this.unsub()
+                this.unsub = undefined
+            }
+            if (board != undefined) {
+                this.unsub = board.workspace.tip.subscribe((tip)=>{
+                    console.log("TIP", tip)
+                    if (tip.status == "complete") {
+                        this._updateSeenTip(board.hash, tip.value.entryHash)
+                    }
+                })
+            }
+        })
+        this.uiProps = writable({
+            showArchived: {},
+            showMenu: true,
+            tips: new HoloHashMap,
+        })
+        for (let i = 0; i < localStorage.length; i+=1){
+            const key = localStorage.key(i)
+            const [type, boardHashB64] = key.split(":")
+            if (type == SeenType.Tip) {
+                const tipB64 = localStorage.getItem(key)
+                this.setSeenTip(decodeHashFromBase64(boardHashB64), decodeHashFromBase64(tipB64))
+            }
+        }
+
+    }
+
+    updateSeenTip(boardHash: EntryHash) {
+        return
         const boardData = get(this.boardList.boardData2.get(boardHash))
         if (boardData.status == "complete") {
-            localStorage.setItem(encodeHashToBase64(boardHash), encodeHashToBase64(boardData.value.tip))
-            this.setTip(boardHash, boardData.value.tip)
+            this._updateSeenTip(boardHash, boardData.value.tip)
         }
     }
 
-    setTip(boardHash:EntryHash, tip: EntryHash) {
+    _updateSeenTip(boardHash: EntryHash, tip:EntryHash) {
+        localStorage.setItem(`${SeenType.Tip}:${encodeHashToBase64(boardHash)}`, encodeHashToBase64(tip))
+        this.setSeenTip(boardHash, tip)
+    }
+
+    setSeenTip(boardHash:EntryHash, tip: EntryHash) {
+        console.log("setting tip to", encodeHashToBase64(tip))
         this.uiProps.update((n) => {
             n.tips.set(boardHash,tip)
             return n
@@ -104,35 +165,6 @@ export class KanDoStore {
 
     get myAgentPubKey(): AgentPubKey {
         return this.client.myPubKey;
-    }
-
-    constructor(
-        public weClient : WeClient,
-        public profilesStore: ProfilesStore,
-        protected clientIn: AppAgentClient,
-        protected roleName: RoleName,
-        protected zomeName: string = ZOME_NAME
-    ) {
-        this.client = clientIn
-        this.myAgentPubKeyB64 = encodeHashToBase64(this.client.myPubKey);
-        this.service = new KanDoService(
-          this.client,
-          this.roleName,
-          this.zomeName
-        );
-        this.synStore = new SynStore(new SynClient(this.client,this.roleName,this.zomeName))
-        this.boardList = new BoardList(profilesStore, this.synStore)
-        this.uiProps = writable({
-            showArchived: {},
-            showMenu: true,
-            tips: new HoloHashMap,
-        })
-        for (let i = 0; i < localStorage.length; i++){
-            const boardHashB64 = localStorage.key(i)
-            const tipB64 = localStorage.getItem(boardHashB64)
-            this.setTip(decodeHashFromBase64(boardHashB64), decodeHashFromBase64(tipB64))
-        }
-
     }
 
     getCardGroupName(cardId: uuidv1, state: BoardState) : string  {

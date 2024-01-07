@@ -5,6 +5,7 @@
   import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
   import Participants from "./Participants.svelte";
   import { BoardType } from "./boardList";
+  import { hashEqual } from "./util";
 
   const dispatch = createEventDispatcher()
   const { getStore } :any = getContext("store");
@@ -20,11 +21,11 @@
 
 </script>
 <div class="wrapper" on:click={()=>{
-      store.updateTip(boardHash)
+      store.updateSeenTip(boardHash)
       dispatch("select")
       }} >
     {#if $boardData.status == "complete"}
-      {#if $uiProps.tips.get(boardHash) != $boardData.value.tip}
+      {#if !hashEqual($uiProps.tips.get(boardHash), $boardData.value.tip)}
         <div class="unread"></div>
       {/if}
 

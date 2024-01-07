@@ -6,6 +6,7 @@ import { SynStore, WorkspaceStore } from "@holochain-syn/core";
 import type { ProfilesStore } from "@holochain-open-dev/profiles";
 import { cloneDeep } from "lodash";
 import { Board, type BoardDelta, type BoardState } from "./board";
+import { hashEqual } from "./util";
 
 export enum BoardType {
     active = "active",
@@ -118,6 +119,11 @@ export class BoardList {
 
     async setActiveBoard(hash: EntryHash | undefined) : Promise<Board | undefined> {
         let board: Board | undefined = undefined
+        const current = get(this.activeBoard)
+        // if no change then don't update
+        if (!current && !hash) return
+        if (current && hash && hashEqual(hash, current.hash)) return
+
         if (hash) {
             board = (await toPromise(this.boardData2.get(hash))).board
             if (board) {

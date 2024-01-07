@@ -204,12 +204,12 @@
 
   const closeBoard = async () => {
     await store.closeActiveBoard(false);
-    store.updateTip(activeBoard.hash)
+    store.updateSeenTip(activeBoard.hash)
   };
 
   const leaveBoard = async () => {
     await store.closeActiveBoard(true);
-    store.updateTip(activeBoard.hash)
+    store.updateSeenTip(activeBoard.hash)
   };
 
   let editBoardDialog
