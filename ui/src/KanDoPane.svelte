@@ -61,6 +61,7 @@
   let store: KanDoStore = getStore();
 
   export let activeBoard: Board
+  export let standAlone = false
 
   $: uiProps = store.uiProps
   $: participants = activeBoard.participants()
@@ -413,28 +414,32 @@
     <EditBoardDialog bind:this={editBoardDialog}></EditBoardDialog>
   <div class="top-bar">
     <div class="left-items">
-      <sl-button  class="board-button close" on:click={closeBoard} title="Close">
-        <SvgIcon icon=faClose size="16px"/>
-      </sl-button>
-      <sl-dropdown class="board-options board-menu" skidding=15>
-        <sl-button slot="trigger"   class="board-button settings" caret>{$state.name}</sl-button>
-        <sl-menu className="settings-menu">
-          <sl-menu-item on:click={()=> editBoardDialog.open(cloneDeep(activeBoard.hash))} class="board-settings" >
-              <SvgIcon icon="faCog"  style="background: transparent; opacity: .5; position: relative; top: -2px;" size="14px"/> <span>Settings</span>
-          </sl-menu-item>
-          <sl-menu-item on:click={() => exportBoard($state)} title="Export" class="board-export" >
-            <SvgIcon icon="faFileExport"  style="background: transparent; opacity: .5; position: relative; top: -2px;" size="14px" /> <span>Export</span>
-          </sl-menu-item>
-          <sl-menu-item on:click={() => {
-            store.archiveBoard(activeBoard.hash)
-            }} title="Archive" class="board-archive" >
-            <SvgIcon icon="faArchive" style="background: transparent; opacity: .5; position: relative; top: -2px;" size="14px" /> <span>Archive</span>
-          </sl-menu-item>
-          <sl-menu-item  on:click={leaveBoard} class="leave-board" >
-              <SvgIcon icon="faArrowTurnDown" style="background: transparent; opacity: .5; position: relative; top: -2px;" size="12px" /> <span>Leave board</span>
-          </sl-menu-item>
-        </sl-menu>
-      </sl-dropdown>
+      {#if standAlone}
+        <h2>{$state.name}</h2>
+      {:else}
+        <sl-button  class="board-button close" on:click={closeBoard} title="Close">
+          <SvgIcon icon=faClose size="16px"/>
+        </sl-button>
+        <sl-dropdown class="board-options board-menu" skidding=15>
+          <sl-button slot="trigger"   class="board-button settings" caret>{$state.name}</sl-button>
+          <sl-menu className="settings-menu">
+            <sl-menu-item on:click={()=> editBoardDialog.open(cloneDeep(activeBoard.hash))} class="board-settings" >
+                <SvgIcon icon="faCog"  style="background: transparent; opacity: .5; position: relative; top: -2px;" size="14px"/> <span>Settings</span>
+            </sl-menu-item>
+            <sl-menu-item on:click={() => exportBoard($state)} title="Export" class="board-export" >
+              <SvgIcon icon="faFileExport"  style="background: transparent; opacity: .5; position: relative; top: -2px;" size="14px" /> <span>Export</span>
+            </sl-menu-item>
+            <sl-menu-item on:click={() => {
+              store.archiveBoard(activeBoard.hash)
+              }} title="Archive" class="board-archive" >
+              <SvgIcon icon="faArchive" style="background: transparent; opacity: .5; position: relative; top: -2px;" size="14px" /> <span>Archive</span>
+            </sl-menu-item>
+            <sl-menu-item  on:click={leaveBoard} class="leave-board" >
+                <SvgIcon icon="faArrowTurnDown" style="background: transparent; opacity: .5; position: relative; top: -2px;" size="12px" /> <span>Leave board</span>
+            </sl-menu-item>
+          </sl-menu>
+        </sl-dropdown>
+      {/if}
     </div>
     <div class="filter-by">
       <LabelSelector setOption={setFilterOption} option={filterOption} />

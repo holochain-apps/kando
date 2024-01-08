@@ -77,10 +77,9 @@ export class BoardList {
 
     constructor(public profilseStore: ProfilesStore, public synStore: SynStore) {
         this.allAgentBoards = pipe(this.profilseStore.agentsWithProfile,
-            agents=>sliceAndJoin(this.agentBoardHashes, agents)
+            agents=>sliceAndJoin(this.agentBoardHashes, agents, {errors: "filter_out"})
         )
    
-
         const boardHashes = asyncDerived(this.synStore.documentsByTag.get(BoardType.active),x=>Array.from(x.keys()))
         this.activeBoardHashes = boardHashes
         const archivedHashes = asyncDerived(this.synStore.documentsByTag.get(BoardType.archived),x=>Array.from(x.keys()))

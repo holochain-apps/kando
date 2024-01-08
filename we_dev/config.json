@@ -37,6 +37,12 @@
             "joiningAgents": [2]
           },
           {
+            "name": "gamez",
+            "instanceName": "gamez",
+            "registeringAgent": 1,
+            "joiningAgents": [2]
+          },
+          {
             "name": "notebooks",
             "instanceName": "notebooks",
             "registeringAgent": 1,
@@ -48,7 +54,7 @@
     "applets": [
       {
         "name": "KanDo Hot Reload",
-        "subtitle": "Real-tiem stickies boards",
+        "subtitle": "Real-time stickies boards",
         "description": "Let's do it!",
         "icon": {
           "type": "filesystem",
@@ -58,6 +64,19 @@
           "type": "localhost",
           "happPath": "/home/eric/code/metacurrency/holochain/kando/workdir/kando.happ",
           "uiPort": 8888
+        }
+      },
+      {
+        "name": "gamez",
+        "subtitle": "games!",
+        "description": "Real-time games based on syn",
+        "icon": {
+          "type": "filesystem",
+          "path": "/home/eric/code/metacurrency/holochain/gamez/we_dev/gamez_icon.svg"
+        },
+        "source": {
+          "type": "https",
+          "url": "https://github.com/holochain-apps/gamez/releases/download/v0.3.2/gamez.webhapp"
         }
       },
       {

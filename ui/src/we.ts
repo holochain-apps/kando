@@ -6,7 +6,7 @@ import { BoardType } from './boardList';
 import { LazyHoloHashMap } from '@holochain-open-dev/utils';
 import type { AppletHash, AppletServices, EntryInfo, Hrl, HrlWithContext, WeServices } from '@lightningrodlabs/we-applet';
 
-const ROLE_NAME = "talking-stickies"
+const ROLE_NAME = "kando"
 const ZOME_NAME = "syn"
 
 const getMyDna = async (client: AppAgentClient) : Promise<DnaHash>  => {
@@ -102,57 +102,3 @@ export const appletServices: AppletServices = {
     },
 };
   
-
-// // Then handle all the different types of views that you offer
-// switch (weClient.renderInfo.type) {
-//   case "applet-view":
-//     switch (weClient.renderInfo.view.type) {
-//       case "main":
-//         // here comes your rendering logic for the main view
-//       case "block":
-//         switch(weClient.renderInfo.view.block) {
-//           case "most_recent_posts":
-//             // your rendering logic to display this block type
-//           case "bookmarked_posts":
-//             // Your rendering logic to display this block type
-//           default:
-//              throw new Error("Unknown applet-view block type");
-//         }
-//       case "entry":
-//         switch (weClient.renderInfo.view.roleName) {
-//           case "forum":
-//             switch (weClient.renderInfo.view.integrityZomeName) {
-//               case "posts_integrity":
-//                 switch (weClient.renderInfo.view.entryType) {
-//                   case "post":
-//                         // here comes your rendering logic for that specific entry type
-//                   default:
-//                     throw new Error("Unknown entry type");
-//                 }
-//               default:
-//                 throw new Error("Unknown integrity zome");
-//             }
-//           default:
-//             throw new Error("Unknown role name");
-//         }
-
-//       default:
-//         throw new Error("Unknown applet-view type");
-//     }
-
-//   case "cross-applet-view":
-//     switch (this.weClient.renderInfo.view.type) {
-//       case "main":
-//         // here comes your rendering logic for the cross-applet main view
-//       case "block":
-//         //
-//       default:
-//         throw new Error("Unknown cross-applet-view render type.")
-
-//     `;
-//     }
-
-//   default:
-//     throw new Error("Unknown render view type");
-
-// }
