@@ -106,7 +106,6 @@ export class KanDoStore {
                 const tipB64 = localStorage.getItem(key)
                 this.setSeenTip(decodeHashFromBase64(boardHashB64), decodeHashFromBase64(tipB64))
             } else if (type == SeenType.Comment) {
-                console.log("found Comment latest", key)
                 const timestampStr = localStorage.getItem(key)
                 this.setLatestComment(decodeHashFromBase64(boardHashB64),cardId, parseInt(timestampStr))
             }
@@ -115,8 +114,10 @@ export class KanDoStore {
     }
 
     updateSeenTip(boardHash: EntryHash, tip:EntryHash) {
-        localStorage.setItem(`${SeenType.Tip}:${encodeHashToBase64(boardHash)}`, encodeHashToBase64(tip))
-        this.setSeenTip(boardHash, tip)
+        if (boardHash && tip) {
+            localStorage.setItem(`${SeenType.Tip}:${encodeHashToBase64(boardHash)}`, encodeHashToBase64(tip))
+            this.setSeenTip(boardHash, tip)
+        }
     }
 
     setSeenTip(boardHash:EntryHash, tip: EntryHash) {

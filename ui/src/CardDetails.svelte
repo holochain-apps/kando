@@ -19,17 +19,6 @@
   import ClickEdit from './ClickEdit.svelte';
   import { hrlB64WithContextToRaw, hrlWithContextToB64 } from './util';
 
-  Marked.setOptions
-  ({
-    renderer: new Renderer,
-    gfm: true,
-    tables: true,
-    breaks: false,
-    pedantic: false,
-    sanitize: true,
-    smartLists: true,
-    smartypants: false
-  });
   
   const { getStore } :any = getContext("store");
   let store: KanDoStore = getStore();

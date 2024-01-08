@@ -6,7 +6,6 @@
   //import { sortBy } from "lodash/fp";
   import type { KanDoStore } from "./store";
   import LabelSelector from "./LabelSelector.svelte";
-  import { Marked, Renderer } from "@ts-stack/markdown";
   import { v1 as uuidv1 } from "uuid";
   import { type Card, Group, UngroupedId, type CardProps, type Comment, type Checklists, Board } from "./board";
   import EditBoardDialog from "./EditBoardDialog.svelte";
@@ -19,6 +18,8 @@
   import { onVisible } from "./util";
   import SvgIcon from "./SvgIcon.svelte";
   import { exportBoard } from "./export";
+  import { Marked, Renderer } from "@ts-stack/markdown";
+  import hljs from 'highlight.js';
 
   onMount(async () => {
         onVisible(columnNameElem,()=>{
@@ -27,9 +28,16 @@
         })
 	});
 
+  class MyRenderer extends Renderer {
+    override link(href: string, title : string, text: string) {
+      return `<a href="${href}"${title? ` title="${title}"`:""} target="_blank">${text}</a>`
+    }
+  }
+
   Marked.setOptions
   ({
-    renderer: new Renderer,
+    renderer: new MyRenderer,
+    highlight: (code, lang) =>  hljs.highlight(lang, code).value,
     gfm: true,
     tables: true,
     breaks: false,

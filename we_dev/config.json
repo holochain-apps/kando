@@ -52,11 +52,11 @@
         "description": "Let's do it!",
         "icon": {
           "type": "filesystem",
-          "path": "./we_dev/kando_icon.png"
+          "path": "/home/eric/code/metacurrency/holochain/kando/we_dev/kando_icon.png"
         },
         "source": {
           "type": "localhost",
-          "happPath": "./workdir/kando.happ",
+          "happPath": "/home/eric/code/metacurrency/holochain/kando/workdir/kando.happ",
           "uiPort": 8888
         }
       },

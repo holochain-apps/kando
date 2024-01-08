@@ -2,6 +2,7 @@
   import Controller from './Controller.svelte'
   import { AppAgentWebsocket, AdminWebsocket } from '@holochain/client';
   import '@shoelace-style/shoelace/dist/themes/light.css';
+  import 'highlight.js/styles/github.css';
   import { WeClient, isWeContext, initializeHotReload } from '@lightningrodlabs/we-applet';
   import { ProfilesClient, ProfilesStore } from '@holochain-open-dev/profiles';
   import "@holochain-open-dev/profiles/dist/elements/profiles-context.js";
