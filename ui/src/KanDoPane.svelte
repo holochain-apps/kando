@@ -37,7 +37,11 @@
   Marked.setOptions
   ({
     renderer: new MyRenderer,
-    highlight: (code, lang) =>  hljs.highlight(lang, code).value,
+    highlight: (code, lang) =>  {
+      if (lang)
+        return hljs.highlight(lang, code).value
+      return code
+    },
     gfm: true,
     tables: true,
     breaks: false,
