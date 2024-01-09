@@ -4,6 +4,7 @@
   import { getContext } from "svelte";
   import type { KanDoStore } from "./store";
   import SvgIcon from "./SvgIcon.svelte";
+  import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
 
   const { getStore } :any = getContext("store");
   let store: KanDoStore = getStore();
@@ -26,8 +27,11 @@
 <div class="avatar-{namePosition}"
     >
     {#if $profile.status == "pending"}
-    ( ? )
-    {:else if $profile.status == "complete"}
+        <sl-skeleton
+        effect="pulse"
+        style={`height: ${size}px; width: ${size}px;`}
+        ></sl-skeleton>
+        {:else if $profile.status == "complete"}
 
         {#if showAvatar}
             {#if placeholder && !$profile.value.entry.fields.avatar}

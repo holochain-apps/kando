@@ -56,6 +56,7 @@ export type Card = {
     props: CardProps;
     comments: Comments
     checklists: Checklists
+    creator: AgentPubKeyB64
 };
   
 export const UngroupedId = "_"

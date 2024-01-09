@@ -304,7 +304,12 @@
           </div>
         </div>
       </div>
-      <div class="belongs-to">In column <strong>{store.getCardGroupName(cardId, $state)}</strong></div>
+      <div class="belongs-to" style="display:flex; align-items: center;">
+        <div >In column <strong>{store.getCardGroupName(cardId, $state)}</strong></div>
+        {#if card && card.creator}
+          <div style="margin-left:20px;margin-right:5px;">Created by:</div><Avatar size={20}  agentPubKey={decodeHashFromBase64(card.creator)}/>
+        {/if}
+      </div>
       {#if editingDescription}
         <sl-textarea id="edit-desc" use:doFocus bind:this={editDescriptionElement} rows=10 class='textarea' value={editDesc}
           on:sl-input={e=>{

@@ -164,7 +164,8 @@
       const card:Card = {
         id: uuidv1(),
         comments: {},
-        checklists: {}, 
+        checklists: {},
+        creator: store.myAgentPubKeyB64,
         props,
       };
       activeBoard.requestChanges([{ type: "add-card", value: card, group: column}]);
