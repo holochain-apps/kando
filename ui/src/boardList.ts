@@ -1,4 +1,4 @@
-import { LazyHoloHashMap } from "@holochain-open-dev/utils";
+import { HoloHashMap, LazyHoloHashMap } from "@holochain-open-dev/utils";
 import { derived, get, writable, type Readable, type Writable } from "svelte/store";
 import { type AgentPubKey, type EntryHash, type EntryHashB64, encodeHashToBase64 } from "@holochain/client";
 import {toPromise, type AsyncReadable, pipe, joinAsync, asyncDerived, sliceAndJoin, alwaysSubscribed} from '@holochain-open-dev/stores'
@@ -52,6 +52,7 @@ export class BoardList {
         return alwaysSubscribed(pipe(joinAsync([board, latestState, tip]), ([board, latestState, tip]) => {console.log("boardData2:pipe"); return {board,latestState, tip: tip.entryHash}}))
     })
 
+
     agentBoardHashes: LazyHoloHashMap<AgentPubKey, AsyncReadable<Array<BoardAndLatestState>>> = new LazyHoloHashMap(agent =>
         pipe(this.activeBoardHashes,
             documentHashes => joinAsync(documentHashes.map(documentHash=>this.synStore.documents.get(documentHash).allAuthors), {errors: "filter_out"}),
@@ -76,7 +77,7 @@ export class BoardList {
     )
         
     allAgentBoards: AsyncReadable<ReadonlyMap<AgentPubKey, Array<BoardAndLatestState>>>
-   
+    allAuthorAgents: AsyncReadable<AgentPubKey[]>
 
     constructor(public profilseStore: ProfilesStore, public synStore: SynStore) {
         this.allAgentBoards = pipe(this.profilseStore.agentsWithProfile,
@@ -90,6 +91,17 @@ export class BoardList {
         this.activeBoardHashes = boardHashes
         const archivedHashes = asyncDerived(this.synStore.documentsByTag.get(BoardType.archived),x=>Array.from(x.keys()))
         this.archivedBoardHashes = archivedHashes
+
+        const allDocumentAuthors = pipe(this.activeBoardHashes,
+            documentHashes => joinAsync(documentHashes.map(documentHash=>this.synStore.documents.get(documentHash).allAuthors)),
+            )
+        this.allAuthorAgents = asyncDerived(allDocumentAuthors, (docAuthors) => {
+            const authors: HoloHashMap<AgentPubKey, boolean> = new HoloHashMap()
+            for (let v of Array.from(docAuthors.values())) {
+                v.forEach((a)=> authors.set(a, true))
+            }
+            return Array.from(authors.keys())
+        })
 
         // const activeTypedHashes = asyncDerived(boardHashes, hashes=>hashes.map(hash=>{const h:TypedHash = {hash, type:BoardType.active}; return h}))
         // const archivedTypedHashes = asyncDerived(archivedHashes, hashes=>hashes.map(hash=>{const h:TypedHash = {hash,type:BoardType.archived}; return h}))

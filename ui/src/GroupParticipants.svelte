@@ -5,12 +5,15 @@
     import type { KanDoStore } from "./store";
     import Avatar from './Avatar.svelte';
     import "@holochain-open-dev/stores/dist/debug-store.js"
+    import type { AgentPubKey } from "@holochain/client";
   
     const { getStore } :any = getContext('store');
     const store:KanDoStore = getStore();
   
-    $: agents = store.profilesStore.agentsWithProfile
+    //$: agents = store.profilesStore.agentsWithProfile
+    $: agents = store.boardList.allAuthorAgents
     $: agentBoards = store.boardList.allAgentBoards
+    $: agentBoardHashes = store.boardList.agentBoardHashes
     
     //__debugStore(store.boardList.allAgentBoards)
     //.status=="complete" ? sliceAndJoin( store.boardList.boardParticipants, $agents.value): undefined
@@ -20,24 +23,24 @@
       dialog.show()
       }
     let dialog
-  
   </script>
     <div class="participants">
         <div class="list">
-          <h4>Participants</h4>
             {#if $agents.status == "pending"}
               agents: <sl-skeleton effect="pulse" style="height: 40px; width: 100%" ></sl-skeleton>
             {:else if $agents.status == "error"}
               <div>Error loading participants</div>
             {:else if $agents.status == "complete"}
-              {@const participants = Array.from($agents.value)}
+              <h4>Participants</h4>
+
+
               {#if $agentBoards.status == "pending"}
                 agentBoard: <sl-skeleton effect="pulse" style="height: 40px; width: 100%" ></sl-skeleton>
               {:else if $agentBoards.status == "error"}
                 <div>Error loading agent boards</div>
               {:else if $agentBoards.status=="complete"}
                 <div class="participant-list">
-                  {#each participants as agentPubKey}
+                  {#each $agents.value as agentPubKey}
                     {@const agentBoards = $agentBoards.value.get(agentPubKey)}
                     <div class="list-item">
                         <Avatar agentPubKey={agentPubKey} size={24} namePosition="row" />
