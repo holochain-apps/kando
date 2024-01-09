@@ -24,27 +24,24 @@
   </script>
     <div class="participants">
         <div class="list">
+          <h4>Participants</h4>
             {#if $agents.status == "pending"}
-                <sl-skeleton
-                    effect="pulse"
-                    style="height: 40px; width: 100%"
-                ></sl-skeleton>
+                <sl-skeleton effect="pulse" style="height: 40px; width: 100%" ></sl-skeleton>
             {:else if $agents.status == "error"}
-              <div>error loading participants</div>
+              <div>Error loading participants</div>
             {:else if $agents.status == "complete"}
-                {@const participants = Array.from($agents.value)}
-                <h4>Participants</h4>
+              {@const participants = Array.from($agents.value)}
+              {#if $agentBoards.status == "pending"}
+                <sl-skeleton effect="pulse" style="height: 40px; width: 100%" ></sl-skeleton>
+              {:else if $agentBoards.status == "error"}
+                <div>Error loading agent boards</div>
+              {:else if $agentBoards.status=="complete"}
                 <div class="participant-list">
                   {#each participants as agentPubKey}
+                    {@const agentBoards = $agentBoards.value.get(agentPubKey)}
                     <div class="list-item">
                         <Avatar agentPubKey={agentPubKey} size={24} namePosition="row" />
                         <div style="margin-left:10px; font-size:120%">
-                            {#if $agentBoards.status == "pending"}
-                              <sl-skeleton effect="pulse" style="height: 20px;" ></sl-skeleton>
-                            {:else if $agentBoards.status == "error"}
-                              <div>error loading agent boards</div>
-                            {:else if $agentBoards.status=="complete"}
-                              {@const agentBoards = $agentBoards.value.get(agentPubKey)}
                               <div class="boards">
                                 <span style="font-size: 12px; opacity: .7;">Contributor to</span>
                                 {#if agentBoards && agentBoards.length> 0}
@@ -56,11 +53,11 @@
                                   {/each}
                                 {/if}
                               </div>
-                            {/if}
                         </div>
                     </div>
                   {/each}
                 </div>
+              {/if}
             {/if}
         </div>
     </div>

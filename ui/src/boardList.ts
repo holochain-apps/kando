@@ -54,7 +54,7 @@ export class BoardList {
 
     agentBoardHashes: LazyHoloHashMap<AgentPubKey, AsyncReadable<Array<BoardAndLatestState>>> = new LazyHoloHashMap(agent =>
         pipe(this.activeBoardHashes,
-            documentHashes => joinAsync(documentHashes.map(documentHash=>this.synStore.documents.get(documentHash).allAuthors)),
+            documentHashes => joinAsync(documentHashes.map(documentHash=>this.synStore.documents.get(documentHash).allAuthors), {errors: "filter_out"}),
             (documentsAuthors, documentHashes) => {
                 const agentBoardHashes: AsyncReadable<BoardAndLatestState>[] = []
                 const b64 = encodeHashToBase64(agent)
@@ -64,10 +64,12 @@ export class BoardList {
                         //const state = this.boardData2.get(hash).workspace.latestSnapshot
                         //agentDocuments.push(asyncDerived(state, state=>{return {hash, state}}))
                         const x = this.boardData2.get(hash)
-                        agentBoardHashes.push(x)
+                        if (x) {
+                            agentBoardHashes.push(x)
+                        }
                     }
                 }
-                return joinAsync(agentBoardHashes)
+                return joinAsync(agentBoardHashes, {errors: "filter_out"})
             },
         )
     )
