@@ -29,7 +29,7 @@
             {#if $agents.status == "pending"}
               agents: <sl-skeleton effect="pulse" style="height: 40px; width: 100%" ></sl-skeleton>
             {:else if $agents.status == "error"}
-              <div>Error loading participants</div>
+              <div>Error loading participants: {$agents.error}</div>
             {:else if $agents.status == "complete"}
               <h4>Participants</h4>
 

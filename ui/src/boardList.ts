@@ -83,7 +83,7 @@ export class BoardList {
         this.allAgentBoards = pipe(this.profilseStore.agentsWithProfile,
             agents=>{
                 console.log("allAgentBoards")
-                return sliceAndJoin(this.agentBoardHashes, agents)
+                return sliceAndJoin(this.agentBoardHashes, agents, {errors: "filter_out"})
             }
         )
    
@@ -93,7 +93,7 @@ export class BoardList {
         this.archivedBoardHashes = archivedHashes
 
         const allDocumentAuthors = pipe(this.activeBoardHashes,
-            documentHashes => joinAsync(documentHashes.map(documentHash=>this.synStore.documents.get(documentHash).allAuthors)),
+            documentHashes => joinAsync(documentHashes.map(documentHash=>this.synStore.documents.get(documentHash).allAuthors), {errors: "filter_out"}),
             )
         this.allAuthorAgents = asyncDerived(allDocumentAuthors, (docAuthors) => {
             const authors: HoloHashMap<AgentPubKey, boolean> = new HoloHashMap()
