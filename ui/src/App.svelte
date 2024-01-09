@@ -147,7 +147,7 @@
       <Controller  client={client} weClient={weClient} profilesStore={profilesStore} roleName={roleName}></Controller>
     {:else if  renderType== RenderType.Board}
       <ControllerBoard  board={hrl[1]} client={client} weClient={weClient} profilesStore={profilesStore} roleName={roleName}></ControllerBoard>
-  {/if}
+    {/if}
   {/if}
 
 </profiles-context>
