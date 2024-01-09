@@ -26,13 +26,13 @@
         <div class="list">
           <h4>Participants</h4>
             {#if $agents.status == "pending"}
-                <sl-skeleton effect="pulse" style="height: 40px; width: 100%" ></sl-skeleton>
+              agents: <sl-skeleton effect="pulse" style="height: 40px; width: 100%" ></sl-skeleton>
             {:else if $agents.status == "error"}
               <div>Error loading participants</div>
             {:else if $agents.status == "complete"}
               {@const participants = Array.from($agents.value)}
               {#if $agentBoards.status == "pending"}
-                <sl-skeleton effect="pulse" style="height: 40px; width: 100%" ></sl-skeleton>
+                agentBoard: <sl-skeleton effect="pulse" style="height: 40px; width: 100%" ></sl-skeleton>
               {:else if $agentBoards.status == "error"}
                 <div>Error loading agent boards</div>
               {:else if $agentBoards.status=="complete"}

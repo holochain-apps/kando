@@ -48,8 +48,8 @@ export class BoardList {
         const tip = pipe(board,
             board => board.workspace.tip
             )
-    
-        return alwaysSubscribed(pipe(joinAsync([board, latestState, tip]), ([board, latestState, tip]) => {return {board,latestState, tip: tip.entryHash}}))
+        console.log("boardData2:main")
+        return alwaysSubscribed(pipe(joinAsync([board, latestState, tip]), ([board, latestState, tip]) => {console.log("boardData2:pipe"); return {board,latestState, tip: tip.entryHash}}))
     })
 
     agentBoardHashes: LazyHoloHashMap<AgentPubKey, AsyncReadable<Array<BoardAndLatestState>>> = new LazyHoloHashMap(agent =>
@@ -65,6 +65,7 @@ export class BoardList {
                         //agentDocuments.push(asyncDerived(state, state=>{return {hash, state}}))
                         const x = this.boardData2.get(hash)
                         if (x) {
+                            console.log("agentBoardHashes")
                             agentBoardHashes.push(x)
                         }
                     }
@@ -79,7 +80,10 @@ export class BoardList {
 
     constructor(public profilseStore: ProfilesStore, public synStore: SynStore) {
         this.allAgentBoards = pipe(this.profilseStore.agentsWithProfile,
-            agents=>sliceAndJoin(this.agentBoardHashes, agents, {errors: "filter_out"})
+            agents=>{
+                console.log("allAgentBoards")
+                return sliceAndJoin(this.agentBoardHashes, agents)
+            }
         )
    
         const boardHashes = asyncDerived(this.synStore.documentsByTag.get(BoardType.active),x=>Array.from(x.keys()))
