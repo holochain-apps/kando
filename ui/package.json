@@ -14,7 +14,7 @@
     "@holochain-open-dev/stores": "^0.8.10",
     "@holochain-open-dev/utils": "^0.16.4",
     "@holochain-syn/core": "^0.12.1",
-    "@holochain/client": "^0.16.7",
+    "@holochain/client": "^0.17.0-dev.3",
     "@lightningrodlabs/we-applet": "^0.12.2",
     "@mdi/js": "^7.1.96",
     "@ts-stack/markdown": "^1.5.0",

@@ -52,6 +52,7 @@
           const cellIds = await adminWebsocket.listCellIds()
           console.log("CELL IDS",cellIds)
           await adminWebsocket.authorizeSigningCredentials(cellIds[0])
+
         }
         console.log("appPort and Id is", appPort, appId)
         client = await AppAgentWebsocket.connect(new URL(url), appId)
