@@ -49,7 +49,7 @@ export class BoardList {
             board => board.workspace.tip
             )
         console.log("boardData2:main")
-        return alwaysSubscribed(pipe(joinAsync([board, latestState, tip]), ([board, latestState, tip]) => {console.log("boardData2:pipe"); return {board,latestState, tip: tip.entryHash}}))
+        return alwaysSubscribed(pipe(joinAsync([board, latestState, tip]), ([board, latestState, tip]) => {return {board,latestState, tip: tip ? tip.entryHash: undefined}}))
     })
 
 
