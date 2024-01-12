@@ -411,7 +411,14 @@
 
 
 </script>
-<div class="board"  style={$state.props.bgUrl ? `background-size:cover; background-image: url(${encodeURI($state.props.bgUrl)})`: ""}>
+<div class="board" >
+
+  <div class="background">
+    <div class="background-overlay"></div>
+    <div class="background-image"
+      style={$state.props.bgUrl ? `background-size:cover; background-image: url(${encodeURI($state.props.bgUrl)})`: ""}></div>
+  </div>
+
     <EditBoardDialog bind:this={editBoardDialog}></EditBoardDialog>
   <div class="top-bar">
     <div class="left-items">
@@ -663,6 +670,36 @@
   <div class="bottom-fade"></div>
 </div>
 <style>
+  .background {
+    position: absolute;
+    z-index: 0;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .background-overlay {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.87) 0%, rgba(148, 179, 205, 0.78) 100%);
+    position: absolute;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    opacity: .8;
+  }
+
+  .background-image {
+    position: absolute;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    background-size: cover;
+  }
+
   .board {
     display: flex;
     flex-direction: column;
