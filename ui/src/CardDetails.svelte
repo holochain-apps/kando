@@ -517,16 +517,16 @@
       {#if props.attachments}
         <div style="display:flex;flex-direction:row;flex-wrap:wrap">
           {#each props.attachments as attachment, i}
-            {#await store.weClient.entryInfo(hrlB64WithContextToRaw(attachment).hrl)}
+            {#await store.weClient.attachableInfo(hrlB64WithContextToRaw(attachment))}
               <sl-button size="small" loading></sl-button>
-            {:then { entryInfo }}
+            {:then { attachableInfo }}
               <sl-button  size="small"
                 on:click={()=>{
                     const hrl = hrlB64WithContextToRaw(attachment)
-                    store.weClient.openHrl(hrl.hrl, hrl.context)
+                    store.weClient.openHrl(hrl)
                   }}
-                style="display:flex;flex-direction:row;margin-right:5px;margin-left:10px"><sl-icon src={entryInfo.icon_src} slot="prefix"></sl-icon>
-                {entryInfo.name}
+                style="display:flex;flex-direction:row;margin-right:5px;margin-left:10px"><sl-icon src={attachableInfo.icon_src} slot="prefix"></sl-icon>
+                {attachableInfo.name}
               </sl-button>
               <sl-button circle size="small"
                 on:click={()=>{

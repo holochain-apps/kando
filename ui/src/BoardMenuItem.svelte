@@ -21,7 +21,6 @@
 
 </script>
 <div class="wrapper" on:click={()=>{
-      store.updateSeenTip(boardHash)
       dispatch("select")
       }} >
     {#if $boardData.status == "complete"}

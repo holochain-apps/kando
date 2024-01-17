@@ -1,6 +1,7 @@
 <script lang="ts">
   import Controller from './Controller.svelte'
   import ControllerBoard from './ControllerBoard.svelte'
+  import ControllerBlockActiveBoards from './ControllerBlockActiveBoards.svelte'
   import { AppAgentWebsocket, AdminWebsocket } from '@holochain/client';
   import '@shoelace-style/shoelace/dist/themes/light.css';
   import 'highlight.js/styles/github.css';
@@ -26,11 +27,12 @@
 
   enum RenderType {
     App,
-    Board
+    Board,
+    BlockActiveBoards
   }
 
   let renderType = RenderType.App
-  let hrl: Hrl
+  let hrlWithContext: HrlWithContext
 
   initialize()
 
@@ -68,10 +70,14 @@
               break;
             case "block":
               switch(weClient.renderInfo.view.block) {
+                case "active_boards":
+                  renderType = RenderType.BlockActiveBoards
+                  break;
                 default:
                   throw new Error("Unknown applet-view block type:"+weClient.renderInfo.view.block);
               }
-            case "entry":
+              break;
+            case "attachable":
               switch (weClient.renderInfo.view.roleName) {
                 case "kando":
                   switch (weClient.renderInfo.view.integrityZomeName) {
@@ -79,7 +85,7 @@
                       switch (weClient.renderInfo.view.entryType) {
                         case "document":
                           renderType = RenderType.Board
-                          hrl = weClient.renderInfo.view.hrl
+                          hrlWithContext = weClient.renderInfo.view.hrlWithContext
                           break;
                         default:
                           throw new Error("Unknown entry type:"+weClient.renderInfo.view.entryType);
@@ -146,7 +152,9 @@
     {#if renderType== RenderType.App}
       <Controller  client={client} weClient={weClient} profilesStore={profilesStore} roleName={roleName}></Controller>
     {:else if  renderType== RenderType.Board}
-      <ControllerBoard  board={hrl[1]} client={client} weClient={weClient} profilesStore={profilesStore} roleName={roleName}></ControllerBoard>
+      <ControllerBoard  board={hrlWithContext.hrl[1]} client={client} weClient={weClient} profilesStore={profilesStore} roleName={roleName}></ControllerBoard>
+    {:else if  renderType== RenderType.BlockActiveBoards}
+      <ControllerBlockActiveBoards client={client} weClient={weClient} profilesStore={profilesStore} roleName={roleName}></ControllerBlockActiveBoards>
     {/if}
   {/if}
 
