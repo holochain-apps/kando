@@ -171,14 +171,6 @@
     right: 0;
     bottom: 0;
   }
-  .flex-scrollable-x {
-    max-width: 100%;
-    overflow-x: auto;
-  }
-  .flex-scrollable-y {
-    max-height: 100%;
-    overflow-y: auto;
-  }
 
   .wrapper {
     position: relative;

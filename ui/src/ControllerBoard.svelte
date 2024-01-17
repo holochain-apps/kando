@@ -53,11 +53,6 @@
         {/if}
         </div>
         </div>
-      <div class="background">
-        <div class="background-overlay"></div>
-        <div class="background-image"
-              style={`background-image: url(${bgUrl});`}></div>
-      </div>
     </div>
   </div>
 </div>
@@ -74,37 +69,6 @@
     position: relative;
   }
 
-
-  .background {
-    position: absolute;
-    z-index: 0;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-  }
-
-  .background-overlay {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.87) 0%, rgba(148, 179, 205, 0.78) 100%);
-    position: absolute;
-    z-index: 2;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-    opacity: .8;
-  }
-
-  .background-image {
-    position: absolute;
-    z-index: 1;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-    background-size: cover;
-  }
-
   :global(:root) {
     --resizeable-height: 200px;
     --tab-width: 60px;
@@ -114,21 +78,6 @@
     .app {
       max-width: none;
     }
-  }
-
-  .loading {
-    text-align: center;
-    padding-top: 100px;
-  }
-  .loader {
-    border: 8px solid #f3f3f3;
-    border-radius: 50%;
-    border-top: 8px solid #3498db;
-    width: 50px;
-    height: 50px;
-    -webkit-animation: spin 2s linear infinite; /* Safari */
-    animation: spin 2s linear infinite;
-    display: inline-block;
   }
   @-webkit-keyframes spin {
     0% { -webkit-transform: rotate(0deg); }
