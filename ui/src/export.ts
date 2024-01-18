@@ -1,6 +1,11 @@
 import type { BoardState } from "./board"
 import sanitize from "sanitize-filename";
 
+interface BoardsExport {
+    version: string,
+    boards: Array<BoardState>
+}
+
 const EXPORT_FORMAT_VERSION = "1"
 const PREFIX = "kando"
 const download = (filename: string, text: string) => {
@@ -33,7 +38,7 @@ export const exportBoards = (boards: Array<BoardState>) => {
 }
 
 const _exportBoards = (fileName:string, boards: Array<BoardState>) => {
-    const exportObject = {
+    const exportObject: BoardsExport = {
         version: EXPORT_FORMAT_VERSION,
         boards,
     }
@@ -42,7 +47,7 @@ const _exportBoards = (fileName:string, boards: Array<BoardState>) => {
 
 export const deserializeExport = (jsonExport:string) : Array<BoardState> => {
     try {
-        const exportObject = JSON.parse(jsonExport)
+        const exportObject: BoardsExport = JSON.parse(jsonExport) as BoardsExport
         if (!exportObject.version) {
             throw("Expected export to have a version number")
         }
@@ -52,6 +57,12 @@ export const deserializeExport = (jsonExport:string) : Array<BoardState> => {
             if (!board.props.attachments) {
                 board.props.attachments = []
             }
+            for (const card of board.cards) {
+                if (!card.props.attachments) {
+                    card.props.attachments = []
+                }
+            }
+
         }
         return exportObject.boards
 
