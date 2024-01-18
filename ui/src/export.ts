@@ -23,7 +23,6 @@ export const exportBoard = (state: BoardState) => {
 }
 
 export const exportBoards = (boards: Array<BoardState>) => {
-    const prefix = "kando"
     const date = new Date();
     const formattedDate = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}-`
         + date.getHours() + "_" + ("00" + date.getMinutes()).slice(-2) +"_"+ ("00" + date.getSeconds()).slice(-2)
@@ -46,6 +45,13 @@ export const deserializeExport = (jsonExport:string) : Array<BoardState> => {
         const exportObject = JSON.parse(jsonExport)
         if (!exportObject.version) {
             throw("Expected export to have a version number")
+        }
+
+        // santize for things that may be missing from previous exports
+        for (const board of exportObject.boards) {
+            if (!board.props.attachments) {
+                board.props.attachments = []
+            }
         }
         return exportObject.boards
 

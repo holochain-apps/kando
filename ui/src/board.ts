@@ -68,6 +68,7 @@ export class Group {
 }
 export type BoardProps = {
   bgUrl: string,
+  attachments: Array<HrlB64WithContext>
 }
 
 export type BoardEphemeralState = { [key: string]: string };
@@ -81,6 +82,7 @@ export interface BoardState {
   labelDefs: LabelDef[];
   categoryDefs: CategoryDef[];
   props: BoardProps;
+  boundTo: Array<HrlB64WithContext>
 }
   
   export type BoardDelta =
@@ -235,14 +237,16 @@ export interface BoardState {
 
   export const boardGrammar = {
     initialState()  {
-      const state = {
+      const state: BoardState = {
         status: "",
         name: "untitled",
         groups: [{id:UngroupedId, name:""}],
+        grouping: {},
         cards: [],
         labelDefs: [],
         categoryDefs: [],
-        props: {bgUrl:""},
+        props: {bgUrl:"", attachments:[]},
+        boundTo: [],
       }
       _initGrouping(state)
       return state
@@ -266,6 +270,7 @@ export interface BoardState {
           if (delta.state.labelDefs !== undefined) state.labelDefs = delta.state.labelDefs
           if (delta.state.categoryDefs !== undefined) state.categoryDefs = delta.state.categoryDefs
           if (delta.state.props !== undefined) state.props = delta.state.props
+          if (delta.state.boundTo !== undefined) state.boundTo = delta.state.boundTo
           if (delta.state.grouping !== undefined) {
             state.grouping = delta.state.grouping
           } else if (state.grouping === undefined) {
@@ -393,9 +398,12 @@ export class Board {
     this.hashB64 = encodeHashToBase64(this.document.documentHash)
   }
 
-  public static async Create(synStore: SynStore) {
+  public static async Create(synStore: SynStore, init: Partial<BoardState>|undefined = undefined) {
     const initState = boardGrammar.initialState()
-    console.log("creating", initState)
+    if (init) {
+      Object.assign(initState, init);
+    }
+
     const documentStore = await synStore.createDocument(initState,{})
 
     await synStore.client.tagDocument(documentStore.documentHash, BoardType.active)
@@ -407,6 +415,19 @@ export class Board {
 
     const me = new Board(documentStore, workspaceStore);
     await me.join()
+
+    if (initState !== undefined) {
+      let changes : BoardDelta[] = [{
+          type: "set-state",
+          state: initState
+          },
+      ]
+      if (changes.length > 0) {
+          me.requestChanges(changes)
+          await me.session.commitChanges()
+      }
+    }
+
     return me
   }
 

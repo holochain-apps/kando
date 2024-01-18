@@ -14,10 +14,12 @@
   import { decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
   import type { Checklist, ChecklistItem, Comment } from "./board";
 
-  import { Marked, Renderer } from "@ts-stack/markdown";
+  import { Marked } from "@ts-stack/markdown";
   import SvgIcon from "./SvgIcon.svelte";
   import ClickEdit from './ClickEdit.svelte';
-  import { hrlB64WithContextToRaw, hrlWithContextToB64 } from './util';
+  import { hrlWithContextToB64 } from './util';
+  import AttachmentsList from './AttachmentsList.svelte';
+  import AttachmentsDialog from "./AttachmentsDialog.svelte"
 
   
   const { getStore } :any = getContext("store");
@@ -241,16 +243,8 @@
 
   let editDescriptionElement
 
-  const addAttachment = async () => {
-    const hrl = await store.weClient.userSelectHrl()
-    if (hrl) {
-      if (props.attachments === undefined) {
-        props.attachments = []
-      }
-      props.attachments.push(hrlWithContextToB64(hrl))
-      handleSave(props)
-    }
-  }
+  let attachmentsDialog : AttachmentsDialog
+
   const removeAttachment = (idx: number) => {
     props.attachments.splice(idx,1)
     handleSave(props)
@@ -262,6 +256,9 @@
   no-header
   on:sl-hide={()=>close()}
   >
+{#if store.weClient}
+  <AttachmentsDialog activeBoard={$activeBoard} bind:this={attachmentsDialog}></AttachmentsDialog>
+{/if}
 
 <div class='card-editor'>
   <div class="card-wrapper">
@@ -510,36 +507,13 @@
     {/if}
     {#if store.weClient}
       <div style="margin-left:10px; margin-bottom:5px;">
-        <button class="control" on:click={()=>addAttachment()} >          
+        <button class="control" on:click={()=>attachmentsDialog.open(card)} >          
           <SvgIcon icon="faPaperclip" size="12px"/> Add Attachment
         </button>
       </div>
       {#if props.attachments}
-        <div style="display:flex;flex-direction:row;flex-wrap:wrap">
-          {#each props.attachments as attachment, i}
-            {#await store.weClient.attachableInfo(hrlB64WithContextToRaw(attachment))}
-              <sl-button size="small" loading></sl-button>
-            {:then { attachableInfo }}
-              <sl-button  size="small"
-                on:click={()=>{
-                    const hrl = hrlB64WithContextToRaw(attachment)
-                    store.weClient.openHrl(hrl)
-                  }}
-                style="display:flex;flex-direction:row;margin-right:5px;margin-left:10px"><sl-icon src={attachableInfo.icon_src} slot="prefix"></sl-icon>
-                {attachableInfo.name}
-              </sl-button>
-              <sl-button circle size="small"
-                on:click={()=>{
-                  removeAttachment(i)
-                  }}
-                >
-                <SvgIcon icon="faTrash" size="12px"></SvgIcon>
-              </sl-button> 
-            {:catch error}
-              Oops. something's wrong.
-            {/await}
-          {/each}
-        </div>
+         <AttachmentsList attachments={props.attachments}
+          on:remove-attachment={(e)=>removeAttachment(e.detail)}/>
       {/if}
     {/if}
 

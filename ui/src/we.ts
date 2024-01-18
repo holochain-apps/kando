@@ -1,22 +1,16 @@
 import { DocumentStore, SynClient, SynStore, WorkspaceStore } from '@holochain-syn/core';
-import { CellType, type AppAgentClient, type RoleName, type ZomeName, type DnaHash } from '@holochain/client';
 import { Board, type BoardEphemeralState, type BoardState } from './board';
 import { asyncDerived, pipe, sliceAndJoin, toPromise } from '@holochain-open-dev/stores';
 import { BoardType } from './boardList';
 import { LazyHoloHashMap } from '@holochain-open-dev/utils';
 import type { AppletHash, AppletServices, AttachableInfo, HrlWithContext, WeServices } from '@lightningrodlabs/we-applet';
-import { wrapPathInSvg } from "@holochain-open-dev/elements"
+import { getMyDna, hrlWithContextToB64 } from './util';
+import type { AppAgentClient, RoleName, ZomeName } from '@holochain/client';
 
 const ROLE_NAME = "kando"
 const ZOME_NAME = "syn"
 
-const getMyDna = async (client: AppAgentClient) : Promise<DnaHash>  => {
-    const appInfo = await client.appInfo();
-    const dnaHash = (appInfo.cell_info[ROLE_NAME][0] as any)[
-      CellType.Provisioned
-    ].cell_id[0];
-    return dnaHash
-} 
+const BOARD_ICON_SRC = `data:image/svg+xml;utf8,<svg width="800px" height="800px" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" fill="black" ><path d="M2.5 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2h-11zm5 2h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm-5 1a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1V3zm9-1h1a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z"/></svg>`
 
 export const appletServices: AppletServices = {
     // Types of attachment that this Applet offers for other Applets to attach
@@ -27,11 +21,11 @@ export const appletServices: AppletServices = {
     ) => ({
       board: {
         label: "Board",
-        icon_src: "https://static-00.iconduck.com/assets.00/kanban-icon-480x512-y56i8vrh.png",
+        icon_src: BOARD_ICON_SRC,
         async create(attachToHrlWithContext: HrlWithContext) {
           const synStore = new SynStore(new SynClient(appletClient, ROLE_NAME));
-          const board = await Board.Create(synStore)
-          const dnaHash = await getMyDna(appletClient)
+          const board = await Board.Create(synStore, {boundTo:[hrlWithContextToB64(attachToHrlWithContext)]})
+          const dnaHash = await getMyDna(ROLE_NAME, appletClient)
           return {
             hrl: [dnaHash, board.hash],
             context: {},
@@ -64,7 +58,7 @@ export const appletServices: AppletServices = {
         const latestSnapshot = await toPromise(workspace.latestSnapshot)
 
         return {
-          icon_src: `data:image/svg+xml;utf8,<svg width="800px" height="800px" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" fill="black" ><path d="M2.5 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2h-11zm5 2h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm-5 1a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1V3zm9-1h1a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z"/></svg>`,
+          icon_src: BOARD_ICON_SRC,
           name: latestSnapshot.name,
         };
     },
@@ -97,7 +91,7 @@ export const appletServices: AppletServices = {
         )
 
         const allBoards = Array.from((await toPromise(allBoardsAsync)).entries())
-        const dnaHash = await getMyDna(appletClient)
+        const dnaHash = await getMyDna(ROLE_NAME, appletClient)
 
         return allBoards
             .filter((r) => !!r)

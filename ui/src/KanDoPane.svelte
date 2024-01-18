@@ -3,11 +3,10 @@
   import CardEditor from "./CardEditor.svelte";
   import CardDetails from "./CardDetails.svelte";
   import EmojiIcon from "./EmojiIcon.svelte";
-  //import { sortBy } from "lodash/fp";
   import type { KanDoStore } from "./store";
   import LabelSelector from "./LabelSelector.svelte";
   import { v1 as uuidv1 } from "uuid";
-  import { type Card, Group, UngroupedId, type CardProps, type Comment, type Checklists, Board } from "./board";
+  import { type Card, Group, UngroupedId, type CardProps, type Comment, type Checklists, Board, type BoardProps } from "./board";
   import EditBoardDialog from "./EditBoardDialog.svelte";
   import Avatar from "./Avatar.svelte";
   import { decodeHashFromBase64, type Timestamp } from "@holochain/client";
@@ -15,11 +14,13 @@
   import '@shoelace-style/shoelace/dist/components/dropdown/dropdown.js';
   import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
   import ClickEdit from "./ClickEdit.svelte";
-  import { onVisible } from "./util";
+  import { hrlB64WithContextToRaw, onVisible } from "./util";
   import SvgIcon from "./SvgIcon.svelte";
   import { exportBoard } from "./export";
   import { Marked, Renderer } from "@ts-stack/markdown";
   import hljs from 'highlight.js';
+  import AttachmentsList from './AttachmentsList.svelte';
+  import AttachmentsDialog from "./AttachmentsDialog.svelte"
 
   onMount(async () => {
         onVisible(columnNameElem,()=>{
@@ -409,6 +410,13 @@
     return true
   }
 
+  let attachmentsDialog : AttachmentsDialog
+
+  const removeAttachment = (props: BoardProps, idx: number) => {
+    let newProps = cloneDeep(props)
+    newProps.attachments.splice(idx,1)
+    activeBoard.requestChanges([{type: 'set-props', props : newProps }])
+  }
 
 </script>
 <div class="board" >
@@ -447,6 +455,34 @@
             </sl-menu-item>
           </sl-menu>
         </sl-dropdown>
+        {#if store.weClient}
+          <AttachmentsDialog activeBoard={activeBoard} bind:this={attachmentsDialog}></AttachmentsDialog>
+          {#if $state.boundTo.length>0}
+            Bound To:
+            {#each $state.boundTo as hrl}
+              {#await store.weClient.attachableInfo(hrlB64WithContextToRaw(hrl))}
+                ...
+              {:then { attachableInfo }}
+                <div style="display:flex">
+                  <sl-icon src={attachableInfo.icon_src}></sl-icon>
+                  {attachableInfo.name}
+                </div>
+              {:catch error}
+                {error}
+              {/await}
+            {/each}
+          {/if}
+          <div style="margin-left:10px; margin-top:2px;display:flex">
+            <button class="attachment-button" style="margin-right:10px" on:click={()=>attachmentsDialog.open(undefined)} >          
+              <SvgIcon icon="faPaperclip" size="12px"/>
+            </button>
+            {#if $state.props.attachments}
+              <AttachmentsList attachments={$state.props.attachments}
+                allowDelete={false}/>
+            {/if}
+          </div>
+        {/if}
+  
       {/if}
     </div>
     <div class="filter-by">
@@ -594,7 +630,8 @@
                     </div>
                     <div class="card-description">{@html Marked.parse(props.description)}</div>
                   </div>
-                  {#if (props && props.agents && props.agents.length > 0) || ( comments && Object.keys(comments).length>0) || (checklists && Object.keys(checklists).length> 0)}
+
+                  {#if (props && props.agents && props.agents.length > 0) || ( comments && Object.keys(comments).length>0) || (checklists && Object.keys(checklists).length> 0) || props.attachments.length > 0}
                   <div class="contributors">
                     {#if props && props.agents && props.agents.length > 0}
                       {#each props.agents as agent}
@@ -613,6 +650,11 @@
                           <SvgIcon color="rgba(86, 94, 109, 1.0)" size=11px icon=faCheck /> {checkedChecklistItems(checklists)} / {totalChecklistItems(checklists)}
                         </div>
                       {/if}
+                      {#if store.weClient && props.attachments.length>0}
+                      <div class="attachments-count">
+                        <SvgIcon color="rgba(86, 94, 109, 1.0)" size=11px icon=faPaperclip /> {props.attachments.length}
+                      </div>
+                    {/if}
                     </div>
                   </div>
                   {/if}
@@ -774,11 +816,6 @@
   .board-options .board-settings span, .board-export span, .board-archive span, .board-options .leave-board span, .board-options .participants span {
     font-size: 16px;
     font-weight: bold;
-  }
-
-  .settings-menu {
-    position: relative;
-    left: -10px;
   }
 
   .board-button.settings:hover {
@@ -1140,7 +1177,10 @@
   }
   
   .comment-count {
-    margin-right: 15px;
+    margin-right: 10px;
+  }
+  .attachments-count {
+    margin-left: 10px;
   }
 
   .labels {
@@ -1160,10 +1200,17 @@
     background-color: rgba(255,255,255,.8);
   }
 
-  .label-icon {
-    margin-right: 0;
+  .attachment-button {
+    width: 30px;
+    height: 30px;
+    padding: 4px;
+    border-radius: 50%;
+    border: 1px solid rgba(235, 235, 238, 1.0);
+    background-color: rgba(255,255,255,.8);    
   }
-
+  .attachment-button:hover {
+    transform: scale(1.25);
+  }
   .hidden {
     display: none;
   }
