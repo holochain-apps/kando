@@ -458,23 +458,14 @@
         {#if store.weClient}
           <AttachmentsDialog activeBoard={activeBoard} bind:this={attachmentsDialog}></AttachmentsDialog>
           {#if $state.boundTo.length>0}
-            Bound To:
-            {#each $state.boundTo as hrl}
-              {#await store.weClient.attachableInfo(hrlB64WithContextToRaw(hrl))}
-                ...
-              {:then { attachableInfo }}
-                <div style="display:flex">
-                  <sl-icon src={attachableInfo.icon_src}></sl-icon>
-                  {attachableInfo.name}
-                </div>
-              {:catch error}
-                {error}
-              {/await}
-            {/each}
+            <div style="margin-left:10px;display:flex; align-items: center">
+              <span style="margin-right: 5px;">Bound To:</span>
+              <AttachmentsList allowDelete={false} attachments={$state.boundTo} />
+            </div>
           {/if}
           <div style="margin-left:10px; margin-top:2px;display:flex">
             <button class="attachment-button" style="margin-right:10px" on:click={()=>attachmentsDialog.open(undefined)} >          
-              <SvgIcon icon="faPaperclip" size="12px"/>
+              <SvgIcon icon="link" size="16px"/>
             </button>
             {#if $state.props.attachments}
               <AttachmentsList attachments={$state.props.attachments}
@@ -652,7 +643,7 @@
                       {/if}
                       {#if store.weClient && props.attachments.length>0}
                       <div class="attachments-count">
-                        <SvgIcon color="rgba(86, 94, 109, 1.0)" size=11px icon=faPaperclip /> {props.attachments.length}
+                        <SvgIcon color="rgba(86, 94, 109, 1.0)" size=11px icon=link /> {props.attachments.length}
                       </div>
                     {/if}
                     </div>
@@ -1200,7 +1191,7 @@
     background-color: rgba(255,255,255,.8);
   }
 
-  .attachment-button {
+  :global(.attachment-button) {
     width: 30px;
     height: 30px;
     padding: 4px;
@@ -1208,7 +1199,7 @@
     border: 1px solid rgba(235, 235, 238, 1.0);
     background-color: rgba(255,255,255,.8);    
   }
-  .attachment-button:hover {
+  :global(.attachment-button:hover) {
     transform: scale(1.25);
   }
   .hidden {

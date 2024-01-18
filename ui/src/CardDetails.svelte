@@ -507,8 +507,8 @@
     {/if}
     {#if store.weClient}
       <div style="margin-left:10px; margin-bottom:5px;">
-        <button class="control" on:click={()=>attachmentsDialog.open(card)} >          
-          <SvgIcon icon="faPaperclip" size="12px"/> Add Attachment
+        <button class="attachment-button" on:click={()=>attachmentsDialog.open(card)} >          
+          <SvgIcon icon="link" size="16px"/>
         </button>
       </div>
       {#if props.attachments}

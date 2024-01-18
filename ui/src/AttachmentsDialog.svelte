@@ -70,16 +70,16 @@
   }
 </script>
 
-<sl-dialog label={card? "Card Attachments":"Board Attachments"} bind:this={dialog}>
+<sl-dialog label={card? "Card Links":"Board Links"} bind:this={dialog}>
   {#if isWeContext()}
   <AttachmentsList attachments={attachments}
       on:remove-attachment={(e)=>removeAttachment(e.detail)}/>
 
   <div>
-      <h3>Search for Attachment:</h3> 
+      <h3>Search Linkables:</h3> 
   </div> 
   <sl-button style="margin-top:5px;margin-right: 5px" circle on:click={()=>addAttachment()} >
-        <SvgIcon icon=faPaperclip size=12 />
+        <SvgIcon icon=link size=12 />
   </sl-button>
 
   <AttachmentsBind
