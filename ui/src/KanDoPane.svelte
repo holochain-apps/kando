@@ -1,7 +1,7 @@
 <script lang="ts">
   import { getContext, onMount } from "svelte";
   import CardEditor from "./CardEditor.svelte";
-  import CardDetails from "./CardDetails.svelte";
+  import CardDetailsDrawer from "./CardDetailsDrawer.svelte";
   import EmojiIcon from "./EmojiIcon.svelte";
   import type { KanDoStore } from "./store";
   import LabelSelector from "./LabelSelector.svelte";
@@ -14,7 +14,7 @@
   import '@shoelace-style/shoelace/dist/components/dropdown/dropdown.js';
   import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
   import ClickEdit from "./ClickEdit.svelte";
-  import { hrlB64WithContextToRaw, onVisible } from "./util";
+  import { onVisible } from "./util";
   import SvgIcon from "./SvgIcon.svelte";
   import { exportBoard } from "./export";
   import { Marked, Renderer } from "@ts-stack/markdown";
@@ -515,7 +515,7 @@
     labelTypes={$state.labelDefs}
     categories={$state.categoryDefs}
   />
-  <CardDetails
+  <CardDetailsDrawer
     bind:this={cardDetailsDialog}
   />
 

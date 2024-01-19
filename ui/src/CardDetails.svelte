@@ -1,14 +1,12 @@
 <script lang="ts">
-  import type { Readable } from 'svelte/store';
   import { UngroupedId, type CardProps, type CategoryDef, type LabelDef } from "./board";
   import '@shoelace-style/shoelace/dist/components/select/select.js';
   import '@shoelace-style/shoelace/dist/components/option/option.js';
   import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
   import '@shoelace-style/shoelace/dist/components/input/input.js';
-  import '@shoelace-style/shoelace/dist/components/drawer/drawer.js';
   import { cloneDeep, isEqual } from "lodash";
   import { v1 as uuidv1 } from "uuid";
-  import { getContext } from 'svelte';
+  import { getContext, onMount } from 'svelte';
   import type { KanDoStore } from './store';
   import Avatar from './Avatar.svelte';
   import { decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
@@ -17,9 +15,9 @@
   import { Marked } from "@ts-stack/markdown";
   import SvgIcon from "./SvgIcon.svelte";
   import ClickEdit from './ClickEdit.svelte';
-  import { hrlWithContextToB64 } from './util';
   import AttachmentsList from './AttachmentsList.svelte';
   import AttachmentsDialog from "./AttachmentsDialog.svelte"
+  import type { HrlWithContext } from '@lightningrodlabs/we-applet';
 
   
   const { getStore } :any = getContext("store");
@@ -39,18 +37,10 @@
 
   const DEFAULT_PROPS = {title:"", description:"", category: "", agents:[], labels:[], attachments:[]}
 
-  //let props:CardProps = DEFAULT_PROPS
-  let cardId:uuidv1 = ""
+  export let cardId:uuidv1
+  export let showControls = true
 
-  let dialog
-
-  export const open = (id: uuidv1)=>{
-    cardId = id
-    updateLatestComment()
-    dialog.show()
-  }
-
-  const updateLatestComment = () => {
+  export const updateLatestComment = () => {
     const card =  $state.cards.find(c=>c.id == cardId)
     if (card) {
       const comments = Object.values(card.comments).sort((a,b)=> a.timestamp - b.timestamp)
@@ -91,7 +81,6 @@
   }
 
   export const reset = ()=>{
-    dialog.hide()
     editingTitle = false
     editingDescription = false
   }
@@ -250,12 +239,12 @@
     handleSave(props)
   }
 
+  const copyHrlToClipboard = () => {
+    const attachment: HrlWithContext = { hrl: [store.dnaHash, $activeBoard.hash], context: cardId }
+    store.weClient?.hrlToClipboard(attachment)
+  }
 </script>
-<sl-drawer class="edit-card" bind:this={dialog}
-  style="--size:500px"
-  no-header
-  on:sl-hide={()=>close()}
-  >
+
 {#if store.weClient}
   <AttachmentsDialog activeBoard={$activeBoard} bind:this={attachmentsDialog}></AttachmentsDialog>
 {/if}
@@ -272,7 +261,7 @@
         {/each}
         </div>
       </div>
-      {:else}
+      {:else if showControls}
       <div class="top-spacer"></div>
       {/if}
 
@@ -285,10 +274,16 @@
             handleSave(props)
           }}></ClickEdit>
         </div>
-        <div class="card-controls">
+        {#if showControls}
+          <div class="card-controls">
+            {#if store.weClient}
+              <div class="details-button archive-button" title="Archive this card" on:click={()=>copyHrlToClipboard()}>
+                <SvgIcon icon=faShare size="18px"/>
+              </div>
+            {/if}
             {#if handleDelete}
               <div class="details-button delete-button" title="Delete this card" on:click={()=>handleDelete(cardId)}>
-                <SvgIcon icon=faTrash size="18px"/>
+                <SvgIcon icon=faTrash size="16px"/>
               </div>
             {/if}
             {#if handleArchive}
@@ -296,10 +291,11 @@
                 <SvgIcon icon=faArchive size="18px"/>
               </div>
             {/if}
-          <div class="details-button" title="Close this card" on:click={(e)=>{close()}}>
-            <SvgIcon icon=faClose size="18px"/>
+            <div class="details-button" title="Close this card" on:click={(e)=>{close()}}>
+              <SvgIcon icon=faClose size="18px"/>
+            </div>
           </div>
-        </div>
+        {/if}
       </div>
       <div class="belongs-to" style="display:flex; align-items: center;">
         <div >In column <strong>{store.getCardGroupName(cardId, $state)}</strong></div>
@@ -506,15 +502,17 @@
     </div>
     {/if}
     {#if store.weClient}
-      <div style="margin-left:10px; margin-bottom:5px;">
-        <button class="attachment-button" on:click={()=>attachmentsDialog.open(card)} >          
-          <SvgIcon icon="link" size="16px"/>
-        </button>
+      <div style="display:flex; flex-wrap:wrap; align-items: center; margin-bottom:10px;">
+        <div style="margin-left:10px; margin-right:10px;">
+          <button class="attachment-button" on:click={()=>attachmentsDialog.open(card)} >          
+            <SvgIcon icon="link" size="16px"/>
+          </button>
+        </div>
+        {#if props.attachments}
+          <AttachmentsList attachments={props.attachments}
+            on:remove-attachment={(e)=>removeAttachment(e.detail)}/>
+        {/if}
       </div>
-      {#if props.attachments}
-         <AttachmentsList attachments={props.attachments}
-          on:remove-attachment={(e)=>removeAttachment(e.detail)}/>
-      {/if}
     {/if}
 
     <sl-dialog bind:this={commentDialog}>
@@ -620,7 +618,6 @@
     </div>
   </div>
 </div>
-</sl-drawer>
 <style>
   .category-selected {
     border: solid 2px rgba(35, 32, 74, .5);
@@ -636,7 +633,7 @@
   }
   .card-editor {
     display: flex;
-    flex-basis: 270px;
+    flex-basis: 100%;
     font-style: normal;
     color: rgba(35, 32, 74, 1.0);
     justify-content: space-between;

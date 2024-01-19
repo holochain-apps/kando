@@ -1,6 +1,7 @@
 <script lang="ts">
   import Controller from './Controller.svelte'
   import ControllerBoard from './ControllerBoard.svelte'
+  import ControllerCard from './ControllerCard.svelte'
   import ControllerBlockActiveBoards from './ControllerBlockActiveBoards.svelte'
   import { AppAgentWebsocket, AdminWebsocket } from '@holochain/client';
   import '@shoelace-style/shoelace/dist/themes/light.css';
@@ -27,7 +28,7 @@
 
   enum RenderType {
     App,
-    Board,
+    Hrl,
     BlockActiveBoards
   }
 
@@ -84,7 +85,7 @@
                     case "syn_integrity":
                       switch (weClient.renderInfo.view.entryType) {
                         case "document":
-                          renderType = RenderType.Board
+                          renderType = RenderType.Hrl
                           hrlWithContext = weClient.renderInfo.view.hrlWithContext
                           break;
                         default:
@@ -151,8 +152,10 @@
   {:else}
     {#if renderType== RenderType.App}
       <Controller  client={client} weClient={weClient} profilesStore={profilesStore} roleName={roleName}></Controller>
-    {:else if  renderType== RenderType.Board}
+    {:else if  renderType== RenderType.Hrl && !hrlWithContext.context}
       <ControllerBoard  board={hrlWithContext.hrl[1]} client={client} weClient={weClient} profilesStore={profilesStore} roleName={roleName}></ControllerBoard>
+    {:else if  renderType== RenderType.Hrl && hrlWithContext.context}
+      <ControllerCard  board={hrlWithContext.hrl[1]} cardId={hrlWithContext.context} client={client} weClient={weClient} profilesStore={profilesStore} roleName={roleName}></ControllerCard>
     {:else if  renderType== RenderType.BlockActiveBoards}
       <ControllerBlockActiveBoards client={client} weClient={weClient} profilesStore={profilesStore} roleName={roleName}></ControllerBlockActiveBoards>
     {/if}

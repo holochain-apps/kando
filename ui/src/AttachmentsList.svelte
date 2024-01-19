@@ -25,7 +25,8 @@
         <sl-button size="small" loading></sl-button>
       {:then { attachableInfo }}
         <sl-button  size="small"
-          on:click={()=>{
+          on:click={(e)=>{
+              e.stopPropagation()
               const hrlWithContext = hrlB64WithContextToRaw(attachment)
               store.weClient.openHrl(hrlWithContext)
             }}

@@ -203,10 +203,17 @@ export interface BoardState {
     if (state.grouping === undefined) {
       state.grouping = {}
       const ungrouped = []
-      state.cards.forEach((card)=>ungrouped.push(card.id))
+      state.stickies.forEach((sticky)=>ungrouped.push(sticky.id))
       state.grouping[UngroupedId] = ungrouped
     }
+    const groupingIds = Object.keys(state.grouping)
+    for (const group of state.groups) {
+      if (!groupingIds.includes(group.id)) {
+        state.grouping[group.id] = []
+      }
+    }
   }
+  
   const _setGroups = (newGroups, state) => {
     state.groups = newGroups
     if (state.groups === undefined) state.groups = []
@@ -236,7 +243,7 @@ export interface BoardState {
   }
 
   export const boardGrammar = {
-    initialState()  {
+    initialState(init: Partial<BoardState>|undefined = undefined)  {
       const state: BoardState = {
         status: "",
         name: "untitled",
@@ -247,6 +254,9 @@ export interface BoardState {
         categoryDefs: [],
         props: {bgUrl:"", attachments:[]},
         boundTo: [],
+      }
+      if (init) {
+        Object.assign(state, init);
       }
       _initGrouping(state)
       return state
@@ -399,11 +409,8 @@ export class Board {
   }
 
   public static async Create(synStore: SynStore, init: Partial<BoardState>|undefined = undefined) {
-    const initState = boardGrammar.initialState()
-    if (init) {
-      Object.assign(initState, init);
-    }
-
+    const initState = boardGrammar.initialState(init)
+  
     const documentStore = await synStore.createDocument(initState,{})
 
     await synStore.client.tagDocument(documentStore.documentHash, BoardType.active)
