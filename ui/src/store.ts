@@ -85,7 +85,7 @@ export class KanDoStore {
           this.zomeName
         );
         this.synStore = new SynStore(new SynClient(this.client,this.roleName,this.zomeName))
-        this.boardList = new BoardList(profilesStore, this.synStore)
+        this.boardList = new BoardList(profilesStore, this.synStore, weClient)
         this.boardList.activeBoard.subscribe((board)=>{
             if (this.unsub) {
                 this.unsub()
