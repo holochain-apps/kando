@@ -25,11 +25,12 @@ export const appletServices: AppletServices = {
         icon_src: BOARD_ICON_SRC,
         async create(attachToHrlWithContext: HrlWithContext) {
           const synStore = new SynStore(new SynClient(appletClient, ROLE_NAME));
-          const board = await Board.Create(synStore, {boundTo:[hrlWithContextToB64(attachToHrlWithContext)]})
+          const hrlB64 = hrlWithContextToB64(attachToHrlWithContext)
+          const board = await Board.Create(synStore, {boundTo:[hrlB64]})
           const dnaHash = await getMyDna(ROLE_NAME, appletClient)
+
           return {
             hrl: [dnaHash, board.hash],
-            context: {},
           };
         },
       },

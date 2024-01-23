@@ -55,9 +55,8 @@ export class BoardList {
                             const activeBoard = get (this.activeBoard)
 
                             if ((tipB64 != seenTipB64) && (!activeBoard || (encodeHashToBase64(activeBoard.hash) != board.hashB64))) {
-                                console.log("updated when not active, notifying we")
                                 this.weClient.notifyWe([{
-                                    title: `Board name changed`,
+                                    title: `Board updated`,
                                     body: "",
                                     notification_type: "change",
                                     icon_src: undefined,

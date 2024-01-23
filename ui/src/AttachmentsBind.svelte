@@ -75,7 +75,7 @@
                             <div style="display:flex;align-items:center;">
                                 <sl-icon style="margin-right:3px" src={aType.icon_src}></sl-icon>{aType.label}
                                 <sl-button size="small" circle style="margin-left:3px" on:click={async ()=>{
-                                    const hrl = await aType.create({hrl:[store.dnaHash,activeBoard.hash],context:undefined})
+                                    const hrl = await aType.create({hrl:[store.dnaHash,activeBoard.hash]})
                                     dispatch("add-binding",hrl)
                                     }} >          
                                     <SvgIcon icon=faPlus size=10/>

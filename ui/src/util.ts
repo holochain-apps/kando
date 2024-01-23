@@ -14,14 +14,14 @@ export function onVisible(element, callback) {
 export function hrlWithContextToB64(hrl: HrlWithContext): HrlB64WithContext {
   return {
     hrl: [encodeHashToBase64(hrl.hrl[0]), encodeHashToBase64(hrl.hrl[1])],
-    context: hrl.context,
+    context: hrl.context === undefined ? 'null' : JSON.stringify(hrl.context),
   };
 }
   
 export function hrlB64WithContextToRaw(hrlB64: HrlB64WithContext): HrlWithContext {
   return {
     hrl: [decodeHashFromBase64(hrlB64.hrl[0]), decodeHashFromBase64(hrlB64.hrl[1])],
-    context: hrlB64.context,
+    context: JSON.parse(hrlB64.context),
   };
 }
 
