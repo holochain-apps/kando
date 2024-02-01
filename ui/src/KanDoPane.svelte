@@ -21,6 +21,7 @@
   import hljs from 'highlight.js';
   import AttachmentsList from './AttachmentsList.svelte';
   import AttachmentsDialog from "./AttachmentsDialog.svelte"
+  import type { HrlWithContext } from "@lightningrodlabs/we-applet";
 
   onMount(async () => {
         onVisible(columnNameElem,()=>{
@@ -418,6 +419,11 @@
     activeBoard.requestChanges([{type: 'set-props', props : newProps }])
   }
 
+  const copyHrlToClipboard = () => {
+    const attachment: HrlWithContext = { hrl: [store.dnaHash, activeBoard.hash], context: "" }
+    store.weClient?.hrlToClipboard(attachment)
+  }
+
 </script>
 <div class="board" >
 
@@ -464,7 +470,10 @@
             </div>
           {/if}
           <div style="margin-left:10px; margin-top:2px;display:flex">
-            <button class="attachment-button" style="margin-right:10px" on:click={()=>attachmentsDialog.open(undefined)} >          
+            <button title="Add Board to Pocket" class="attachment-button" style="margin-right:10px" on:click={()=>copyHrlToClipboard()} >          
+              <SvgIcon icon="faGetPocket" size="16px"/>
+            </button>
+            <button title="Manage Board Attachments" class="attachment-button" style="margin-right:10px" on:click={()=>attachmentsDialog.open(undefined)} >          
               <SvgIcon icon="link" size="16px"/>
             </button>
             {#if $state.props.attachments}

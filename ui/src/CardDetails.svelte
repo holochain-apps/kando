@@ -277,8 +277,8 @@
         {#if showControls}
           <div class="card-controls">
             {#if store.weClient}
-              <div class="details-button archive-button" title="Archive this card" on:click={()=>copyHrlToClipboard()}>
-                <SvgIcon icon=faShare size="18px"/>
+              <div class="details-button pocket-button" title="Add this card to pocket" on:click={()=>copyHrlToClipboard()}>
+                <SvgIcon icon=faGetPocket size="18px"/>
               </div>
             {/if}
             {#if handleDelete}
@@ -504,7 +504,7 @@
     {#if store.weClient}
       <div style="display:flex; flex-wrap:wrap; align-items: center; margin-bottom:10px;">
         <div style="margin-left:10px; margin-right:10px;">
-          <button class="attachment-button" on:click={()=>attachmentsDialog.open(card)} >          
+          <button title="Manage Card Attachments" class="attachment-button" on:click={()=>attachmentsDialog.open(card)} >          
             <SvgIcon icon="link" size="16px"/>
           </button>
         </div>
@@ -823,12 +823,12 @@
     box-shadow: 0px 8px 10px rgba(53, 39, 211, 0.35);
   }
 
-  .delete-button, .archive-button {
+  .delete-button, .archive-button, .pocket-button {
     opacity: .7;
     transition: all .25s ease;
   }
 
-  .delete-button:hover, .archive-button:hover {
+  .delete-button:hover, .archive-button:hover, .pocket-button:hover {
     opacity: 1;
   }
 
