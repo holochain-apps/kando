@@ -66,10 +66,13 @@
     props = props
     handleSave(props)
   }
+
   const setAgents = () => {
-    props.agents = selectedAvatars
-    handleSave(props)
-  }
+    if (!isEqual(props.agents, selectedAvatars)) {
+      props.agents = selectedAvatars
+      requestChanges([{ type: "set-card-agents", id: card.id, agents: cloneDeep(props.agents)}]);
+    }
+  } 
 
   const setLabels = () => {
     props.labels = selectedLabels.map(o => o.value)
@@ -276,9 +279,10 @@
         </div>
         {#if showControls}
           <div class="card-controls">
+            
             {#if store.weClient}
               <div class="details-button pocket-button" title="Add this card to pocket" on:click={()=>copyHrlToClipboard()}>
-                <SvgIcon icon=faGetPocket size="18px"/>
+                <SvgIcon icon=addToPocket size="25px"/>
               </div>
             {/if}
             {#if handleDelete}

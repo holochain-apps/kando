@@ -2,10 +2,10 @@ import { HoloHashMap, LazyHoloHashMap } from "@holochain-open-dev/utils";
 import { derived, get, writable, type Readable, type Writable } from "svelte/store";
 import { type AgentPubKey, type EntryHash, type EntryHashB64, encodeHashToBase64 } from "@holochain/client";
 import {toPromise, type AsyncReadable, pipe, joinAsync, asyncDerived, sliceAndJoin, alwaysSubscribed} from '@holochain-open-dev/stores'
-import { SynStore, WorkspaceStore } from "@holochain-syn/core";
+import { SynStore, WorkspaceStore, type Commit, stateFromCommit } from "@holochain-syn/core";
 import type { ProfilesStore } from "@holochain-open-dev/profiles";
 import { cloneDeep } from "lodash";
-import { Board, type BoardDelta, type BoardState } from "./board";
+import { Board, feedItems, type BoardDelta, type BoardState, deltaToFeedString } from "./board";
 import { hashEqual } from "./util";
 import type { WeClient } from "@lightningrodlabs/we-applet";
 import { SeenType } from "./store";
@@ -36,13 +36,14 @@ export class BoardList {
     activeBoardHash: Writable<EntryHash| undefined> = writable(undefined)
     activeBoardHashB64: Readable<string| undefined> = derived(this.activeBoardHash, s=> s ? encodeHashToBase64(s): undefined)
     boardCount: AsyncReadable<number>
+    notifiedItems = {}
 
     boardData2 = new LazyHoloHashMap( documentHash => {
         const docStore = this.synStore.documents.get(documentHash)
 
         const board = pipe(docStore.allWorkspaces,
             workspaces => {
-                const board = new Board(docStore,  new WorkspaceStore(docStore, Array.from(workspaces.keys())[0]))
+                const board = new Board(docStore,  new WorkspaceStore(docStore, Array.from(workspaces.keys())[0]), this.synStore.client.client.myPubKey)
                 // TODO: fix once we know if our applet is in front or not.
                 if (this.weClient) {
                     board.workspace.tip.subscribe((tip)=>{
@@ -55,15 +56,23 @@ export class BoardList {
                             const activeBoard = get (this.activeBoard)
 
                             if ((tipB64 != seenTipB64) && (!activeBoard || (encodeHashToBase64(activeBoard.hash) != board.hashB64))) {
-                                this.weClient.notifyWe([{
-                                    title: `Board updated`,
-                                    body: "",
-                                    notification_type: "change",
-                                    icon_src: undefined,
-                                    urgency: "low",
-                                    timestamp: Date.now()
-                                }
-                                ])
+                                const boardState = stateFromCommit(tipRecord.entry) as BoardState
+                                const feed = feedItems(boardState.feed)
+                                feed.forEach(feedItem=> {
+                                    const key = `${feedItem.author}.${feedItem.timestamp.getTime()}`
+                                    if (! this.notifiedItems[key]) {
+                                        this.weClient.notifyWe([{
+                                            title: `${boardState.name} updated`,
+                                            body: deltaToFeedString(boardState, feedItem.content),
+                                            notification_type: "change",
+                                            icon_src: undefined,
+                                            urgency: "low",
+                                            timestamp: Date.now()
+                                        }
+                                        ])
+                                        this.notifiedItems[key] = true
+                                    }
+                                })
                             }
                         }
                     })

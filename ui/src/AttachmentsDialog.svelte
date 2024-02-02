@@ -79,7 +79,7 @@
       <h3>Search Linkables:</h3> 
   </div> 
   <sl-button style="margin-top:5px;margin-right: 5px" circle on:click={()=>addAttachment()} >
-        <SvgIcon icon=link size=12 />
+        <SvgIcon icon=link size=20 />
   </sl-button>
 
   <AttachmentsBind

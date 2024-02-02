@@ -6,7 +6,7 @@
   import type { KanDoStore } from "./store";
   import LabelSelector from "./LabelSelector.svelte";
   import { v1 as uuidv1 } from "uuid";
-  import { type Card, Group, UngroupedId, type CardProps, type Comment, type Checklists, Board, type BoardProps } from "./board";
+  import { type Card, Group, UngroupedId, type CardProps, type Comment, type Checklists, Board, type BoardProps, type Feed, type FeedItem, sortedFeedKeys, feedItems, deltaToFeedString } from "./board";
   import EditBoardDialog from "./EditBoardDialog.svelte";
   import Avatar from "./Avatar.svelte";
   import { decodeHashFromBase64, type Timestamp } from "@holochain/client";
@@ -356,13 +356,13 @@
       return
     }
     const newGroups = cloneDeep($state.groups)
-    newGroups.push(new Group(newColumnName))
+    const group = new Group(newColumnName)
     newColumnName = ""
     columnNameElem.value=""
     activeBoard.requestChanges([
       {
-        type: "set-groups",
-        groups: newGroups
+        type: "add-group",
+        group
       }
     ])          
   }
@@ -423,6 +423,7 @@
     const attachment: HrlWithContext = { hrl: [store.dnaHash, activeBoard.hash], context: "" }
     store.weClient?.hrlToClipboard(attachment)
   }
+  let feedHidden = true
 
 </script>
 <div class="board" >
@@ -461,6 +462,7 @@
             </sl-menu-item>
           </sl-menu>
         </sl-dropdown>
+
         {#if store.weClient}
           <AttachmentsDialog activeBoard={activeBoard} bind:this={attachmentsDialog}></AttachmentsDialog>
           {#if $state.boundTo.length>0}
@@ -471,10 +473,10 @@
           {/if}
           <div style="margin-left:10px; margin-top:2px;display:flex">
             <button title="Add Board to Pocket" class="attachment-button" style="margin-right:10px" on:click={()=>copyHrlToClipboard()} >          
-              <SvgIcon icon="faGetPocket" size="16px"/>
+              <SvgIcon icon="addToPocket" size="20px"/>
             </button>
             <button title="Manage Board Attachments" class="attachment-button" style="margin-right:10px" on:click={()=>attachmentsDialog.open(undefined)} >          
-              <SvgIcon icon="link" size="16px"/>
+              <SvgIcon icon="link" size="20px"/>
             </button>
             {#if $state.props.attachments}
               <AttachmentsList attachments={$state.props.attachments}
@@ -489,6 +491,37 @@
       <LabelSelector setOption={setFilterOption} option={filterOption} />
     </div>
     <div class="right-items">
+      <svg
+        on:click={()=>feedHidden = !feedHidden}
+        style="margin-right:10px"
+        xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 12h4l3 8l4 -16l3 8h4" /></svg>
+      <div class="feed"
+           class:hidden={feedHidden}
+      >
+      <div class="feed-header">
+        <span><strong>Activity</strong> (latest 50)</span>
+        <div class="details-button" title="Close" on:click={(e)=>{feedHidden = !feedHidden}}>
+          <SvgIcon icon=faClose size="18px"/>
+        </div>
+
+      </div>
+      <div class="feed-items">
+        {#each feedItems($state.feed) as item}
+          <div class="feed-item">
+            <Avatar agentPubKey={decodeHashFromBase64(item.author)} showNickname={false} size={20} />
+            <span>{deltaToFeedString($state,item.content)}
+              {#if item.content.delta.type == 'set-card-agents'} to:
+                {#each item.content.delta.agents as agent}
+                  <Avatar agentPubKey={decodeHashFromBase64(agent)} showNickname={false} size={20} />
+                {/each}
+              {/if}
+            </span>
+            {store.timeAgo.format(item.timestamp)}
+          </div>
+        {/each}
+        </div>
+      </div>
+
       {#if $participants}
         <div class="participants">
           <div style="display:flex; flex-direction: row">
@@ -1212,7 +1245,41 @@
     transform: scale(1.25);
   }
   .hidden {
-    display: none;
+    display: none !important;
+  }
+  .feed {
+    border: solid 2px black;
+    border-radius: 5px;
+    position: absolute;
+    top: 30px;
+    right: 10px;
+    z-index: 10;
+    background-color: rgba(255, 255, 255, 0.9);
+    display:flex;
+    flex-direction: column;
+  }
+  .feed-header {
+    margin: 5px;
+    display:flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .feed-items {
+    padding: 10px;
+    display:flex;
+    flex-direction: column;
+    max-height: 88vh;
+    overflow: auto;
+    border-top: solid 1px gray;
+    padding-top: 5px;
+  }
+  .feed-item {
+    padding: 4px;
+    border-radius: 5px;
+    margin-bottom: 5px;
+    border: solid 1px blue;
+    background-color: rgba( 0, 0, 255, 0.1);
   }
 
 </style>
