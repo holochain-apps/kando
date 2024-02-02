@@ -53,14 +53,14 @@ export class BoardList {
                             const tipB64 = encodeHashToBase64(tipRecord.entryHash)
                             const key = `${SeenType.Tip}:${board.hashB64}`
                             const seenTipB64 = localStorage.getItem(key)
-                            const activeBoard = get (this.activeBoard)
 
-                            if ((tipB64 != seenTipB64) && (!activeBoard || (encodeHashToBase64(activeBoard.hash) != board.hashB64))) {
+                            if (tipB64 != seenTipB64) {
                                 const boardState = stateFromCommit(tipRecord.entry) as BoardState
                                 const feed = feedItems(boardState.feed)
+                                const me = encodeHashToBase64(this.synStore.client.client.myPubKey)
                                 feed.forEach(feedItem=> {
                                     const key = `${feedItem.author}.${feedItem.timestamp.getTime()}`
-                                    if (! this.notifiedItems[key]) {
+                                    if (! this.notifiedItems[key]  && feedItem.author != me) {
                                         this.weClient.notifyWe([{
                                             title: `${boardState.name} updated`,
                                             body: deltaToFeedString(boardState, feedItem.content),
