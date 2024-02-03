@@ -50,6 +50,8 @@
                 state.cards.forEach((c)=>{
                     if (c.props.title.toLocaleLowerCase().includes(searchText)
                     || c.props.description.toLocaleLowerCase().includes(searchText)
+                    || Object.values(c.comments).find(c=>c.text.includes(searchText))
+
                     ) {
                         fc.push({
                             hash,

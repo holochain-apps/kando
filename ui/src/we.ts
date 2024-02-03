@@ -107,14 +107,28 @@ export const appletServices: AppletServices = {
 
         const allBoards = Array.from((await toPromise(allBoardsAsync)).entries())
         const dnaHash = await getMyDna(ROLE_NAME, appletClient)
+        const searchText = searchFilter.toLowerCase()
 
-        return allBoards
+        let hrls: Array<HrlWithContext> = allBoards
             .filter((r) => !!r)
             .filter((r) => {
                 const state = r[1]
-                return state.name.toLowerCase().includes(searchFilter.toLowerCase())
+                return state.name.toLowerCase().includes(searchText)
             })
             .map((r) => ({ hrl: [dnaHash, r![0]], context: undefined }));
+        for (const r of allBoards.filter((r) => !!r)) {
+          const state: BoardState = r[1]
+          for (const card of state.cards) {
+            console.log("LOOKING", card)
+            if (card.props.title.toLowerCase().includes(searchText) || 
+                card.props.description.toLowerCase().includes(searchText) ||
+                Object.values(card.comments).find(c=>c.text.includes(searchText))
+                ) {
+                hrls.push({ hrl: [dnaHash, r![0]], context: card.id })
+              }
+          }
+        }
+        return hrls
     },
 };
   
