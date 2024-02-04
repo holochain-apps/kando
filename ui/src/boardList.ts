@@ -60,10 +60,15 @@ export class BoardList {
                                 const me = encodeHashToBase64(this.synStore.client.client.myPubKey)
                                 feed.forEach(feedItem=> {
                                     const key = `${feedItem.author}.${feedItem.timestamp.getTime()}`
-                                    if (! this.notifiedItems[key]  && feedItem.author != me) {
+                                    if (! this.notifiedItems[key] ) {
+                                        let body = `${me} ${deltaToFeedString(boardState, feedItem.content)}`
+                                        if (feedItem.content.delta.type == 'set-card-agents') {
+                                            body=`${body} to:`
+                                            feedItem.content.delta.agents.forEach(agent=>body=`${body} ${agent}`)
+                                        }
                                         this.weClient.notifyWe([{
                                             title: `${boardState.name} updated`,
-                                            body: deltaToFeedString(boardState, feedItem.content),
+                                            body,
                                             notification_type: "change",
                                             icon_src: undefined,
                                             urgency: "low",
