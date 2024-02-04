@@ -61,7 +61,7 @@ export class BoardList {
                                 feed.forEach(feedItem=> {
                                     const key = `${feedItem.author}.${feedItem.timestamp.getTime()}`
                                     if (! this.notifiedItems[key] ) {
-                                        let body = `${me} ${deltaToFeedString(boardState, feedItem.content)}`
+                                        let body = `${feedItem.author} ${deltaToFeedString(boardState, feedItem.content)}`
                                         if (feedItem.content.delta.type == 'set-card-agents') {
                                             body=`${body} to:`
                                             feedItem.content.delta.agents.forEach(agent=>body=`${body} ${agent}`)
