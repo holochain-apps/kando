@@ -24,7 +24,6 @@ const download = (filename: string, text: string) => {
 export const exportBoard = (state: BoardState) => {
     const fileName = sanitize(`${PREFIX}_export_${state.name}.json`)
     _exportBoards(fileName, [state])
-    alert(`Your board was exported to your Downloads folder as: '${fileName}'`)
 }
 
 export const exportBoards = (boards: Array<BoardState>) => {
@@ -34,7 +33,6 @@ export const exportBoards = (boards: Array<BoardState>) => {
 
     const fileName = sanitize(`${PREFIX}_export_${formattedDate}.json`)
     _exportBoards(fileName, boards)
-    alert(`Your board was exported to your Downloads folder as: '${fileName}'`)
 }
 
 const _exportBoards = (fileName:string, boards: Array<BoardState>) => {
