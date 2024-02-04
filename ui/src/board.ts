@@ -128,8 +128,12 @@ export interface BoardState {
   
   export type BoardDelta =
     | {
+        type: "create";
+        name: string;
+      }
+    | {
         type: "set-state";
-        state: BoardState;
+        state: Partial<BoardState>;
       }
     | {
         type: "set-status";
@@ -308,10 +312,13 @@ export interface BoardState {
     })
   }
 
+  export const newFeedKey = (author) :string => {
+    return `${author}.${Date.now()}`
+  }
   const addToFeed = (state: BoardState, author: AgentPubKeyB64, delta: BoardDelta, context: any): BoardState => {
     if (!state.feed) state.feed = {}
     
-    state.feed[`${author}.${Date.now()}`] = {delta, context}
+    state.feed[newFeedKey(author)] = {delta, context}
     const keys = Object.keys(state)
     if (keys.length > MAX_FEED_ITEMS) {
       const keysToRemove = keys.map(key=>{
@@ -330,6 +337,9 @@ export interface BoardState {
     const context = content.context
     let feedText = ""
     switch (delta.type) {
+      case "create": 
+        feedText = `created board ${delta.name}`
+        break;
       case "set-status": 
         feedText = `set the board status to ${delta.status}`
         break;
@@ -499,8 +509,12 @@ export interface BoardState {
         case "set-state":
           if (delta.state.status !== undefined) state.status = delta.state.status
           if (delta.state.name !== undefined) state.name = delta.state.name
-          if (delta.state.groups !== undefined) state.groups = delta.state.groups
-          _setGroups(delta.state.groups, state)
+          if (delta.state.groups !== undefined) {
+            state.groups = delta.state.groups
+            _setGroups(delta.state.groups, state)
+          } else if (!state.groups) {
+            state.groups = []
+          }
           if (delta.state.cards !== undefined) state.cards = delta.state.cards
           if (delta.state.labelDefs !== undefined) state.labelDefs = delta.state.labelDefs
           if (delta.state.categoryDefs !== undefined) state.categoryDefs = delta.state.categoryDefs
@@ -550,7 +564,6 @@ export interface BoardState {
           if (g) {
             const [group,i] = g
             if (group) {
-              console.log("GG", group)
               feedContext = {group: cloneDeep(group)}
             }
           }
@@ -689,19 +702,6 @@ export class Board {
        );
 
     const me = new Board(documentStore, workspaceStore, synStore.client.client.myPubKey);
-    await me.join()
-
-    if (initState !== undefined) {
-      let changes : BoardDelta[] = [{
-          type: "set-state",
-          state: initState
-          },
-      ]
-      if (changes.length > 0) {
-          me.requestChanges(changes)
-          await me.session.commitChanges()
-      }
-    }
 
     return me
   }
@@ -744,7 +744,11 @@ export class Board {
       console.log("REQUESTING BOARD CHANGES: ", deltas)
       this.session.change((state,_eph)=>{
         for (const delta of deltas) {
-          boardGrammar.applyDelta(delta, state,_eph, this.myAgentKeyB64)
+          try {
+            boardGrammar.applyDelta(delta, state,_eph, this.myAgentKeyB64)
+          } catch (e) {
+            console.log("Error applying delta:",e, delta)
+          }
         }
       })
   }

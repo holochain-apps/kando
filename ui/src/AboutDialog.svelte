@@ -29,10 +29,16 @@
             if ( importedBoardStates.length > 0) {
                 const boards:Array<Board> = []
                 for (const b of importedBoardStates) {
-                    boards.push(await store.boardList.makeBoard(b))
+                    console.log("importing", b.name)
+                    try {
+                        boards.push(await store.boardList.makeBoard(b))
+                    } catch(e) {
+                        console.log("error importing", b.name, e)
+                    }
                 }
                 if (importedBoardStates.length == 1) {
                     store.setUIprops({showMenu:false})
+                    boards[0].join()
                     store.setActiveBoard(boards[0].hash)
                 }
             }
@@ -72,7 +78,7 @@
 </script>
 
 
-<sl-dialog label="KanDo!: UI v0.8.23 for DNA v0.7.0" bind:this={dialog} width={600} >
+<sl-dialog label="KanDo!: UI v0.8.24 for DNA v0.7.0" bind:this={dialog} width={600} >
     <div class="about">
         <p>KanDo! is a demonstration Holochain app built by the Holochain Foundation.</p>
         <p> <b>Developers:</b>
@@ -100,7 +106,7 @@
 
 
     {#if $allBoards.status == "pending"}
-        <div class="spinning" ><SvgIcon icon=faSpinner  color="#fff"></SvgIcon></div>
+        <div class="spinning" style="display:inline-block"> <SvgIcon icon=faSpinner  color="black"></SvgIcon></div>
     {:else if $allBoards.status == "complete"}
         <sl-dropdown skidding=15>
             <sl-button slot="trigger" caret><SvgIcon icon=faClone size=20px style="margin-right: 10px"/><span>New Board From </span></sl-button>

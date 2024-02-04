@@ -44,41 +44,43 @@ export class BoardList {
         const board = pipe(docStore.allWorkspaces,
             workspaces => {
                 const board = new Board(docStore,  new WorkspaceStore(docStore, Array.from(workspaces.keys())[0]), this.synStore.client.client.myPubKey)
-                // TODO: fix once we know if our applet is in front or not.
                 if (this.weClient) {
                     board.workspace.tip.subscribe((tip)=>{
-                        if (tip.status=="complete") {
+                        try {
+                            if (tip.status=="complete" && tip.value) {
+                                const tipRecord = tip.value
+                                const tipB64 = encodeHashToBase64(tipRecord.entryHash)
+                                const key = `${SeenType.Tip}:${board.hashB64}`
+                                const seenTipB64 = localStorage.getItem(key)
 
-                            const tipRecord = tip.value
-                            const tipB64 = encodeHashToBase64(tipRecord.entryHash)
-                            const key = `${SeenType.Tip}:${board.hashB64}`
-                            const seenTipB64 = localStorage.getItem(key)
-
-                            if (tipB64 != seenTipB64) {
-                                const boardState = stateFromCommit(tipRecord.entry) as BoardState
-                                const feed = feedItems(boardState.feed)
-                                const me = encodeHashToBase64(this.synStore.client.client.myPubKey)
-                                feed.forEach(feedItem=> {
-                                    const key = `${feedItem.author}.${feedItem.timestamp.getTime()}`
-                                    if (! this.notifiedItems[key] ) {
-                                        let body = `${feedItem.author} ${deltaToFeedString(boardState, feedItem.content)}`
-                                        if (feedItem.content.delta.type == 'set-card-agents') {
-                                            body=`${body} to:`
-                                            feedItem.content.delta.agents.forEach(agent=>body=`${body} ${agent}`)
+                                if (tipB64 != seenTipB64) {
+                                    const boardState = stateFromCommit(tipRecord.entry) as BoardState
+                                    const feed = feedItems(boardState.feed)
+                                    const me = encodeHashToBase64(this.synStore.client.client.myPubKey)
+                                    feed.forEach(feedItem=> {
+                                        const key = `${feedItem.author}.${feedItem.timestamp.getTime()}`
+                                        if (! this.notifiedItems[key] ) {
+                                            let body = `${feedItem.author} ${deltaToFeedString(boardState, feedItem.content)}`
+                                            if (feedItem.content.delta.type == 'set-card-agents') {
+                                                body=`${body} to:`
+                                                feedItem.content.delta.agents.forEach(agent=>body=`${body} ${agent}`)
+                                            }
+                                            this.weClient.notifyWe([{
+                                                title: `${boardState.name} updated`,
+                                                body,
+                                                notification_type: "change",
+                                                icon_src: undefined,
+                                                urgency: "low",
+                                                timestamp: Date.now()
+                                            }
+                                            ])
+                                            this.notifiedItems[key] = true
                                         }
-                                        this.weClient.notifyWe([{
-                                            title: `${boardState.name} updated`,
-                                            body,
-                                            notification_type: "change",
-                                            icon_src: undefined,
-                                            urgency: "low",
-                                            timestamp: Date.now()
-                                        }
-                                        ])
-                                        this.notifiedItems[key] = true
-                                    }
-                                })
+                                    })
+                                }
                             }
+                        } catch(e) {
+                            console.log("Error notifying We", e)
                         }
                     })
                 }
@@ -91,8 +93,9 @@ export class BoardList {
         const tip = pipe(board,
             board => board.workspace.tip
             )
-        console.log("boardData2:main")
-        return alwaysSubscribed(pipe(joinAsync([board, latestState, tip]), ([board, latestState, tip]) => {return {board,latestState, tip: tip ? tip.entryHash: undefined}}))
+
+        return alwaysSubscribed(pipe(joinAsync([board, latestState, tip]), ([board, latestState, tip]) => {
+            return {board,latestState, tip: tip ? tip.entryHash: undefined}}))
     })
 
 
@@ -160,7 +163,9 @@ export class BoardList {
             ([boards,archived]) => [...boards, ...archived]
             )
         this.allBoards = pipe(asyncJoined,
-            docHashes => sliceAndJoin(this.boardData2, docHashes, {errors: "filter_out"})
+            docHashes => {
+                return sliceAndJoin(this.boardData2, docHashes, {errors: "filter_out"})
+            }
         )
         this.boardCount =  asyncDerived(joined,
             ([boards,archived]) => boards.length + archived.length
@@ -237,7 +242,7 @@ export class BoardList {
         return this.makeBoard(newBoard)
     }
 
-    async makeBoard(options: BoardState, fromHash?: EntryHashB64) : Promise<Board> {
+    async makeBoard(options: Partial<BoardState>, fromHash?: EntryHashB64) : Promise<Board> {
         if (!options.name) {
             options.name = "untitled"
         }
