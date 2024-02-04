@@ -32,7 +32,6 @@
     {return {label: `${emoji} ${toolTip}`, value: type}} )
   $: selectedLabels = calcSelectedLabels(props.labels)
   $: selectedAvatars = cloneDeep(props.agents)
-  $: selectedAvatarsForSelect = selectedAvatars.join(" ")
   $: allProfiles = store.profilesStore.allProfiles
 
   const DEFAULT_PROPS = {title:"", description:"", category: "", agents:[], labels:[], attachments:[]}
@@ -491,7 +490,7 @@
     <div class="multi-select card-section">
       <div class="detail-label">Assigned to</div>
       <sl-select
-        value={selectedAvatarsForSelect}
+        value={selectedAvatars}
         on:sl-change={(e)=>{
           selectedAvatars = e.target.value
           setAgents()
