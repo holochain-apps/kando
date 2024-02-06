@@ -10,7 +10,7 @@
   import type { KanDoStore } from './store';
   import Avatar from './Avatar.svelte';
   import { decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
-  import type { Checklist, ChecklistItem, Comment } from "./board";
+  import type { BoardDelta, Card, Checklist, ChecklistItem, Comment } from "./board";
 
   import { Marked } from "@ts-stack/markdown";
   import SvgIcon from "./SvgIcon.svelte";
@@ -179,27 +179,41 @@
 
   const addChecklistItem = (id: uuidv1, list:Checklist, text: string) => {
     const item = {checked:false, text}
-    let items = cloneDeep(list.items)
-    if (!items) {
-      items = [item]
-    } else {
-      items.push(item)
-    }
-    updateChecklist(id, list.id, list.title, list.order, items)
+    const changes:BoardDelta[] = [{ type: "add-checklist-item", id, checklistId:list.id, item }]
+    requestChanges(changes)
   }
-
 
   const setChecklistItemStatus = (id: uuidv1, list:Checklist, idx: number, checked: boolean) => {
-    let items = cloneDeep(list.items)
-    items[idx].checked = checked
-    updateChecklist(id, list.id, list.title, list.order, items)
+    const changes:BoardDelta[] = [{ type: "set-checklist-item-state", id, checklistId:list.id, itemId:idx, state:checked }]
+    requestChanges(changes)
+
   }
 
-
   const deleteChecklistItem = (id: uuidv1, list:Checklist, idx: number) => {
-    let items = cloneDeep(list.items)
-    items.splice(idx, 1)
-    updateChecklist(id, list.id, list.title, list.order, items)
+    const changes:BoardDelta[] = [{ type: "delete-checklist-item", id, checklistId:list.id, itemId:idx }]
+    requestChanges(changes)
+  }
+
+  const convertChecklistItem = (id: uuidv1, list:Checklist, idx: number) => {
+
+    const groupId = store.getCardGroupId(cardId, $state)
+    const c:Card = {
+        id: uuidv1(),
+        comments: {},
+        checklists: {},
+        creator: store.myAgentPubKeyB64,
+        props: {
+          title: list.items[idx].text,
+          description: `(converted to card from checklist ${list.title} in ${card.props.title})`,
+          category: "",
+          agents: [],
+          labels: [],
+          attachments: []
+        },
+      };
+
+    const changes:BoardDelta[] = [{ type: "convert-checklist-item", id, checklistId:list.id, itemId:idx, groupId, card: c }]
+    requestChanges(changes)
   }
 
   const editDescription = () => {
@@ -360,11 +374,17 @@
                 }} 
                 checked={item.checked}
                 >{item.text}</sl-checkbox>
-                <span class="delete-item"  on:click={(e)=>{
-                  e.stopPropagation();
-                  deleteChecklistItem(cardId,list,itemIdx)
-                 }}><SvgIcon icon=faTrash size=12px style="opacity: .3;  margin-left: 3px; position: relative; top: -.15rem"/></span >
-                
+                <div style="disply:flex;align-items:center;">
+                  <span class="convert-item" title="Convert item to card"  on:click={(e)=>{
+                    e.stopPropagation();
+                    convertChecklistItem(cardId,list,itemIdx)
+                  }}><SvgIcon icon=convertCard size=18x style="opacity: .3;  margin-left: 3px; position: relative; top: -.15rem"/></span >
+                  <span class="delete-item" title="Delete item" on:click={(e)=>{
+                    e.stopPropagation();
+                    deleteChecklistItem(cardId,list,itemIdx)
+                  }}><SvgIcon icon=faTrash size=12px style="opacity: .3;  margin-left: 3px; position: relative; top: -.15rem"/></span >
+                  
+                </div>
             </div>
             {/each}
             {#if addingChecklistItem != idx}
@@ -972,7 +992,7 @@
     font-size: 16px;
   }
 
-  .delete-item {
+  .delete-item, .convert-item {
     opacity: 0;
     position: relative;
     top: 2px;
@@ -982,8 +1002,10 @@
   .checklist-item:hover .delete-item {
     opacity: 1;
   }
-
-  .delete-item:hover {
+  .checklist-item:hover .convert-item {
+    opacity: 1;
+  }
+  .delete-item:hover, .convert-item:hover {
     cursor: pointer;
   }
 

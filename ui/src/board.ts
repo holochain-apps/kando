@@ -219,6 +219,33 @@ export interface BoardState {
         order: number;
       }
     | {
+        type: "add-checklist-item";
+        id: uuidv1;
+        checklistId: uuidv1;
+        item: ChecklistItem;
+      }
+    | {
+        type: "delete-checklist-item";
+        id: uuidv1;
+        checklistId: uuidv1;
+        itemId: number;
+      }
+    | {
+        type: "set-checklist-item-state";
+        id: uuidv1;
+        checklistId: uuidv1;
+        itemId: number;
+        state: boolean;
+      }
+    | {
+        type: "convert-checklist-item";
+        id: uuidv1;
+        checklistId: uuidv1;
+        itemId: number;
+        card: Card;
+        groupId: uuidv1;
+      }
+    | {
         type: "delete-card-checklist";
         id: uuidv1;
         checklistId: uuidv1;
@@ -464,6 +491,59 @@ export interface BoardState {
         if (!feedText) feedText = `updated a checklist "${delta.title}" on card "${context.card}"`
         }
         break;
+      case "add-checklist-item":{
+        const c = _getCard(state, delta.id)
+        if (c) {
+          const [card,i] = c
+          if (card) {
+            const list = card.checklists[delta.checklistId]
+            feedText =  `added item "${delta.item.text}" to "${card.props.title}${list?`:${list.title}`:""}"`
+        }}
+        if (!feedText) feedText = `added checklist item ${delta.item.text} to card "${context.card}"`
+        }
+        break;
+      case "delete-checklist-item":{
+        const c = _getCard(state, delta.id)
+        if (c) {
+          const [card,i] = c
+          if (card) {      
+            const list = card.checklists[delta.checklistId]
+            if (list) {
+              feedText =  `deleted item "${context.item}" from "${card.props.title}:${list.title}"`
+            }
+        }}
+        if (!feedText) feedText = `deleted a checklist item from card "${context.card}"`
+        }
+        break;
+      case "set-checklist-item-state":{
+        const itemStateStr = delta.state ? "Checked" : "Unchecked"
+        const c = _getCard(state, delta.id)
+        if (c) {
+          const [card,i] = c
+          if (card) {      
+            const list = card.checklists[delta.checklistId]
+            if (list) {
+              const item = list.items[delta.itemId]
+              feedText =  `set item ${item ? ` "${item.text}"`:""} on "${card.props.title}: ${list.title}" to ${itemStateStr}`
+            }
+        }}
+        if (!feedText) feedText = `set item a checklist item from card "${context.card}" to ${itemStateStr}`
+        }
+        break;
+      case "convert-checklist-item":{
+        const c = _getCard(state, delta.id)
+        if (c) {
+          const [card,i] = c
+          if (card) {      
+            const list = card.checklists[delta.checklistId]
+            if (list) {
+              const item = list.items[delta.itemId]
+              feedText =  `converted item "${context.item}" from "${card.props.title}: ${list.title}" to a card`
+            }
+        }}
+        if (!feedText) feedText = `converted a checklist item from card "${context.card}" to a card`
+        }
+        break;      
       case "delete-card-checklist":
         feedText =  `deleted checklist ${context.checklist} on card "${context.card}"`
         break;
@@ -474,6 +554,17 @@ export interface BoardState {
     return feedText
   }
 
+  const _addCard = (state: BoardState, card:Card, gropuId: uuidv1) => {
+    _initGrouping(state)
+    state.cards.push(card)
+    if (state.grouping[gropuId] !== undefined) {
+      state.grouping[gropuId].push(card.id)
+    }
+    else {
+      state.grouping[gropuId] = [gropuId.id]
+    }
+  }
+  
   export const boardGrammar = {
     initialState(init: Partial<BoardState>|undefined = undefined)  {
       const state: BoardState = {
@@ -552,14 +643,7 @@ export interface BoardState {
           state.categoryDefs = delta.categoryDefs
           break;
         case "add-card":
-          _initGrouping(state)
-          state.cards.push(delta.value)
-          if (state.grouping[delta.group] !== undefined) {
-            state.grouping[delta.group].push(delta.value.id)
-          }
-          else {
-            state.grouping[delta.group] = [delta.value.id]
-          }
+          _addCard(state, delta.value, delta.group)
           const g  =_getGroup(state, delta.group)
           if (g) {
             const [group,i] = g
@@ -648,6 +732,55 @@ export interface BoardState {
               }
           }};
           break;
+        case "add-checklist-item":{
+          const [card,i] = _getCard(state, delta.id)
+          if (card) {
+            const checklist = state.cards[i].checklists[delta.checklistId]
+            if (checklist) {
+              checklist.items.push(delta.item)
+              feedContext = {card: card.props.title}
+            }
+          }
+          break;
+        }
+        case "delete-checklist-item":{
+          const [card,i] = _getCard(state, delta.id)
+          if (card) {
+            const checklist = state.cards[i].checklists[delta.checklistId]
+            if (checklist) {
+              const removed = checklist.items.splice(delta.itemId,1)
+              feedContext = {card: card.props.title, item:removed[0]? removed[0].text:""}
+            }
+          }
+          break;
+        }
+        case "set-checklist-item-state":{
+          const [card,i] = _getCard(state, delta.id)
+          if (card) {
+            const checklist = state.cards[i].checklists[delta.checklistId]
+            if (checklist) {
+              if (checklist.items[delta.itemId] && checklist.items[delta.itemId].checked != delta.state) {
+                state.cards[i].checklists[delta.checklistId].items[delta.itemId].checked = delta.state
+                feedContext = {card: card.props.title}
+              }
+            }
+          }
+          break;
+        }
+        case "convert-checklist-item":{
+          const [card,i] = _getCard(state, delta.id)
+          if (card) {
+            const checklist = state.cards[i].checklists[delta.checklistId]
+            if (checklist) {
+              const removed = checklist.items.splice(delta.itemId,1)
+              if (removed[0]) {
+                _addCard(state, delta.card, delta.groupId)
+                feedContext = {card: card.props.title, item:removed[0]? removed[0].text:""}
+              }
+            }
+          }
+          break;
+        }
         case "delete-card-checklist":{
           const [card,i] = _getCard(state, delta.id)
           if (card) {

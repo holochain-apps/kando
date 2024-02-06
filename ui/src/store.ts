@@ -185,16 +185,24 @@ export class KanDoStore {
         return this.client.myPubKey;
     }
 
-    getCardGroupName(cardId: uuidv1, state: BoardState) : string  {
+    getCardGroupId(cardId: uuidv1, state: BoardState) : uuidv1  {
         const keyValPairs = Object.entries(state.grouping)
         for (const [gId, cardIds] of keyValPairs) {
             if (cardIds.includes(cardId)) {
-                if (gId=="_") return "Archived"
-                const g = (state.groups.find((g)=>g.id == gId))
-                if (g) {
-                    return g.name
-                }
+                return gId
             }
+        }
+        return undefined
+    }
+
+    getCardGroupName(cardId: uuidv1, state: BoardState) : string  {
+        const gId = this.getCardGroupId(cardId, state)
+        if (gId === "_") {
+            return "Archived"
+        }
+        const g = (state.groups.find((g)=>g.id == gId))
+        if (g) {
+            return g.name
         }
         return "Unknown"
     }
