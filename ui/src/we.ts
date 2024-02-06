@@ -119,7 +119,6 @@ export const appletServices: AppletServices = {
         for (const r of allBoards.filter((r) => !!r)) {
           const state: BoardState = r[1]
           for (const card of state.cards) {
-            console.log("LOOKING", card)
             if (card.props.title.toLowerCase().includes(searchText) || 
                 card.props.description.toLowerCase().includes(searchText) ||
                 Object.values(card.comments).find(c=>c.text.includes(searchText))

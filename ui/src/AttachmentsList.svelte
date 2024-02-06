@@ -27,10 +27,13 @@
         <div style="cursor:pointer; padding: 0 5px 0 5px; border: dashed 1px;margin-right:5px" title={`${hrlToString(hrlWithContext.hrl)}?${JSON.stringify(hrlWithContext.context)}`}> ?...</div>
       {:then { attachableInfo }}
         <sl-button  size="small"
-          on:click={(e)=>{
+          on:click={async (e)=>{
               e.stopPropagation()
-              const hrlWithContext = hrlB64WithContextToRaw(attachment)
-              store.weClient.openHrl(hrlWithContext)
+              try {
+                await store.weClient.openHrl(hrlWithContext)
+              } catch(e) {
+                alert(`Error opening link: ${e}`)
+              }
             }}
           style="display:flex;flex-direction:row;margin-right:5px"><sl-icon src={attachableInfo.icon_src} slot="prefix"></sl-icon>
           {attachableInfo.name}
