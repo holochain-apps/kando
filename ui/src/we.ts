@@ -58,20 +58,20 @@ export const appletServices: AppletServices = {
         const docStore = new DocumentStore<BoardState, BoardEphemeralState> (synStore, documentHash)
         const workspaces = await toPromise(docStore.allWorkspaces)
         const workspace = new WorkspaceStore(docStore, Array.from(workspaces.keys())[0])
-        const latestSnapshot = await toPromise(workspace.latestSnapshot)
+        const latestState = await toPromise(workspace.latestState)
 
         if (hrlWithContext.context) {
-          const card = latestSnapshot.cards.find(c=>c.id === hrlWithContext.context)
+          const card = latestState.cards.find(c=>c.id === hrlWithContext.context)
           if (card) {
             return {
               icon_src: CARD_ICON_SRC,
-              name: `${latestSnapshot.name}: ${card.props.title}`,
+              name: `${latestState.name}: ${card.props.title}`,
             };    
           }
         }
         return {
           icon_src: BOARD_ICON_SRC,
-          name: latestSnapshot.name,
+          name: latestState.name,
         };
       } else {
         throw new Error("unknown entry type:"+ entryType)
@@ -96,7 +96,7 @@ export const appletServices: AppletServices = {
                 }
             ) 
             const latestState = pipe(workspace, 
-                w => w.latestSnapshot
+                w => w.latestState
                 )
             return latestState
         })

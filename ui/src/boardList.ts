@@ -88,7 +88,7 @@ export class BoardList {
             }
         )
         const latestState = pipe(board, 
-            board => board.workspace.latestSnapshot
+            board => board.workspace.latestState
             )
         const tip = pipe(board,
             board => board.workspace.tip
