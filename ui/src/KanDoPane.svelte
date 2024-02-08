@@ -1281,5 +1281,8 @@
     border: solid 1px blue;
     background-color: rgba( 0, 0, 255, 0.1);
   }
+  .idle {
+    opacity: 0.5;
+  }
 
 </style>
