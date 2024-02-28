@@ -54,8 +54,8 @@
     "applets": [
       {
         "name": "KanDo Hot Reload",
-        "subtitle": "Real-time stickies boards",
-        "description": "Let's do it!",
+        "subtitle": "Real-time KanBan boards",
+        "description": "Manage it!",
         "icon": {
           "type": "filesystem",
           "path": "./we_dev/kando_icon.png"
