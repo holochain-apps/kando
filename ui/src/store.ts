@@ -74,6 +74,7 @@ export class KanDoStore {
         protected zomeName: string = ZOME_NAME
     ) {
         this.client = clientIn
+        console.log("WECLIENT", weClient)
         getMyDna(roleName, clientIn).then(res=>{
             this.dnaHash = res
           })

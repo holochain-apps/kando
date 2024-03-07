@@ -3,9 +3,10 @@
   import { createEventDispatcher, getContext } from "svelte";
   import type { KanDoStore } from "./store";
   import { hrlB64WithContextToRaw } from "./util";
-  import type { HrlB64WithContext } from "@lightningrodlabs/we-applet";
+  import { weaveUrlFromWal, type HrlB64WithContext, WeClient } from "@lightningrodlabs/we-applet";
   import SvgIcon from "./SvgIcon.svelte";
   import { hrlToString } from "@holochain-open-dev/utils";
+  import '@lightningrodlabs/we-elements/dist/elements/wal-embed.js';
 
   const dispatch = createEventDispatcher()
 
@@ -14,8 +15,20 @@
 
   const { getStore } :any = getContext("store");
   let store: KanDoStore = getStore();
-  
+  let embedLink
+  let xxx: WeClient
+
 </script>
+{#if embedLink}
+<div class="embed modal">
+  {xxx.appletInfo}
+  <wal-embed
+    style="margin-top: 20px;"
+    we-client={xxx}
+    src={embedLink}
+  ></wal-embed>
+</div>
+{/if}
 <div class="attachments-list">
   {#each attachments as attachment, index}
     {@const hrlWithContext = hrlB64WithContextToRaw(attachment)}
@@ -30,7 +43,9 @@
           on:click={async (e)=>{
               e.stopPropagation()
               try {
-                await store.weClient.openHrl(hrlWithContext)
+                embedLink = weaveUrlFromWal(hrlWithContext,false)
+                xxx = store.weClient
+                //await store.weClient.openHrl(hrlWithContext)
               } catch(e) {
                 alert(`Error opening link: ${e}`)
               }
@@ -69,5 +84,16 @@
     display:flex;
     margin-right:4px;
     border-radius:4px;
+  }
+  .embed {
+    width: 80%;
+    height: 80%;
+    background-color: white;
+    padding: 5px;
+    position: fixed;
+    top: 99px;
+    border: solid 1px;
+    display: flex;
+    flex-direction: column;
   }
 </style>

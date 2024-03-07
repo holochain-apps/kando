@@ -42,6 +42,7 @@
     $: bgImage = `background-image: url("`+ bgUrl+`");`
     let menuVisible = false
   </script>
+
   <div class="flex-scrollable-parent">
     <div class="flex-scrollable-container">
       <div class='app'>

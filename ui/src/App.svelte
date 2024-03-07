@@ -1,5 +1,6 @@
 <script lang="ts">
   import Controller from './Controller.svelte'
+  import ControllerCreate from './ControllerCreate.svelte'
   import ControllerBoard from './ControllerBoard.svelte'
   import ControllerCard from './ControllerCard.svelte'
   import ControllerBlockActiveBoards from './ControllerBlockActiveBoards.svelte'
@@ -26,9 +27,12 @@
 
   let connected = false
 
+  let createView
+
   enum RenderType {
     App,
     Hrl,
+    CreateBoard,
     BlockActiveBoards
   }
 
@@ -100,6 +104,13 @@
                   throw new Error("Unknown role name:"+weClient.renderInfo.view.roleName);
               }
               break;
+            case "creatable":
+              switch (weClient.renderInfo.view.name) {
+                case "board":
+                  renderType = RenderType.CreateBoard
+                  createView = weClient.renderInfo.view
+              }              
+              break;
             default:
               throw new Error("Unsupported applet-view type");
           }
@@ -150,7 +161,9 @@
   {:else if $prof.status=="error"}
    Error when loading profile: {$prof.error}
   {:else}
-    {#if renderType== RenderType.App}
+    {#if renderType== RenderType.CreateBoard}
+      <ControllerCreate  view={createView} client={client} weClient={weClient} profilesStore={profilesStore} roleName={roleName}></ControllerCreate>
+    {:else if renderType== RenderType.App}
       <Controller  client={client} weClient={weClient} profilesStore={profilesStore} roleName={roleName}></Controller>
     {:else if  renderType== RenderType.Hrl && !hrlWithContext.context}
       <ControllerBoard  board={hrlWithContext.hrl[1]} client={client} weClient={weClient} profilesStore={profilesStore} roleName={roleName}></ControllerBoard>

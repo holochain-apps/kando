@@ -424,7 +424,7 @@
     store.weClient?.hrlToClipboard(attachment)
   }
   let feedHidden = true
-
+  
 </script>
 <div class="board" >
 
