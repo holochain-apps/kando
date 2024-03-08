@@ -16,18 +16,17 @@
   const { getStore } :any = getContext("store");
   let store: KanDoStore = getStore();
   let embedLink
-  let xxx: WeClient
 
 </script>
-{#if embedLink}
-<div class="embed modal">
-  {xxx.appletInfo}
+{#if embedLink>=0 && attachments.length>0}
   <wal-embed
+    class="embed"
     style="margin-top: 20px;"
-    we-client={xxx}
-    src={embedLink}
-  ></wal-embed>
-</div>
+    src={weaveUrlFromWal(hrlB64WithContextToRaw(attachments[embedLink]),false)}
+    closable
+    on:open-in-sidebar={() => embedLink = -1}
+    on:close={() => embedLink = -1}
+      ></wal-embed>
 {/if}
 <div class="attachments-list">
   {#each attachments as attachment, index}
@@ -43,9 +42,8 @@
           on:click={async (e)=>{
               e.stopPropagation()
               try {
-                embedLink = weaveUrlFromWal(hrlWithContext,false)
-                xxx = store.weClient
-                //await store.weClient.openHrl(hrlWithContext)
+//                embedLink = index
+                await store.weClient.openHrl(hrlWithContext)
               } catch(e) {
                 alert(`Error opening link: ${e}`)
               }
@@ -86,14 +84,8 @@
     border-radius:4px;
   }
   .embed {
-    width: 80%;
-    height: 80%;
-    background-color: white;
-    padding: 5px;
     position: fixed;
-    top: 99px;
-    border: solid 1px;
-    display: flex;
-    flex-direction: column;
+    top: 84px;
+    z-index: 100;
   }
 </style>
