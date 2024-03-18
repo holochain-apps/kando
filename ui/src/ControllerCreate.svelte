@@ -44,8 +44,12 @@
           on:sl-input={(e)=>disabled = !e.target.value}
           label="Board Name"></sl-input>
           <div style="margin-top:10px;display:flex;justify-content:flex-end">
+            <sl-button on:click={()=>{
+              view.cancel()
+            }}>Cancel</sl-button>
             <sl-button 
-              style="margin-right:10px;"
+              style="margin-left:10px;"
+              variant="primary"
               disabled={disabled}
               on:click={async ()=>{
               try {
@@ -59,9 +63,6 @@
                 view.reject(e)
               }
             }}>Create</sl-button>
-            <sl-button on:click={()=>{
-              view.cancel()
-            }}>Cancel</sl-button>
           </div>
         </div>
         </div>
