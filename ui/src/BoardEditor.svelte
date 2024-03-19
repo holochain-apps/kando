@@ -24,7 +24,7 @@
 
     let boardHash:EntryHash|undefined = undefined
     let text = ''
-    let props:BoardProps = {bgUrl: ""}
+    let props:BoardProps = {bgUrl: "", attachments: []}
     let groups: Array<Group> = []
     let labelDefs: Array<LabelDef> = []
     let categoryDefs: Array<CategoryDef> = []
@@ -32,7 +32,7 @@
 
     export const reset = () => {
       text = ''
-      props = {bgUrl: ""}
+      props = {bgUrl: "", attachments: []}
       groups = [] // new Group("Backlog"), new Group("Prioritized"), new Group("Doing"), new Group("Done")
       labelDefs = []
       categoryDefs = []

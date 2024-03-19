@@ -1,17 +1,19 @@
 <script lang="ts">
-    import KanDoPane from './KanDoPane.svelte'
     import { KanDoStore } from './store'
     import { setContext } from 'svelte';
-    import type { AppAgentClient, EntryHash } from '@holochain/client';
-    import type { SynStore } from '@holochain-syn/store';
+    import type { AppAgentClient } from '@holochain/client';
+    import { SynStore } from '@holochain-syn/store';
     import type { ProfilesStore } from "@holochain-open-dev/profiles";
     import type { WeClient } from '@lightningrodlabs/we-applet';
+    import { SynClient } from '@holochain-syn/core';
+    import { getMyDna } from './util';
+    import { Board } from './board';
 
     export let roleName = ""
     export let client : AppAgentClient
     export let weClient : WeClient
     export let profilesStore : ProfilesStore
-    export let board : EntryHash
+    export let view
 
     let store: KanDoStore = new KanDoStore (
       weClient,
@@ -20,9 +22,6 @@
       roleName,
     );
     let synStore: SynStore = store.synStore
-    store.boardList.setActiveBoard(board)
-    $: activeBoardHash = store.boardList.activeBoardHash
-    $: activeBoard = store.boardList.activeBoard
 
     setContext('synStore', {
       getStore: () => synStore,
@@ -31,26 +30,40 @@
     setContext('store', {
       getStore: () => store,
     });
-    const DEFAULT_KD_BG_IMG = "none"
-    //const DEFAULT_KD_BG_IMG = "https://img.freepik.com/free-photo/studio-background-concept-abstract-empty-light-gradient-purple-studio-room-background-product-plain-studio-background_1258-54461.jpg"
-    const NO_BOARD_IMG = "none"
-
-    $: bgUrl = DEFAULT_KD_BG_IMG  // FIXME$activeBoard ?   ($activeBoard.state.props && $boardState.props.bgUrl) ? $boardState.props.bgUrl : DEFAULT_KD_BG_IMG
-  </script>
+  let inputElement
+  let disabled = true
+</script>
   <div class="flex-scrollable-parent">
     <div class="flex-scrollable-container">
       <div class='app'>
 
       <div class="wrapper">
 
-      <div class="workspace" style="display:flex">
-
-
-        {#if $activeBoardHash !== undefined}
-          <KanDoPane activeBoard={$activeBoard} standAlone={true}/>
-        {:else}
-          Unable to find board.
-        {/if}
+      <div class="workspace" style="display:flex; flex-direction:column;padding:20px;">
+        <sl-input bind:this={inputElement}
+          on:sl-input={(e)=>disabled = !e.target.value}
+          label="Board Name"></sl-input>
+          <div style="margin-top:10px;display:flex;justify-content:flex-end">
+            <sl-button on:click={()=>{
+              view.cancel()
+            }}>Cancel</sl-button>
+            <sl-button 
+              style="margin-left:10px;"
+              variant="primary"
+              disabled={disabled}
+              on:click={async ()=>{
+              try {
+                const synStore = new SynStore(new SynClient(client, roleName));
+                //const hrlB64 = hrlWithContextToB64(attachToHrlWithContext)
+                const board = await Board.Create(synStore, {/*boundTo:[hrlB64]*/name: inputElement.value})
+                const dnaHash = await getMyDna(roleName, client)
+                view.resolve({hrl:[dnaHash, board.hash]})
+              } catch(e) {
+                console.log("ERR",e)
+                view.reject(e)
+              }
+            }}>Create</sl-button>
+          </div>
         </div>
         </div>
     </div>

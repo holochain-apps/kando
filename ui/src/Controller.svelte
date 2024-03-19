@@ -42,6 +42,7 @@
     $: bgImage = `background-image: url("`+ bgUrl+`");`
     let menuVisible = false
   </script>
+
   <div class="flex-scrollable-parent">
     <div class="flex-scrollable-container">
       <div class='app'>
@@ -75,11 +76,6 @@
         {/if}
         </div>
         </div>
-      <div class="background">
-        <div class="background-overlay"></div>
-        <div class="background-image"
-              style={`background-image: url(${bgUrl});`}></div>
-      </div>
     </div>
   </div>
 </div>
@@ -129,35 +125,7 @@
         }
     }
 
-  .background {
-    position: absolute;
-    z-index: 0;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-  }
 
-  .background-overlay {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.87) 0%, rgba(148, 179, 205, 0.78) 100%);
-    position: absolute;
-    z-index: 2;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-    opacity: .8;
-  }
-
-  .background-image {
-    position: absolute;
-    z-index: 1;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-    background-size: cover;
-  }
 
   :global(:root) {
     --resizeable-height: 200px;
@@ -203,14 +171,6 @@
     left: 0;
     right: 0;
     bottom: 0;
-  }
-  .flex-scrollable-x {
-    max-width: 100%;
-    overflow-x: auto;
-  }
-  .flex-scrollable-y {
-    max-height: 100%;
-    overflow-y: auto;
   }
 
   .wrapper {

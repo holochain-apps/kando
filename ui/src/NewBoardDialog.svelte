@@ -2,7 +2,7 @@
     import BoardEditor from './BoardEditor.svelte';
     import type { KanDoStore } from './store';
     import { getContext } from 'svelte';
-    import type { BoardProps, CategoryDef, Group, LabelDef } from './board';
+    import { newFeedKey, type BoardProps, type BoardState, type CategoryDef, type Group, type LabelDef, type BoardDelta } from './board';
     import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
     import '@shoelace-style/shoelace/dist/components/button/button.js';
     import type SlDialog from '@shoelace-style/shoelace/dist/components/dialog/dialog';
@@ -16,8 +16,11 @@
     const store:KanDoStore = getStore();
 
     const addBoard = async (name: string, groups: Group[], labelDefs: LabelDef[], categoryDefs: CategoryDef[], props: BoardProps) => {
-        // @ts-ignore
-        const board = await store.boardList.makeBoard({name, groups, labelDefs, categoryDefs, props, status:""})
+        const state:Partial<BoardState> = {name, groups, labelDefs, categoryDefs, props, status:""}
+        state.feed = {}
+        state.feed[newFeedKey(store.myAgentPubKeyB64)] = {delta:{type:"create", name}, context:null}
+        const board = await store.boardList.makeBoard(state)
+        await board.join()        
         store.setUIprops({showMenu:false})
         dialog.hide()
         await store.boardList.setActiveBoard(board.hash)

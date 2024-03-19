@@ -2,11 +2,13 @@ import { HoloHashMap, LazyHoloHashMap } from "@holochain-open-dev/utils";
 import { derived, get, writable, type Readable, type Writable } from "svelte/store";
 import { type AgentPubKey, type EntryHash, type EntryHashB64, encodeHashToBase64 } from "@holochain/client";
 import {toPromise, type AsyncReadable, pipe, joinAsync, asyncDerived, sliceAndJoin, alwaysSubscribed} from '@holochain-open-dev/stores'
-import { SynStore, WorkspaceStore } from "@holochain-syn/core";
+import { SynStore, WorkspaceStore, type Commit, stateFromCommit } from "@holochain-syn/core";
 import type { ProfilesStore } from "@holochain-open-dev/profiles";
 import { cloneDeep } from "lodash";
-import { Board, type BoardDelta, type BoardState } from "./board";
+import { Board, feedItems, type BoardDelta, type BoardState, deltaToFeedString } from "./board";
 import { hashEqual } from "./util";
+import type { WeClient } from "@lightningrodlabs/we-applet";
+import { SeenType } from "./store";
 
 export enum BoardType {
     active = "active",
@@ -34,22 +36,66 @@ export class BoardList {
     activeBoardHash: Writable<EntryHash| undefined> = writable(undefined)
     activeBoardHashB64: Readable<string| undefined> = derived(this.activeBoardHash, s=> s ? encodeHashToBase64(s): undefined)
     boardCount: AsyncReadable<number>
+    notifiedItems = {}
 
     boardData2 = new LazyHoloHashMap( documentHash => {
         const docStore = this.synStore.documents.get(documentHash)
 
         const board = pipe(docStore.allWorkspaces,
-            workspaces => 
-                new Board(docStore,  new WorkspaceStore(docStore, Array.from(workspaces.keys())[0]))
+            workspaces => {
+                const board = new Board(docStore,  new WorkspaceStore(docStore, Array.from(workspaces.keys())[0]), this.synStore.client.client.myPubKey)
+                if (this.weClient) {
+                    board.workspace.tip.subscribe((tip)=>{
+                        try {
+                            if (tip.status=="complete" && tip.value) {
+                                const tipRecord = tip.value
+                                const tipB64 = encodeHashToBase64(tipRecord.entryHash)
+                                const key = `${SeenType.Tip}:${board.hashB64}`
+                                const seenTipB64 = localStorage.getItem(key)
+
+                                if (tipB64 != seenTipB64) {
+                                    const boardState = stateFromCommit(tipRecord.entry) as BoardState
+                                    const feed = feedItems(boardState.feed)
+                                    const me = encodeHashToBase64(this.synStore.client.client.myPubKey)
+                                    feed.forEach(feedItem=> {
+                                        const key = `${feedItem.author}.${feedItem.timestamp.getTime()}`
+                                        if (! this.notifiedItems[key] ) {
+                                            let body = `${feedItem.author} ${deltaToFeedString(boardState, feedItem.content)}`
+                                            if (feedItem.content.delta.type == 'set-card-agents') {
+                                                body=`${body} to:`
+                                                feedItem.content.delta.agents.forEach(agent=>body=`${body} ${agent}`)
+                                            }
+                                            this.weClient.notifyWe([{
+                                                title: `${boardState.name} updated`,
+                                                body,
+                                                notification_type: "change",
+                                                icon_src: undefined,
+                                                urgency: "low",
+                                                timestamp: Date.now()
+                                            }
+                                            ])
+                                            this.notifiedItems[key] = true
+                                        }
+                                    })
+                                }
+                            }
+                        } catch(e) {
+                            console.log("Error notifying We", e)
+                        }
+                    })
+                }
+                return board
+            }
         )
         const latestState = pipe(board, 
-            board => board.workspace.latestSnapshot
+            board => board.workspace.latestState
             )
         const tip = pipe(board,
             board => board.workspace.tip
             )
-        console.log("boardData2:main")
-        return alwaysSubscribed(pipe(joinAsync([board, latestState, tip]), ([board, latestState, tip]) => {return {board,latestState, tip: tip ? tip.entryHash: undefined}}))
+
+        return alwaysSubscribed(pipe(joinAsync([board, latestState, tip]), ([board, latestState, tip]) => {
+            return {board,latestState, tip: tip ? tip.entryHash: undefined}}))
     })
 
 
@@ -79,7 +125,7 @@ export class BoardList {
     allAgentBoards: AsyncReadable<ReadonlyMap<AgentPubKey, Array<BoardAndLatestState>>>
     allAuthorAgents: AsyncReadable<AgentPubKey[]>
 
-    constructor(public profilseStore: ProfilesStore, public synStore: SynStore) {
+    constructor(public profilseStore: ProfilesStore, public synStore: SynStore, public weClient : WeClient) {
         this.allAgentBoards = pipe(this.profilseStore.agentsWithProfile,
             agents=>{
                 console.log("allAgentBoards")
@@ -117,7 +163,9 @@ export class BoardList {
             ([boards,archived]) => [...boards, ...archived]
             )
         this.allBoards = pipe(asyncJoined,
-            docHashes => sliceAndJoin(this.boardData2, docHashes, {errors: "filter_out"})
+            docHashes => {
+                return sliceAndJoin(this.boardData2, docHashes, {errors: "filter_out"})
+            }
         )
         this.boardCount =  asyncDerived(joined,
             ([boards,archived]) => boards.length + archived.length
@@ -194,23 +242,11 @@ export class BoardList {
         return this.makeBoard(newBoard)
     }
 
-    async makeBoard(options: BoardState, fromHash?: EntryHashB64) : Promise<Board> {
-        const board = await Board.Create(this.synStore)
-        const sessionStore = board.session
+    async makeBoard(options: Partial<BoardState>, fromHash?: EntryHashB64) : Promise<Board> {
         if (!options.name) {
             options.name = "untitled"
         }
-        if (options !== undefined) {
-            let changes : BoardDelta[] = [{
-                type: "set-state",
-                state: options
-                },
-            ]
-            if (changes.length > 0) {
-                board.requestChanges(changes)
-                await sessionStore.commitChanges()
-            }        
-        }
+        const board = await Board.Create(this.synStore, options)
         return board
     }
 }

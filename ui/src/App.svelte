@@ -1,6 +1,9 @@
 <script lang="ts">
   import Controller from './Controller.svelte'
+  import ControllerCreate from './ControllerCreate.svelte'
   import ControllerBoard from './ControllerBoard.svelte'
+  import ControllerCard from './ControllerCard.svelte'
+  import ControllerBlockActiveBoards from './ControllerBlockActiveBoards.svelte'
   import { AppAgentWebsocket, AdminWebsocket } from '@holochain/client';
   import '@shoelace-style/shoelace/dist/themes/light.css';
   import 'highlight.js/styles/github.css';
@@ -24,13 +27,17 @@
 
   let connected = false
 
+  let createView
+
   enum RenderType {
     App,
-    Board
+    Hrl,
+    CreateBoard,
+    BlockActiveBoards
   }
 
   let renderType = RenderType.App
-  let hrl: Hrl
+  let hrlWithContext: HrlWithContext
 
   initialize()
 
@@ -46,7 +53,9 @@
     if (!isWeContext()) {
         console.log("adminPort is", adminPort)
         if (adminPort) {
-          const adminWebsocket = await AdminWebsocket.connect(new URL(`ws://localhost:${adminPort}`))
+          const url = `ws://localhost:${adminPort}`
+          console.log("connecting to admin port at:", url)
+          const adminWebsocket = await AdminWebsocket.connect({url})
           const x = await adminWebsocket.listApps({})
           console.log("apps", x)
           const cellIds = await adminWebsocket.listCellIds()
@@ -55,7 +64,7 @@
 
         }
         console.log("appPort and Id is", appPort, appId)
-        client = await AppAgentWebsocket.connect(new URL(url), appId)
+        client = await AppAgentWebsocket.connect(appId,{url})
         profilesClient = new ProfilesClient(client, appId);
     }
     else {
@@ -69,18 +78,22 @@
               break;
             case "block":
               switch(weClient.renderInfo.view.block) {
+                case "active_boards":
+                  renderType = RenderType.BlockActiveBoards
+                  break;
                 default:
                   throw new Error("Unknown applet-view block type:"+weClient.renderInfo.view.block);
               }
-            case "entry":
+              break;
+            case "attachable":
               switch (weClient.renderInfo.view.roleName) {
                 case "kando":
                   switch (weClient.renderInfo.view.integrityZomeName) {
                     case "syn_integrity":
                       switch (weClient.renderInfo.view.entryType) {
                         case "document":
-                          renderType = RenderType.Board
-                          hrl = weClient.renderInfo.view.hrl
+                          renderType = RenderType.Hrl
+                          hrlWithContext = weClient.renderInfo.view.hrlWithContext
                           break;
                         default:
                           throw new Error("Unknown entry type:"+weClient.renderInfo.view.entryType);
@@ -93,6 +106,13 @@
                 default:
                   throw new Error("Unknown role name:"+weClient.renderInfo.view.roleName);
               }
+              break;
+            case "creatable":
+              switch (weClient.renderInfo.view.name) {
+                case "board":
+                  renderType = RenderType.CreateBoard
+                  createView = weClient.renderInfo.view
+              }              
               break;
             default:
               throw new Error("Unsupported applet-view type");
@@ -144,10 +164,16 @@
   {:else if $prof.status=="error"}
    Error when loading profile: {$prof.error}
   {:else}
-    {#if renderType== RenderType.App}
+    {#if renderType== RenderType.CreateBoard}
+      <ControllerCreate  view={createView} client={client} weClient={weClient} profilesStore={profilesStore} roleName={roleName}></ControllerCreate>
+    {:else if renderType== RenderType.App}
       <Controller  client={client} weClient={weClient} profilesStore={profilesStore} roleName={roleName}></Controller>
-    {:else if  renderType== RenderType.Board}
-      <ControllerBoard  board={hrl[1]} client={client} weClient={weClient} profilesStore={profilesStore} roleName={roleName}></ControllerBoard>
+    {:else if  renderType== RenderType.Hrl && !hrlWithContext.context}
+      <ControllerBoard  board={hrlWithContext.hrl[1]} client={client} weClient={weClient} profilesStore={profilesStore} roleName={roleName}></ControllerBoard>
+    {:else if  renderType== RenderType.Hrl && hrlWithContext.context}
+      <ControllerCard  board={hrlWithContext.hrl[1]} cardId={hrlWithContext.context} client={client} weClient={weClient} profilesStore={profilesStore} roleName={roleName}></ControllerCard>
+    {:else if  renderType== RenderType.BlockActiveBoards}
+      <ControllerBlockActiveBoards client={client} weClient={weClient} profilesStore={profilesStore} roleName={roleName}></ControllerBlockActiveBoards>
     {/if}
   {/if}
 

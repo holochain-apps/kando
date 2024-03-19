@@ -1,17 +1,19 @@
 <script lang="ts">
-    import KanDoPane from './KanDoPane.svelte'
+    import CardDetails from './CardDetails.svelte'
     import { KanDoStore } from './store'
     import { setContext } from 'svelte';
     import type { AppAgentClient, EntryHash } from '@holochain/client';
     import type { SynStore } from '@holochain-syn/store';
     import type { ProfilesStore } from "@holochain-open-dev/profiles";
     import type { WeClient } from '@lightningrodlabs/we-applet';
+    import type { v1 as uuidv1 } from "uuid";
 
     export let roleName = ""
     export let client : AppAgentClient
     export let weClient : WeClient
     export let profilesStore : ProfilesStore
     export let board : EntryHash
+    export let cardId : uuidv1
 
     let store: KanDoStore = new KanDoStore (
       weClient,
@@ -22,7 +24,6 @@
     let synStore: SynStore = store.synStore
     store.boardList.setActiveBoard(board)
     $: activeBoardHash = store.boardList.activeBoardHash
-    $: activeBoard = store.boardList.activeBoard
 
     setContext('synStore', {
       getStore: () => synStore,
@@ -31,12 +32,8 @@
     setContext('store', {
       getStore: () => store,
     });
-    const DEFAULT_KD_BG_IMG = "none"
-    //const DEFAULT_KD_BG_IMG = "https://img.freepik.com/free-photo/studio-background-concept-abstract-empty-light-gradient-purple-studio-room-background-product-plain-studio-background_1258-54461.jpg"
-    const NO_BOARD_IMG = "none"
-
-    $: bgUrl = DEFAULT_KD_BG_IMG  // FIXME$activeBoard ?   ($activeBoard.state.props && $boardState.props.bgUrl) ? $boardState.props.bgUrl : DEFAULT_KD_BG_IMG
-  </script>
+  
+</script>
   <div class="flex-scrollable-parent">
     <div class="flex-scrollable-container">
       <div class='app'>
@@ -47,7 +44,7 @@
 
 
         {#if $activeBoardHash !== undefined}
-          <KanDoPane activeBoard={$activeBoard} standAlone={true}/>
+          <CardDetails cardId={cardId} showControls={false} />
         {:else}
           Unable to find board.
         {/if}

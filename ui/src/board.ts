@@ -4,6 +4,7 @@ import { v1 as uuidv1 } from "uuid";
 import { type AgentPubKey, type EntryHash, type EntryHashB64, encodeHashToBase64, type AgentPubKeyB64, type Timestamp } from "@holochain/client";
 import { BoardType } from "./boardList";
 import type { HrlB64WithContext } from "@lightningrodlabs/we-applet";
+import { cloneDeep } from "lodash";
 
 export class LabelDef {
     type: uuidv1
@@ -68,9 +69,49 @@ export class Group {
 }
 export type BoardProps = {
   bgUrl: string,
+  attachments: Array<HrlB64WithContext>
 }
 
+const MAX_FEED_ITEMS = 50
+export type FeedContent = {
+  delta: BoardDelta,
+  context: any,  // used to hold info important to generating the feed item description
+}
+
+export type FeedItem = {
+  timestamp: Date,
+  content: FeedContent,
+  author: AgentPubKeyB64,
+}
+
+export type ParsedFeedKey = {
+  author: AgentPubKeyB64,
+  timestamp: number,
+}
+
+export type Feed = {[key: string]: FeedContent}  // key is agent and timestamp to make unique feed keys to prevent collisions
+
 export type BoardEphemeralState = { [key: string]: string };
+
+export const parseFeedKey = (key: string) : ParsedFeedKey => {
+  const [author, timestamp] = key.split(".")
+  return {author, timestamp: parseInt(timestamp)}
+}
+
+export const sortedFeedKeys = (feed: Feed) => {
+  const keys = Object.keys(feed)
+  return keys.map(key=> parseFeedKey(key)).sort(({timestamp:a},{timestamp:b})=>b-a)
+}
+
+export const feedItems = (feed: Feed): FeedItem[] => {
+  if (!feed) return []
+  const parsedKeys: ParsedFeedKey[] = sortedFeedKeys(feed)
+  return parsedKeys.map(({timestamp, author})=> {
+    const content = feed[`${author}.${timestamp}`]
+    const item: FeedItem = {author,timestamp:new Date(timestamp), content}
+    return item
+  })
+}
 
 export interface BoardState {
   status: string;
@@ -81,12 +122,18 @@ export interface BoardState {
   labelDefs: LabelDef[];
   categoryDefs: CategoryDef[];
   props: BoardProps;
+  boundTo: Array<HrlB64WithContext>
+  feed: Feed
 }
   
   export type BoardDelta =
     | {
+        type: "create";
+        name: string;
+      }
+    | {
         type: "set-state";
-        state: BoardState;
+        state: Partial<BoardState>;
       }
     | {
         type: "set-status";
@@ -104,6 +151,10 @@ export interface BoardState {
     | {
         type: "set-groups";
         groups: Group[];
+      }
+    | {
+        type: "add-group";
+        group: Group;
       }
     | {
         type: "set-props";
@@ -132,6 +183,11 @@ export interface BoardState {
         type: "update-card-props";
         id: uuidv1;
         props: CardProps;
+      }
+    | {
+        type: "set-card-agents";
+        id: uuidv1;
+        agents: AgentPubKeyB64[];
       }
     | {
         type: "add-card-comment";
@@ -163,6 +219,33 @@ export interface BoardState {
         order: number;
       }
     | {
+        type: "add-checklist-item";
+        id: uuidv1;
+        checklistId: uuidv1;
+        item: ChecklistItem;
+      }
+    | {
+        type: "delete-checklist-item";
+        id: uuidv1;
+        checklistId: uuidv1;
+        itemId: number;
+      }
+    | {
+        type: "set-checklist-item-state";
+        id: uuidv1;
+        checklistId: uuidv1;
+        itemId: number;
+        state: boolean;
+      }
+    | {
+        type: "convert-checklist-item";
+        id: uuidv1;
+        checklistId: uuidv1;
+        itemId: number;
+        card: Card;
+        groupId: uuidv1;
+      }
+    | {
         type: "delete-card-checklist";
         id: uuidv1;
         checklistId: uuidv1;
@@ -171,7 +254,23 @@ export interface BoardState {
         type: "delete-card";
         id: string;
       };
-  
+
+  const _getCard = (state: BoardState, cardId: uuidv1) : [Card, number] |undefined => {
+    const index = state.cards.findIndex((card) => card.id === cardId)
+    if (index >=0) {
+      return [state.cards[index], index]
+    }
+    return undefined
+  }
+
+  const _getGroup = (state: BoardState, groupId: uuidv1) : [Group, number]|undefined => {
+    const index = state.groups.findIndex((g) => g.id === groupId)
+    if (index >=0) {
+      return [state.groups[index],index]
+    }
+    return undefined
+  }
+
   const _removeCardFromGroups = (state: BoardState, cardId: uuidv1) => {
     _initGrouping(state)
     // remove the item from the group it's in
@@ -201,10 +300,17 @@ export interface BoardState {
     if (state.grouping === undefined) {
       state.grouping = {}
       const ungrouped = []
-      state.cards.forEach((card)=>ungrouped.push(card.id))
+      state.stickies.forEach((sticky)=>ungrouped.push(sticky.id))
       state.grouping[UngroupedId] = ungrouped
     }
+    const groupingIds = Object.keys(state.grouping)
+    for (const group of state.groups) {
+      if (!groupingIds.includes(group.id)) {
+        state.grouping[group.id] = []
+      }
+    }
   }
+  
   const _setGroups = (newGroups, state) => {
     state.groups = newGroups
     if (state.groups === undefined) state.groups = []
@@ -233,26 +339,260 @@ export interface BoardState {
     })
   }
 
+  export const newFeedKey = (author) :string => {
+    return `${author}.${Date.now()}`
+  }
+  const addToFeed = (state: BoardState, author: AgentPubKeyB64, delta: BoardDelta, context: any): BoardState => {
+    if (!state.feed) state.feed = {}
+    
+    state.feed[newFeedKey(author)] = {delta, context}
+    const keys = Object.keys(state)
+    if (keys.length > MAX_FEED_ITEMS) {
+      const keysToRemove = keys.map(key=>{
+        const [auth, date] = key.split(".")
+        return [auth,parseInt(date)]
+      }).sort(([_x, a],[_y,b]) => 
+        // @ts-ignore
+        a-b).slice(MAX_FEED_ITEMS)
+      keysToRemove.forEach( ([a,d])=> delete state.feed[`${a}.${d}`])
+    }
+    return state
+  }
+
+  export const deltaToFeedString = (state: BoardState, content: FeedContent):string => {
+    const delta = content.delta
+    const context = content.context
+    let feedText = ""
+    switch (delta.type) {
+      case "create": 
+        feedText = `created board ${delta.name}`
+        break;
+      case "set-status": 
+        feedText = `set the board status to ${delta.status}`
+        break;
+      case "set-state":
+        feedText = `set the board `
+        break;
+      case "set-name":
+        feedText = `set the board name to ${delta.name}`
+        break;
+      case "set-props":
+        feedText = `upated the board settings`
+        break;
+      case "add-group":
+        feedText = `added column "${delta.group.name}"`
+        break;
+      case "set-groups":
+          feedText =  `updated the columns`
+        break;
+      case "set-group-order":
+        feedText = `reorded the columns`
+        break;
+      case "set-label-defs":
+        feedText = `updated the labels`
+        break;
+      case "set-category-defs":
+        feedText = `updated the categories`
+        break;
+      case "add-card":
+        feedText = `added a card titled "${delta.value.props.title}" to ${context.group.name}`
+        break;
+      case "update-card-group":{
+        const c = _getCard(state, delta.id)
+        if (c) {
+          const [card,i] = c
+          if (card) {
+            const g  =_getGroup(state, delta.group)
+            if (g) {
+              const [group,i] = g
+              if (group) {
+                feedText = `moved card "${card.props.title}" to ${group.name}`
+              } else {
+                feedText = `moved card "${card.props.title}"`
+              }
+            }
+        }}
+        if (!feedText) feedText = `moved card "${context.card}"`
+        }
+        break;
+      case "update-card-props":
+        const c = _getCard(state, delta.id)
+        if (c) {
+          const [card,i] = c
+          if (card) {
+            feedText = `updated card "${card.props.title}"`
+          }
+        }
+        if (!feedText) feedText = `updated card "${context.card}"`
+
+        break;
+      case "set-card-agents": {
+        const c = _getCard(state, delta.id)
+        if (c) {
+          const [card,i] = c
+          if (card) {
+            feedText = `updated card "${card.props.title}" assignees`
+          }
+        }
+        if (!feedText) feedText = `updated card "${context.card}" assignees`
+        }
+        break;
+      case "add-card-comment": {
+          const c = _getCard(state, delta.id)
+          if (c) {
+            const [card,i] = c
+            if (card) {
+              feedText = `added comment to card "${card.props.title}"`
+            }
+          }
+          if (!feedText) feedText = `added a comment to card "${context.card}"`
+        }
+        break;
+      case "update-card-comment":{
+        const c = _getCard(state, delta.id)
+        if (c) {
+          const [card,i] = c
+          if (card) {
+            feedText = `updated comment on card "${card.props.title}"`
+          };
+        }
+        if (!feedText) feedText = `updated a comment on card "${context.card}"`
+        }
+        break;
+      case "delete-card-comment": {
+        const c = _getCard(state, delta.id)
+        if (c) {
+          const [card,i] = c
+          if (card) {
+            feedText = `deleted comment on card "${card.props.title}"`
+          }
+        }
+        if (!feedText) feedText = `deleted a comment on card "${context.card}"`
+        }
+        break;
+      case "add-card-checklist": {
+        const c = _getCard(state, delta.id)
+        if (c) {
+          const [card,i] = c
+          if (card) {
+              feedText = `added a checklist "${delta.checklist.title}" to card "${card.props.title}"`
+          }
+        }
+        if (!feedText) feedText = `added a checklist "${delta.checklist.title}" to card "${context.card}"`
+        }
+        break;
+      case "update-card-checklist":{
+        const c = _getCard(state, delta.id)
+        if (c) {
+          const [card,i] = c
+          if (card) {      
+            feedText =  `updated checklist ${delta.title} on card "${card.props.title}"`
+        }}
+        if (!feedText) feedText = `updated a checklist "${delta.title}" on card "${context.card}"`
+        }
+        break;
+      case "add-checklist-item":{
+        const c = _getCard(state, delta.id)
+        if (c) {
+          const [card,i] = c
+          if (card) {
+            const list = card.checklists[delta.checklistId]
+            feedText =  `added item "${delta.item.text}" to "${card.props.title}${list?`:${list.title}`:""}"`
+        }}
+        if (!feedText) feedText = `added checklist item ${delta.item.text} to card "${context.card}"`
+        }
+        break;
+      case "delete-checklist-item":{
+        const c = _getCard(state, delta.id)
+        if (c) {
+          const [card,i] = c
+          if (card) {      
+            const list = card.checklists[delta.checklistId]
+            if (list) {
+              feedText =  `deleted item "${context.item}" from "${card.props.title}:${list.title}"`
+            }
+        }}
+        if (!feedText) feedText = `deleted a checklist item from card "${context.card}"`
+        }
+        break;
+      case "set-checklist-item-state":{
+        const itemStateStr = delta.state ? "Checked" : "Unchecked"
+        const c = _getCard(state, delta.id)
+        if (c) {
+          const [card,i] = c
+          if (card) {      
+            const list = card.checklists[delta.checklistId]
+            if (list) {
+              const item = list.items[delta.itemId]
+              feedText =  `set item ${item ? ` "${item.text}"`:""} on "${card.props.title}: ${list.title}" to ${itemStateStr}`
+            }
+        }}
+        if (!feedText) feedText = `set item a checklist item from card "${context.card}" to ${itemStateStr}`
+        }
+        break;
+      case "convert-checklist-item":{
+        const c = _getCard(state, delta.id)
+        if (c) {
+          const [card,i] = c
+          if (card) {      
+            const list = card.checklists[delta.checklistId]
+            if (list) {
+              const item = list.items[delta.itemId]
+              feedText =  `converted item "${context.item}" from "${card.props.title}: ${list.title}" to a card`
+            }
+        }}
+        if (!feedText) feedText = `converted a checklist item from card "${context.card}" to a card`
+        }
+        break;      
+      case "delete-card-checklist":
+        feedText =  `deleted checklist ${context.checklist} on card "${context.card}"`
+        break;
+      case "delete-card":
+        feedText = `deleted card "${context.card}"`
+        break;
+    }
+    return feedText
+  }
+
+  const _addCard = (state: BoardState, card:Card, gropuId: uuidv1) => {
+    _initGrouping(state)
+    state.cards.push(card)
+    if (state.grouping[gropuId] !== undefined) {
+      state.grouping[gropuId].push(card.id)
+    }
+    else {
+      state.grouping[gropuId] = [gropuId.id]
+    }
+  }
+  
   export const boardGrammar = {
-    initialState()  {
-      const state = {
+    initialState(init: Partial<BoardState>|undefined = undefined)  {
+      const state: BoardState = {
         status: "",
         name: "untitled",
         groups: [{id:UngroupedId, name:""}],
+        grouping: {},
         cards: [],
         labelDefs: [],
         categoryDefs: [],
-        props: {bgUrl:""},
+        props: {bgUrl:"", attachments:[]},
+        boundTo: [],
+        feed: {}
+      }
+      if (init) {
+        Object.assign(state, init);
       }
       _initGrouping(state)
       return state
     },
+
     applyDelta( 
       delta: BoardDelta,
       state: BoardState,
       _ephemeralState: any,
-      _author: AgentPubKey
+      author: AgentPubKeyB64
     ) {
+      let feedContext = null
       switch (delta.type) {
         case "set-status":
           state.status = delta.status
@@ -260,12 +600,17 @@ export interface BoardState {
         case "set-state":
           if (delta.state.status !== undefined) state.status = delta.state.status
           if (delta.state.name !== undefined) state.name = delta.state.name
-          if (delta.state.groups !== undefined) state.groups = delta.state.groups
-          _setGroups(delta.state.groups, state)
+          if (delta.state.groups !== undefined) {
+            state.groups = delta.state.groups
+            _setGroups(delta.state.groups, state)
+          } else if (!state.groups) {
+            state.groups = []
+          }
           if (delta.state.cards !== undefined) state.cards = delta.state.cards
           if (delta.state.labelDefs !== undefined) state.labelDefs = delta.state.labelDefs
           if (delta.state.categoryDefs !== undefined) state.categoryDefs = delta.state.categoryDefs
           if (delta.state.props !== undefined) state.props = delta.state.props
+          if (delta.state.boundTo !== undefined) state.boundTo = delta.state.boundTo
           if (delta.state.grouping !== undefined) {
             state.grouping = delta.state.grouping
           } else if (state.grouping === undefined) {
@@ -282,6 +627,11 @@ export interface BoardState {
           _initGrouping(state)
           _setGroups(delta.groups, state)
           break;
+        case "add-group":
+          _initGrouping(state)
+          state.groups.push(delta.group)
+          state.grouping[delta.group.id] = []
+          break;
         case "set-group-order":
           _initGrouping(state)
           state.grouping[delta.id] = delta.order
@@ -293,36 +643,49 @@ export interface BoardState {
           state.categoryDefs = delta.categoryDefs
           break;
         case "add-card":
-          _initGrouping(state)
-          state.cards.push(delta.value)
-          if (state.grouping[delta.group] !== undefined) {
-            state.grouping[delta.group].push(delta.value.id)
-          }
-          else {
-            state.grouping[delta.group] = [delta.value.id]
+          _addCard(state, delta.value, delta.group)
+          const g  =_getGroup(state, delta.group)
+          if (g) {
+            const [group,i] = g
+            if (group) {
+              feedContext = {group: cloneDeep(group)}
+            }
           }
           break;
-        case "update-card-group":
-          _removeCardFromGroups(state, delta.id)
-          _addCardToGroup(state, delta.group, delta.id, delta.index)
+        case "update-card-group":{
+          const [card,i] = _getCard(state, delta.id)
+          if (card) {
+            _removeCardFromGroups(state, delta.id)
+            _addCardToGroup(state, delta.group, delta.id, delta.index)
+            feedContext = {card: card.props.title}
+          }}
           break;
         case "update-card-props":
-          state.cards.forEach((card, i) => {
-            if (card.id === delta.id) {
-              state.cards[i].props = delta.props;
-            }
-          });
+          const [card,i] = _getCard(state, delta.id)
+          if (card) {
+            state.cards[i].props = delta.props;
+            feedContext = {card: card.props.title}
+          }
           break;
-        case "add-card-comment":
-          state.cards.forEach((card, i) => {
-            if (card.id === delta.id) {
-              state.cards[i].comments[delta.comment.id] = delta.comment;
-            }
-          });
+        case "set-card-agents": {
+          const [card,i] = _getCard(state, delta.id)
+          if (card) {
+            state.cards[i].props.agents = delta.agents;
+            feedContext = {card: card.props.title}
+          }
+          }
           break;
-        case "update-card-comment":
-          state.cards.forEach((card, i) => {
-            if (card.id === delta.id) {
+        case "add-card-comment": {
+          const [card,i] = _getCard(state, delta.id)
+          if (card) {
+            state.cards[i].comments[delta.comment.id] = delta.comment;
+            feedContext = {card: card.props.title}
+          }
+          }
+          break;
+        case "update-card-comment":{
+          const [card,i] = _getCard(state, delta.id)
+          if (card) {
               const existingComment = state.cards[i].comments[delta.commentId]
               if (existingComment) {
                 const comment = {
@@ -332,26 +695,30 @@ export interface BoardState {
                   timestamp: new Date().getTime()
                 }
                 state.cards[i].comments[delta.commentId] = comment
+                feedContext = {card: card.props.title}
               }
-          }});
+          };
+          }
           break;
-        case "delete-card-comment":
-          state.cards.forEach((card, i) => {
-            if (card.id === delta.id) {
-              delete state.cards[i].comments[delta.commentId]
+        case "delete-card-comment": {
+          const [card,i] = _getCard(state, delta.id)
+          if (card) {
+            delete state.cards[i].comments[delta.commentId]
+            feedContext = {card: card.props.title}
             }
-          });
+          }
           break;
-        case "add-card-checklist":
-          state.cards.forEach((card, i) => {
-            if (card.id === delta.id) {
+        case "add-card-checklist": {
+          const [card,i] = _getCard(state, delta.id)
+          if (card) {
               state.cards[i].checklists[delta.checklist.id] = delta.checklist;
+              feedContext = {card: card.props.title}
             }
-          });
+          }
           break;
-        case "update-card-checklist":
-          state.cards.forEach((card, i) => {
-            if (card.id === delta.id) {
+        case "update-card-checklist":{
+          const [card,i] = _getCard(state, delta.id)
+          if (card) {
               const checklist = state.cards[i].checklists[delta.checklistId]
               if (checklist) {
                 state.cards[i].checklists[delta.checklistId] = {
@@ -361,22 +728,78 @@ export interface BoardState {
                   timestamp: new Date().getTime(),
                   order: delta.order,
                 }
+                feedContext = {card: card.props.title}
               }
-          }});
+          }};
           break;
-        case "delete-card-checklist":
-          state.cards.forEach((card, i) => {
-            if (card.id === delta.id) {
-              delete state.cards[i].checklists[delta.checklistId]
+        case "add-checklist-item":{
+          const [card,i] = _getCard(state, delta.id)
+          if (card) {
+            const checklist = state.cards[i].checklists[delta.checklistId]
+            if (checklist) {
+              checklist.items.push(delta.item)
+              feedContext = {card: card.props.title}
             }
-          });
+          }
           break;
-        case "delete-card":
-          const index = state.cards.findIndex((card) => card.id === delta.id)
-          state.cards.splice(index,1)
-          _removeCardFromGroups(state, delta.id)
+        }
+        case "delete-checklist-item":{
+          const [card,i] = _getCard(state, delta.id)
+          if (card) {
+            const checklist = state.cards[i].checklists[delta.checklistId]
+            if (checklist) {
+              const removed = checklist.items.splice(delta.itemId,1)
+              feedContext = {card: card.props.title, item:removed[0]? removed[0].text:""}
+            }
+          }
+          break;
+        }
+        case "set-checklist-item-state":{
+          const [card,i] = _getCard(state, delta.id)
+          if (card) {
+            const checklist = state.cards[i].checklists[delta.checklistId]
+            if (checklist) {
+              if (checklist.items[delta.itemId] && checklist.items[delta.itemId].checked != delta.state) {
+                state.cards[i].checklists[delta.checklistId].items[delta.itemId].checked = delta.state
+                feedContext = {card: card.props.title}
+              }
+            }
+          }
+          break;
+        }
+        case "convert-checklist-item":{
+          const [card,i] = _getCard(state, delta.id)
+          if (card) {
+            const checklist = state.cards[i].checklists[delta.checklistId]
+            if (checklist) {
+              const removed = checklist.items.splice(delta.itemId,1)
+              if (removed[0]) {
+                _addCard(state, delta.card, delta.groupId)
+                feedContext = {card: card.props.title, item:removed[0]? removed[0].text:""}
+              }
+            }
+          }
+          break;
+        }
+        case "delete-card-checklist":{
+          const [card,i] = _getCard(state, delta.id)
+          if (card) {
+              feedContext = {checklist: card.checklists[delta.checklistId].title, card:card.props.title}
+              delete card.checklists[delta.checklistId]
+            }
+          };
+          break;
+        case "delete-card": {
+          const [card,i] = _getCard(state, delta.id)
+          if (card) {
+            state.cards.splice(i,1)
+            _removeCardFromGroups(state, delta.id)
+            feedContext = {card: card.props.title}
+          }
+          }
           break;
       }
+      state = addToFeed(state, author, delta, feedContext)
     },
   };
   
@@ -388,14 +811,20 @@ export type BoardStateData = {
 export class Board {
   public session: SessionStore<BoardState,BoardEphemeralState> | undefined
   public hashB64: EntryHashB64
+  public myAgentKeyB64: AgentPubKeyB64
 
-  constructor(public document: DocumentStore<BoardState, BoardEphemeralState>, public workspace: WorkspaceStore<BoardState,BoardEphemeralState>) {
-    this.hashB64 = encodeHashToBase64(this.document.documentHash)
-  }
+  constructor(
+    public document: DocumentStore<BoardState, BoardEphemeralState>, 
+    public workspace: WorkspaceStore<BoardState,BoardEphemeralState>,
+    public myAgentKey: AgentPubKey
+    ) {
+      this.hashB64 = encodeHashToBase64(this.document.documentHash)
+      this.myAgentKeyB64 = encodeHashToBase64(myAgentKey)
+    }
 
-  public static async Create(synStore: SynStore) {
-    const initState = boardGrammar.initialState()
-    console.log("creating", initState)
+  public static async Create(synStore: SynStore, init: Partial<BoardState>|undefined = undefined) {
+    const initState = boardGrammar.initialState(init)
+  
     const documentStore = await synStore.createDocument(initState,{})
 
     await synStore.client.tagDocument(documentStore.documentHash, BoardType.active)
@@ -405,8 +834,8 @@ export class Board {
         undefined
        );
 
-    const me = new Board(documentStore, workspaceStore);
-    await me.join()
+    const me = new Board(documentStore, workspaceStore, synStore.client.client.myPubKey);
+
     return me
   }
 
@@ -448,7 +877,11 @@ export class Board {
       console.log("REQUESTING BOARD CHANGES: ", deltas)
       this.session.change((state,_eph)=>{
         for (const delta of deltas) {
-          boardGrammar.applyDelta(delta, state,_eph, undefined)
+          try {
+            boardGrammar.applyDelta(delta, state,_eph, this.myAgentKeyB64)
+          } catch (e) {
+            console.log("Error applying delta:",e, delta)
+          }
         }
       })
   }

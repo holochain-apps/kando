@@ -1,6 +1,11 @@
 import type { BoardState } from "./board"
 import sanitize from "sanitize-filename";
 
+interface BoardsExport {
+    version: string,
+    boards: Array<BoardState>
+}
+
 const EXPORT_FORMAT_VERSION = "1"
 const PREFIX = "kando"
 const download = (filename: string, text: string) => {
@@ -19,22 +24,19 @@ const download = (filename: string, text: string) => {
 export const exportBoard = (state: BoardState) => {
     const fileName = sanitize(`${PREFIX}_export_${state.name}.json`)
     _exportBoards(fileName, [state])
-    alert(`Your board was exported to your Downloads folder as: '${fileName}'`)
 }
 
 export const exportBoards = (boards: Array<BoardState>) => {
-    const prefix = "kando"
     const date = new Date();
     const formattedDate = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}-`
         + date.getHours() + "_" + ("00" + date.getMinutes()).slice(-2) +"_"+ ("00" + date.getSeconds()).slice(-2)
 
     const fileName = sanitize(`${PREFIX}_export_${formattedDate}.json`)
     _exportBoards(fileName, boards)
-    alert(`Your board was exported to your Downloads folder as: '${fileName}'`)
 }
 
 const _exportBoards = (fileName:string, boards: Array<BoardState>) => {
-    const exportObject = {
+    const exportObject: BoardsExport = {
         version: EXPORT_FORMAT_VERSION,
         boards,
     }
@@ -43,9 +45,22 @@ const _exportBoards = (fileName:string, boards: Array<BoardState>) => {
 
 export const deserializeExport = (jsonExport:string) : Array<BoardState> => {
     try {
-        const exportObject = JSON.parse(jsonExport)
+        const exportObject: BoardsExport = JSON.parse(jsonExport) as BoardsExport
         if (!exportObject.version) {
             throw("Expected export to have a version number")
+        }
+
+        // santize for things that may be missing from previous exports
+        for (const board of exportObject.boards) {
+            if (!board.props.attachments) {
+                board.props.attachments = []
+            }
+            for (const card of board.cards) {
+                if (!card.props.attachments) {
+                    card.props.attachments = []
+                }
+            }
+
         }
         return exportObject.boards
 

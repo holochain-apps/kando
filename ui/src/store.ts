@@ -9,8 +9,9 @@ import {
     type AgentPubKey,
     decodeHashFromBase64,
     type Timestamp,
+    type DnaHash,
   } from '@holochain/client';
-import { SynStore,  SynClient, type Commit } from '@holochain-syn/core';
+import { SynStore,  SynClient} from '@holochain-syn/core';
 import { BoardList } from './boardList';
 import TimeAgo from "javascript-time-ago"
 import en from 'javascript-time-ago/locale/en'
@@ -20,7 +21,7 @@ import type { ProfilesStore } from '@holochain-open-dev/profiles';
 import type { BoardState } from './board';
 import type { WeClient } from '@lightningrodlabs/we-applet';
 import { HoloHashMap } from '@holochain-open-dev/utils';
-import { pipe } from '@holochain-open-dev/stores';
+import { getMyDna } from './util';
 
 
 TimeAgo.addDefaultLocale(en)
@@ -63,6 +64,7 @@ export class KanDoStore {
     client: AppAgentClient;
     uiProps: Writable<UIProps>
     unsub: Unsubscriber
+    dnaHash: DnaHash
 
     constructor(
         public weClient : WeClient,
@@ -72,6 +74,11 @@ export class KanDoStore {
         protected zomeName: string = ZOME_NAME
     ) {
         this.client = clientIn
+        console.log("WECLIENT", weClient)
+        getMyDna(roleName, clientIn).then(res=>{
+            this.dnaHash = res
+          })
+
         this.myAgentPubKeyB64 = encodeHashToBase64(this.client.myPubKey);
         this.service = new KanDoService(
           this.client,
@@ -79,7 +86,7 @@ export class KanDoStore {
           this.zomeName
         );
         this.synStore = new SynStore(new SynClient(this.client,this.roleName,this.zomeName))
-        this.boardList = new BoardList(profilesStore, this.synStore)
+        this.boardList = new BoardList(profilesStore, this.synStore, weClient)
         this.boardList.activeBoard.subscribe((board)=>{
             if (this.unsub) {
                 this.unsub()
@@ -179,16 +186,24 @@ export class KanDoStore {
         return this.client.myPubKey;
     }
 
-    getCardGroupName(cardId: uuidv1, state: BoardState) : string  {
+    getCardGroupId(cardId: uuidv1, state: BoardState) : uuidv1  {
         const keyValPairs = Object.entries(state.grouping)
         for (const [gId, cardIds] of keyValPairs) {
             if (cardIds.includes(cardId)) {
-                if (gId=="_") return "Archived"
-                const g = (state.groups.find((g)=>g.id == gId))
-                if (g) {
-                    return g.name
-                }
+                return gId
             }
+        }
+        return undefined
+    }
+
+    getCardGroupName(cardId: uuidv1, state: BoardState) : string  {
+        const gId = this.getCardGroupId(cardId, state)
+        if (gId === "_") {
+            return "Archived"
+        }
+        const g = (state.groups.find((g)=>g.id == gId))
+        if (g) {
+            return g.name
         }
         return "Unknown"
     }

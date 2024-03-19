@@ -1,23 +1,23 @@
 <script lang="ts">
-  import type { Readable } from 'svelte/store';
   import { UngroupedId, type CardProps, type CategoryDef, type LabelDef } from "./board";
   import '@shoelace-style/shoelace/dist/components/select/select.js';
   import '@shoelace-style/shoelace/dist/components/option/option.js';
   import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
   import '@shoelace-style/shoelace/dist/components/input/input.js';
-  import '@shoelace-style/shoelace/dist/components/drawer/drawer.js';
   import { cloneDeep, isEqual } from "lodash";
   import { v1 as uuidv1 } from "uuid";
-  import { getContext } from 'svelte';
+  import { getContext, onMount } from 'svelte';
   import type { KanDoStore } from './store';
   import Avatar from './Avatar.svelte';
   import { decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
-  import type { Checklist, ChecklistItem, Comment } from "./board";
+  import type { BoardDelta, Card, Checklist, ChecklistItem, Comment } from "./board";
 
-  import { Marked, Renderer } from "@ts-stack/markdown";
+  import { Marked } from "@ts-stack/markdown";
   import SvgIcon from "./SvgIcon.svelte";
   import ClickEdit from './ClickEdit.svelte';
-  import { hrlB64WithContextToRaw, hrlWithContextToB64 } from './util';
+  import AttachmentsList from './AttachmentsList.svelte';
+  import AttachmentsDialog from "./AttachmentsDialog.svelte"
+  import type { HrlWithContext } from '@lightningrodlabs/we-applet';
 
   
   const { getStore } :any = getContext("store");
@@ -32,23 +32,14 @@
     {return {label: `${emoji} ${toolTip}`, value: type}} )
   $: selectedLabels = calcSelectedLabels(props.labels)
   $: selectedAvatars = cloneDeep(props.agents)
-  $: selectedAvatarsForSelect = selectedAvatars.join(" ")
   $: allProfiles = store.profilesStore.allProfiles
 
   const DEFAULT_PROPS = {title:"", description:"", category: "", agents:[], labels:[], attachments:[]}
 
-  //let props:CardProps = DEFAULT_PROPS
-  let cardId:uuidv1 = ""
+  export let cardId:uuidv1
+  export let showControls = true
 
-  let dialog
-
-  export const open = (id: uuidv1)=>{
-    cardId = id
-    updateLatestComment()
-    dialog.show()
-  }
-
-  const updateLatestComment = () => {
+  export const updateLatestComment = () => {
     const card =  $state.cards.find(c=>c.id == cardId)
     if (card) {
       const comments = Object.values(card.comments).sort((a,b)=> a.timestamp - b.timestamp)
@@ -74,10 +65,13 @@
     props = props
     handleSave(props)
   }
+
   const setAgents = () => {
-    props.agents = selectedAvatars
-    handleSave(props)
-  }
+    if (!isEqual(props.agents, selectedAvatars)) {
+      props.agents = selectedAvatars
+      requestChanges([{ type: "set-card-agents", id: card.id, agents: cloneDeep(props.agents)}]);
+    }
+  } 
 
   const setLabels = () => {
     props.labels = selectedLabels.map(o => o.value)
@@ -89,7 +83,6 @@
   }
 
   export const reset = ()=>{
-    dialog.hide()
     editingTitle = false
     editingDescription = false
   }
@@ -186,27 +179,41 @@
 
   const addChecklistItem = (id: uuidv1, list:Checklist, text: string) => {
     const item = {checked:false, text}
-    let items = cloneDeep(list.items)
-    if (!items) {
-      items = [item]
-    } else {
-      items.push(item)
-    }
-    updateChecklist(id, list.id, list.title, list.order, items)
+    const changes:BoardDelta[] = [{ type: "add-checklist-item", id, checklistId:list.id, item }]
+    requestChanges(changes)
   }
-
 
   const setChecklistItemStatus = (id: uuidv1, list:Checklist, idx: number, checked: boolean) => {
-    let items = cloneDeep(list.items)
-    items[idx].checked = checked
-    updateChecklist(id, list.id, list.title, list.order, items)
+    const changes:BoardDelta[] = [{ type: "set-checklist-item-state", id, checklistId:list.id, itemId:idx, state:checked }]
+    requestChanges(changes)
+
   }
 
-
   const deleteChecklistItem = (id: uuidv1, list:Checklist, idx: number) => {
-    let items = cloneDeep(list.items)
-    items.splice(idx, 1)
-    updateChecklist(id, list.id, list.title, list.order, items)
+    const changes:BoardDelta[] = [{ type: "delete-checklist-item", id, checklistId:list.id, itemId:idx }]
+    requestChanges(changes)
+  }
+
+  const convertChecklistItem = (id: uuidv1, list:Checklist, idx: number) => {
+
+    const groupId = store.getCardGroupId(cardId, $state)
+    const c:Card = {
+        id: uuidv1(),
+        comments: {},
+        checklists: {},
+        creator: store.myAgentPubKeyB64,
+        props: {
+          title: list.items[idx].text,
+          description: `(converted to card from checklist ${list.title} in ${card.props.title})`,
+          category: "",
+          agents: [],
+          labels: [],
+          attachments: []
+        },
+      };
+
+    const changes:BoardDelta[] = [{ type: "convert-checklist-item", id, checklistId:list.id, itemId:idx, groupId, card: c }]
+    requestChanges(changes)
   }
 
   const editDescription = () => {
@@ -241,27 +248,22 @@
 
   let editDescriptionElement
 
-  const addAttachment = async () => {
-    const hrl = await store.weClient.userSelectHrl()
-    if (hrl) {
-      if (props.attachments === undefined) {
-        props.attachments = []
-      }
-      props.attachments.push(hrlWithContextToB64(hrl))
-      handleSave(props)
-    }
-  }
+  let attachmentsDialog : AttachmentsDialog
+
   const removeAttachment = (idx: number) => {
     props.attachments.splice(idx,1)
     handleSave(props)
   }
 
+  const copyHrlToClipboard = () => {
+    const attachment: HrlWithContext = { hrl: [store.dnaHash, $activeBoard.hash], context: cardId }
+    store.weClient?.hrlToClipboard(attachment)
+  }
 </script>
-<sl-drawer class="edit-card" bind:this={dialog}
-  style="--size:500px"
-  no-header
-  on:sl-hide={()=>close()}
-  >
+
+{#if store.weClient}
+  <AttachmentsDialog activeBoard={$activeBoard} bind:this={attachmentsDialog}></AttachmentsDialog>
+{/if}
 
 <div class='card-editor'>
   <div class="card-wrapper">
@@ -275,7 +277,7 @@
         {/each}
         </div>
       </div>
-      {:else}
+      {:else if showControls}
       <div class="top-spacer"></div>
       {/if}
 
@@ -288,10 +290,17 @@
             handleSave(props)
           }}></ClickEdit>
         </div>
-        <div class="card-controls">
+        {#if showControls}
+          <div class="card-controls">
+            
+            {#if store.weClient}
+              <div class="details-button pocket-button" title="Add this card to pocket" on:click={()=>copyHrlToClipboard()}>
+                <SvgIcon icon=addToPocket size="25px"/>
+              </div>
+            {/if}
             {#if handleDelete}
               <div class="details-button delete-button" title="Delete this card" on:click={()=>handleDelete(cardId)}>
-                <SvgIcon icon=faTrash size="18px"/>
+                <SvgIcon icon=faTrash size="16px"/>
               </div>
             {/if}
             {#if handleArchive}
@@ -299,10 +308,11 @@
                 <SvgIcon icon=faArchive size="18px"/>
               </div>
             {/if}
-          <div class="details-button" title="Close this card" on:click={(e)=>{close()}}>
-            <SvgIcon icon=faClose size="18px"/>
+            <div class="details-button" title="Close this card" on:click={(e)=>{close()}}>
+              <SvgIcon icon=faClose size="18px"/>
+            </div>
           </div>
-        </div>
+        {/if}
       </div>
       <div class="belongs-to" style="display:flex; align-items: center;">
         <div >In column <strong>{store.getCardGroupName(cardId, $state)}</strong></div>
@@ -364,11 +374,17 @@
                 }} 
                 checked={item.checked}
                 >{item.text}</sl-checkbox>
-                <span class="delete-item"  on:click={(e)=>{
-                  e.stopPropagation();
-                  deleteChecklistItem(cardId,list,itemIdx)
-                 }}><SvgIcon icon=faTrash size=12px style="opacity: .3;  margin-left: 3px; position: relative; top: -.15rem"/></span >
-                
+                <div style="disply:flex;align-items:center;">
+                  <span class="convert-item" title="Convert item to card"  on:click={(e)=>{
+                    e.stopPropagation();
+                    convertChecklistItem(cardId,list,itemIdx)
+                  }}><SvgIcon icon=convertCard size=18x style="opacity: .3;  margin-left: 3px; position: relative; top: -.15rem"/></span >
+                  <span class="delete-item" title="Delete item" on:click={(e)=>{
+                    e.stopPropagation();
+                    deleteChecklistItem(cardId,list,itemIdx)
+                  }}><SvgIcon icon=faTrash size=12px style="opacity: .3;  margin-left: 3px; position: relative; top: -.15rem"/></span >
+                  
+                </div>
             </div>
             {/each}
             {#if addingChecklistItem != idx}
@@ -494,7 +510,7 @@
     <div class="multi-select card-section">
       <div class="detail-label">Assigned to</div>
       <sl-select
-        value={selectedAvatarsForSelect}
+        value={selectedAvatars}
         on:sl-change={(e)=>{
           selectedAvatars = e.target.value
           setAgents()
@@ -509,38 +525,17 @@
     </div>
     {/if}
     {#if store.weClient}
-      <div style="margin-left:10px; margin-bottom:5px;">
-        <button class="control" on:click={()=>addAttachment()} >          
-          <SvgIcon icon="faPaperclip" size="12px"/> Add Attachment
-        </button>
-      </div>
-      {#if props.attachments}
-        <div style="display:flex;flex-direction:row;flex-wrap:wrap">
-          {#each props.attachments as attachment, i}
-            {#await store.weClient.entryInfo(hrlB64WithContextToRaw(attachment).hrl)}
-              <sl-button size="small" loading></sl-button>
-            {:then { entryInfo }}
-              <sl-button  size="small"
-                on:click={()=>{
-                    const hrl = hrlB64WithContextToRaw(attachment)
-                    store.weClient.openHrl(hrl.hrl, hrl.context)
-                  }}
-                style="display:flex;flex-direction:row;margin-right:5px;margin-left:10px"><sl-icon src={entryInfo.icon_src} slot="prefix"></sl-icon>
-                {entryInfo.name}
-              </sl-button>
-              <sl-button circle size="small"
-                on:click={()=>{
-                  removeAttachment(i)
-                  }}
-                >
-                <SvgIcon icon="faTrash" size="12px"></SvgIcon>
-              </sl-button> 
-            {:catch error}
-              Oops. something's wrong.
-            {/await}
-          {/each}
+      <div style="display:flex; flex-wrap:wrap; align-items: center; margin-bottom:10px;">
+        <div style="margin-left:10px; margin-right:10px;">
+          <button title="Manage Card Attachments" class="attachment-button" on:click={()=>attachmentsDialog.open(card)} >          
+            <SvgIcon icon="link" size="16px"/>
+          </button>
         </div>
-      {/if}
+        {#if props.attachments}
+          <AttachmentsList attachments={props.attachments}
+            on:remove-attachment={(e)=>removeAttachment(e.detail)}/>
+        {/if}
+      </div>
     {/if}
 
     <sl-dialog bind:this={commentDialog}>
@@ -646,7 +641,6 @@
     </div>
   </div>
 </div>
-</sl-drawer>
 <style>
   .category-selected {
     border: solid 2px rgba(35, 32, 74, .5);
@@ -662,7 +656,7 @@
   }
   .card-editor {
     display: flex;
-    flex-basis: 270px;
+    flex-basis: 100%;
     font-style: normal;
     color: rgba(35, 32, 74, 1.0);
     justify-content: space-between;
@@ -852,12 +846,12 @@
     box-shadow: 0px 8px 10px rgba(53, 39, 211, 0.35);
   }
 
-  .delete-button, .archive-button {
+  .delete-button, .archive-button, .pocket-button {
     opacity: .7;
     transition: all .25s ease;
   }
 
-  .delete-button:hover, .archive-button:hover {
+  .delete-button:hover, .archive-button:hover, .pocket-button:hover {
     opacity: 1;
   }
 
@@ -998,7 +992,7 @@
     font-size: 16px;
   }
 
-  .delete-item {
+  .delete-item, .convert-item {
     opacity: 0;
     position: relative;
     top: 2px;
@@ -1008,8 +1002,10 @@
   .checklist-item:hover .delete-item {
     opacity: 1;
   }
-
-  .delete-item:hover {
+  .checklist-item:hover .convert-item {
+    opacity: 1;
+  }
+  .delete-item:hover, .convert-item:hover {
     cursor: pointer;
   }
 
