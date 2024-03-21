@@ -3,8 +3,8 @@ import { get, type Readable } from "svelte/store";
 import { v1 as uuidv1 } from "uuid";
 import { type AgentPubKey, type EntryHash, type EntryHashB64, encodeHashToBase64, type AgentPubKeyB64, type Timestamp } from "@holochain/client";
 import { BoardType } from "./boardList";
-import type { HrlB64WithContext } from "@lightningrodlabs/we-applet";
 import { cloneDeep } from "lodash";
+import type { WALUrl } from "./util";
 
 export class LabelDef {
     type: uuidv1
@@ -26,7 +26,7 @@ export type CardProps = {
   category: uuidv1,
   agents: Array<EntryHashB64>,
   labels: Array<uuidv1>,
-  attachments: Array<HrlB64WithContext>
+  attachments: Array<WALUrl>
 }
 
 export type Comment = {
@@ -69,7 +69,7 @@ export class Group {
 }
 export type BoardProps = {
   bgUrl: string,
-  attachments: Array<HrlB64WithContext>
+  attachments: Array<WALUrl>
 }
 
 const MAX_FEED_ITEMS = 50
@@ -122,7 +122,7 @@ export interface BoardState {
   labelDefs: LabelDef[];
   categoryDefs: CategoryDef[];
   props: BoardProps;
-  boundTo: Array<HrlB64WithContext>
+  boundTo: Array<WALUrl>
   feed: Feed
 }
   

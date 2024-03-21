@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { type HrlB64WithContext, isWeContext, type HrlWithContext } from "@lightningrodlabs/we-applet";
+  import { isWeContext, type WAL, weaveUrlFromWal } from "@lightningrodlabs/we-applet";
   import { cloneDeep } from "lodash";
   import type { Board, Card } from "./board";
   import { getContext } from "svelte";
   import type { KanDoStore } from "./store";
-  import { getMyDna, hrlWithContextToB64} from "./util";
+  import { getMyDna, type WALUrl} from "./util";
   import '@shoelace-style/shoelace/dist/components/button/button.js';
   import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
   import AttachmentsList from "./AttachmentsList.svelte";
@@ -13,7 +13,7 @@
   const { getStore } :any = getContext("store");
   let store: KanDoStore = getStore();
   let card: Card | undefined
-  let attachments: Array<HrlB64WithContext> = []
+  let attachments: Array<WALUrl> = []
  
   $:attachments = attachments
 
@@ -38,17 +38,17 @@
   }
 
   const addAttachment = async () => {
-    const hrl = await store.weClient.userSelectHrl()
-    if (hrl) {
+    const wal = await store.weClient.userSelectWal()
+    if (wal) {
       const dnaHash = await getMyDna(store.service.roleName, store.client)
-      const srcHrl: HrlWithContext = card ? {hrl:[dnaHash, activeBoard.hash],context:card.id}: {hrl:[dnaHash, activeBoard.hash]}
-      await store.weClient.requestBind(srcHrl, hrl)
-      _addAttachment(hrl)
+      const srcHrl: WAL = card ? {hrl:[dnaHash, activeBoard.hash],context:card.id}: {hrl:[dnaHash, activeBoard.hash]}
+      await store.weClient.requestBind(srcHrl, wal)
+      _addAttachment(wal)
     }
   }
 
-  const _addAttachment = (hrl: HrlWithContext) => {
-    attachments.push(hrlWithContextToB64(hrl))
+  const _addAttachment = (wal: WAL) => {
+    attachments.push(weaveUrlFromWal(wal))
     attachments = attachments
     handleSave()
   }

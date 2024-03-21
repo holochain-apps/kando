@@ -54,7 +54,7 @@
               on:click={async ()=>{
               try {
                 const synStore = new SynStore(new SynClient(client, roleName));
-                //const hrlB64 = hrlWithContextToB64(attachToHrlWithContext)
+                //const hrlB64 = hrlWithContextToB64(attachToWAL)
                 const board = await Board.Create(synStore, {/*boundTo:[hrlB64]*/name: inputElement.value})
                 const dnaHash = await getMyDna(roleName, client)
                 view.resolve({hrl:[dnaHash, board.hash]})
