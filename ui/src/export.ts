@@ -52,11 +52,12 @@ export const deserializeExport = (jsonExport:string) : Array<BoardState> => {
 
         // santize for things that may be missing from previous exports
         for (const board of exportObject.boards) {
-            if (!board.props.attachments) {
+            if (!board.props.attachments || (board.props.attachments[0] && typeof(board.props.attachments[0]) != "string")) {
                 board.props.attachments = []
             }
             for (const card of board.cards) {
-                if (!card.props.attachments) {
+                console.log("CARD", card.props.attachments, (card.props.attachments[0] && typeof(card.props.attachments[0]) != "string"))
+                if (!card.props.attachments || (card.props.attachments[0] && typeof(card.props.attachments[0]) != "string")) {
                     card.props.attachments = []
                 }
             }

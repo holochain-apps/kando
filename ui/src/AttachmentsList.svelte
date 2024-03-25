@@ -36,23 +36,29 @@
       class:attachment-item={!allowDelete}
     >
       {#await store.weClient.assetInfo(wal)}
-        <div style="cursor:pointer; padding: 0 5px 0 5px; border: dashed 1px;margin-right:5px" title={`${hrlToString(wal.hrl)}?${JSON.stringify(wal.context)}`}> ?...</div>
-      {:then { assetInfo }}
-        <sl-button  size="small"
-          on:click={async (e)=>{
-              e.stopPropagation()
-              try {
-//                embedLink = index
-                await store.weClient.openWal(wal)
-              } catch(e) {
-                alert(`Error opening link: ${e}`)
-              }
-            }}
-          style="display:flex;flex-direction:row;margin-right:5px"><sl-icon src={assetInfo.icon_src} slot="prefix"></sl-icon>
-          {assetInfo.name}
-        </sl-button> 
+        <div style="cursor:pointer; padding: 0 5px 0 5px; border: dashed 1px;margin-right:5px" title={`Resolving WAL: ${hrlToString(wal.hrl)}?${JSON.stringify(wal.context)}`}> ...</div>
+      {:then data}
+        {#if data}
+          {@const assetInfo = data.assetInfo}
+          <sl-button  size="small"
+            on:click={async (e)=>{
+                e.stopPropagation()
+                try {
+  //                embedLink = index
+                  await store.weClient.openWal(wal)
+                } catch(e) {
+                  alert(`Error opening link: ${e}`)
+                }
+              }}
+            style="display:flex;flex-direction:row;margin-right:5px"><sl-icon src={assetInfo.icon_src} slot="prefix"></sl-icon>
+            {assetInfo.name}
+          </sl-button>
+        {:else} 
+        <div style="color:red; cursor:pointer; padding: 0 5px 0 5px; border: dashed 1px;margin-right:5px" title={`Failed to resolve WAL: ${hrlToString(wal.hrl)}?${JSON.stringify(wal.context)}`}>Bad WAL</div>
+
+        {/if}
       {:catch error}
-        Oops. something's wrong.
+        <div style="color:red">Error getting asset info: {error}</div>
       {/await}
       {#if allowDelete}
         <sl-button size="small"
