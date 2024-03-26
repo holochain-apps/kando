@@ -3,7 +3,7 @@
   import { createEventDispatcher, getContext } from "svelte";
   import type { KanDoStore } from "./store";
   import type {  WALUrl } from "./util";
-  import { weaveUrlFromWal, weaveUrlToWAL, WeClient } from "@lightningrodlabs/we-applet";
+  import { weaveUrlToWAL } from "@lightningrodlabs/we-applet";
   import SvgIcon from "./SvgIcon.svelte";
   import { hrlToString } from "@holochain-open-dev/utils";
   import '@lightningrodlabs/we-elements/dist/elements/wal-embed.js';

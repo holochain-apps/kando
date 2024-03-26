@@ -65,7 +65,7 @@ export class BoardList {
                                                 body=`${body} to:`
                                                 feedItem.content.delta.agents.forEach(agent=>body=`${body} ${agent}`)
                                             }
-                                            this.weClient.notifyWe([{
+                                            this.weClient.notifyFrame([{
                                                 title: `${boardState.name} updated`,
                                                 body,
                                                 notification_type: "change",
