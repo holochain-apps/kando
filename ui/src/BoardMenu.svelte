@@ -6,6 +6,7 @@
     import NewBoardDialog from './NewBoardDialog.svelte';
     import SvgIcon from "./SvgIcon.svelte";
     import AboutDialog from "./AboutDialog.svelte";
+    import SettingsDialog from "./SettingsDialog.svelte";
     import KDLogoIcon from "./icons/KDLogoIcon.svelte";
     import BoardMenuItem from "./BoardMenuItem.svelte";
     import { BoardType } from "./boardList";
@@ -40,10 +41,12 @@
     }
 
     let aboutDialog
+    let settingsDialog
 
 </script>
 
 <AboutDialog bind:this={aboutDialog} />
+<SettingsDialog bind:this={settingsDialog} />
 <div class="board-menu"
     class:wide={wide} >
 
@@ -106,10 +109,11 @@
 
     <NewBoardDialog bind:this={newBoardDialog}></NewBoardDialog>
     <div class="footer" 
-        class:slideOut={$uiProps.showMenu == false}
-        on:click={()=>aboutDialog.open()}>   
+        class:slideOut={$uiProps.showMenu == false}>   
         <div class="logo" title="About KanDo!"><KDLogoIcon /></div>
-        <div class="cog"><SvgIcon icon=faCog size="20px" color="#fff"/></div>
+        <div on:click={()=>aboutDialog.open()}><SvgIcon icon=info color="#fff"></SvgIcon></div>
+
+        <div on:click={()=>settingsDialog.open()} style="margin-left:10px;"><SvgIcon icon=faCog size="20px" color="#fff"/></div>
     </div>
 </div>
 
@@ -246,7 +250,7 @@
         border-radius: 0;
         bottom: 0px;
         height: 40px;
-        display: block;
+        display: flex;
         align-items: center;
         width: 330px;
         left: 0;

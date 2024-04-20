@@ -5,10 +5,10 @@ import {toPromise, type AsyncReadable, pipe, joinAsync, asyncDerived, sliceAndJo
 import { SynStore, WorkspaceStore, type Commit, stateFromCommit } from "@holochain-syn/core";
 import type { ProfilesStore } from "@holochain-open-dev/profiles";
 import { cloneDeep } from "lodash";
-import { Board, feedItems, type BoardDelta, type BoardState, deltaToFeedString } from "./board";
+import { Board, feedItems, type BoardDelta, type BoardState, deltaToFeedString, feedItemShouldNotify } from "./board";
 import { hashEqual } from "./util";
 import type { WeClient } from "@lightningrodlabs/we-applet";
-import { SeenType } from "./store";
+import { NotificationType, SeenType } from "./store";
 
 export enum BoardType {
     active = "active",
@@ -57,26 +57,31 @@ export class BoardList {
                                     const boardState = stateFromCommit(tipRecord.entry) as BoardState
                                     const feed = feedItems(boardState.feed)
                                     const me = encodeHashToBase64(this.synStore.client.client.myPubKey)
-                                    feed.forEach(feedItem=> {
+                                    const notifications = []
+                                    feed.forEach(feedItem=> { 
                                         const key = `${feedItem.author}.${feedItem.timestamp.getTime()}`
                                         if (! this.notifiedItems[key] ) {
-                                            let body = `${feedItem.author} ${deltaToFeedString(boardState, feedItem.content)}`
-                                            if (feedItem.content.delta.type == 'set-card-agents') {
-                                                body=`${body} to:`
-                                                feedItem.content.delta.agents.forEach(agent=>body=`${body} ${agent}`)
+                                            const notifyType:NotificationType = feedItemShouldNotify(me, boardState, feedItem, get(this.notifications))
+                                            if (notifyType) {
+                                                console.log("notifying", key, notifyType, feedItem)  
+                                                let body = `${feedItem.author} ${deltaToFeedString(boardState, feedItem.content)}`
+                                                if (feedItem.content.delta.type == 'set-card-agents') {
+                                                    body=`${body} to:`
+                                                    feedItem.content.delta.agents.forEach(agent=>body=`${body} ${agent}`)
+                                                }
+                                                notifications.push({
+                                                    title: `${boardState.name} updated`,
+                                                    body,
+                                                    notification_type: "change",
+                                                    icon_src: undefined,
+                                                    urgency: notifyType,
+                                                    timestamp: Date.now()
+                                                })
                                             }
-                                            this.weClient.notifyFrame([{
-                                                title: `${boardState.name} updated`,
-                                                body,
-                                                notification_type: "change",
-                                                icon_src: undefined,
-                                                urgency: "low",
-                                                timestamp: Date.now()
-                                            }
-                                            ])
                                             this.notifiedItems[key] = true
                                         }
                                     })
+                                    this.weClient.notifyFrame(notifications)
                                 }
                             }
                         } catch(e) {
@@ -125,7 +130,7 @@ export class BoardList {
     allAgentBoards: AsyncReadable<ReadonlyMap<AgentPubKey, Array<BoardAndLatestState>>>
     allAuthorAgents: AsyncReadable<AgentPubKey[]>
 
-    constructor(public profilseStore: ProfilesStore, public synStore: SynStore, public weClient : WeClient) {
+    constructor(public profilseStore: ProfilesStore, public synStore: SynStore, public weClient : WeClient, public notifications: Readable<{[key: string]: NotificationType}>) {
         this.allAgentBoards = pipe(this.profilseStore.agentsWithProfile,
             agents=>{
                 console.log("allAgentBoards")

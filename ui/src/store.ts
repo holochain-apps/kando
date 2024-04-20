@@ -16,7 +16,7 @@ import { BoardList } from './boardList';
 import TimeAgo from "javascript-time-ago"
 import en from 'javascript-time-ago/locale/en'
 import type { v1 as uuidv1 } from "uuid";
-import { get, writable, type Unsubscriber, type Writable } from "svelte/store";
+import { derived, get, writable, type Unsubscriber, type Writable } from "svelte/store";
 import type { ProfilesStore } from '@holochain-open-dev/profiles';
 import type { BoardState } from './board';
 import type { WeClient } from '@lightningrodlabs/we-applet';
@@ -47,11 +47,37 @@ export enum SeenType {
     Comment="c",
 }
 
+export type NotificationOption = {
+    id: string,
+    name: string,
+}
+export const NotificationOptions = [
+    {id: 'addCard', name:'Adding new cards'},
+    {id: 'assignedMe', name:'Card assigned to me'},
+    {id: 'assignedAny', name:'Card assigned to anyone'},
+    {id: 'moveMy', name:'Moving my cards'},
+    {id: 'moveAny', name:'Moving any card'},
+    {id: 'commentMy', name:'Comments on my cards'},
+    {id: 'commentAny', name:'Comments on any card'},
+    {id: 'updateMy', name:'Updates to my cards'},
+    {id: 'updateAny', name:'Updates to any card'},
+
+    {id: 'addBoard', name:'Adding boards'},
+    {id: 'updateBoard', name:'Changing board settings'},
+]
+export enum NotificationType {
+    None=  "",
+    Low= "low",
+    Medium= "medium",
+    High="high"
+} 
+
 export interface UIProps {
     showArchived: {[key: string]: boolean},
     showMenu: boolean,
     tips: HoloHashMap<EntryHash,EntryHash>,
     latestComment: {[key: string]: Timestamp}
+    notifications: {[key: string]: NotificationType}
   }
 
 export class KanDoStore {
@@ -74,7 +100,6 @@ export class KanDoStore {
         protected zomeName: string = ZOME_NAME
     ) {
         this.client = clientIn
-        console.log("WECLIENT", weClient)
         getMyDna(roleName, clientIn).then(res=>{
             this.dnaHash = res
           })
@@ -86,7 +111,40 @@ export class KanDoStore {
           this.zomeName
         );
         this.synStore = new SynStore(new SynClient(this.client,this.roleName,this.zomeName))
-        this.boardList = new BoardList(profilesStore, this.synStore, weClient)
+        this.uiProps = writable({
+            showArchived: {},
+            showMenu: true,
+            tips: new HoloHashMap,
+            latestComment: {},
+            notifications: {
+                assignedToMe:NotificationType.High,
+                moveMy:NotificationType.High,
+                commentMy:NotificationType.High,
+                updateMy:NotificationType.Medium,
+                addBoard:NotificationType.Low,
+                addCard:NotificationType.Low,
+            }
+        })
+        for (let i = 0; i < localStorage.length; i+=1){
+            const key = localStorage.key(i)
+            const [type, boardHashB64, cardId] = key.split(":")
+            switch (type) {
+                case SeenType.Tip:
+                    const tipB64 = localStorage.getItem(key)
+                    this.setSeenTip(decodeHashFromBase64(boardHashB64), decodeHashFromBase64(tipB64))
+                    break;
+                case SeenType.Comment:
+                    const timestampStr = localStorage.getItem(key)
+                    this.setLatestComment(decodeHashFromBase64(boardHashB64),cardId, parseInt(timestampStr))
+                    break;
+                case "notifications":
+                    console.log(localStorage.getItem(key))
+                    const notifications:NotificationOptions = JSON.parse(localStorage.getItem(key))
+                    this.setUIprops({notifications})
+                    break;
+            }
+        }
+        this.boardList = new BoardList(profilesStore, this.synStore, weClient, derived(this.uiProps, props=>props.notifications))
         this.boardList.activeBoard.subscribe((board)=>{
             if (this.unsub) {
                 this.unsub()
@@ -100,24 +158,19 @@ export class KanDoStore {
                 })
             }
         })
-        this.uiProps = writable({
-            showArchived: {},
-            showMenu: true,
-            tips: new HoloHashMap,
-            latestComment: {}
-        })
-        for (let i = 0; i < localStorage.length; i+=1){
-            const key = localStorage.key(i)
-            const [type, boardHashB64, cardId] = key.split(":")
-            if (type == SeenType.Tip) {
-                const tipB64 = localStorage.getItem(key)
-                this.setSeenTip(decodeHashFromBase64(boardHashB64), decodeHashFromBase64(tipB64))
-            } else if (type == SeenType.Comment) {
-                const timestampStr = localStorage.getItem(key)
-                this.setLatestComment(decodeHashFromBase64(boardHashB64),cardId, parseInt(timestampStr))
-            }
-        }
 
+    }
+
+    setNotifications(name:string, value: NotificationType) {
+        const notifications = get(this.uiProps).notifications
+        //const notifications = {}
+        console.log("setting",notifications)
+
+        notifications[name] = value
+        console.log("setting",notifications)
+
+        this.setUIprops({notifications})
+        localStorage.setItem("notifications", JSON.stringify(notifications))
     }
 
     updateSeenTip(boardHash: EntryHash, tip:EntryHash) {

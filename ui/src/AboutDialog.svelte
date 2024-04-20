@@ -19,66 +19,12 @@
     let dialog
     export const open = ()=>{dialog.show()}
 
-    let fileinput;
-	const onFileSelected = (e)=>{
-        let file = e.target.files[0];
-        let reader = new FileReader();
 
-        reader.addEventListener("load", async () => {
-            const importedBoardStates = deserializeExport(reader.result as string)
-            if ( importedBoardStates.length > 0) {
-                const boards:Array<Board> = []
-                for (const b of importedBoardStates) {
-                    console.log("importing", b.name)
-                    try {
-                        boards.push(await store.boardList.makeBoard(b))
-                    } catch(e) {
-                        console.log("error importing", b.name, e)
-                    }
-                }
-                if (importedBoardStates.length == 1) {
-                    store.setUIprops({showMenu:false})
-                    boards[0].join()
-                    store.setActiveBoard(boards[0].hash)
-                }
-            }
-            importing = false
-        }, false);
-        importing = true
-        reader.readAsText(file);
-    };
-    const createBoardFrom = async (oldBoard: BoardState) => {
-        const board = await store.boardList.cloneBoard(oldBoard)
-        store.setUIprops({showMenu:false})
-        store.setActiveBoard(board.hash)
-    }
-    const exportAllBoards = async () => {
-        const boardStates = []
-        exporting = true
-
-        const hashes = await toPromise(asyncDerived(store.synStore.documentsByTag.get(BoardType.active),x=>Array.from(x.keys())))
-        const docs = hashes.map(hash=>new DocumentStore<BoardState, BoardEphemeralState>(store.synStore, hash))
-        for (const docStore of docs) {
-            try {
-                const workspaces = await toPromise(docStore.allWorkspaces)
-                const workspaceStore = new WorkspaceStore(docStore, Array.from(workspaces.keys())[0])
-                boardStates.push(await toPromise(workspaceStore.latestSnapshot))
-            } catch(e) {
-                console.log("Error getting snapshot for ", encodeHashToBase64(docStore.documentHash), e)
-            }
-        }
-        exportBoards(boardStates)
-        exporting = false
-    }
-    let importing = false
-    let exporting = false
-
-    $: allBoards = store.boardList.allBoards
 
 </script>
 
 
-<sl-dialog label="KanDo!: UI v0.9.3 for DNA v0.9.0" bind:this={dialog} width={600} >
+<sl-dialog label="KanDo!: UI v0.9.6 for DNA v0.9.0" bind:this={dialog} width={600} >
     <div class="about">
         <p>KanDo! is a demonstration Holochain app built by the Holochain Foundation.</p>
         <p> <b>Developers:</b>
@@ -87,44 +33,7 @@
             a library that makes it really easy to build this kind of real-time collaboaration into Holochain apps.
         </p>
     <p class="small">Copyright © 2023-2024 Holochain Foundation.  This software is distributed under the MIT License</p>
-    {#if importing}
-        <div class="export-import" title="Import Boards">
-            <div class="spinning" style="margin:auto"><SvgIcon icon=faSpinner color="#fff"></SvgIcon></div>
-        </div>
-    {:else}
-        <div class="export-import" on:click={()=>{fileinput.click();}} title="Import Boards">
-            <SvgIcon color="#fff" icon=faFileImport size=20px style="margin-left: 15px;"/><span>Import Boards </span>
-        </div>
-    {/if}
-    {#if exporting}
-        <div class="export-import" title="Import Boards">
-            <div class="spinning" style="margin:auto"><SvgIcon icon=faSpinner  color="#fff"></SvgIcon></div>
-        </div>
-    {:else}
-        <div class="export-import" on:click={()=>{exportAllBoards()}} title="Export All Boards"><SvgIcon color="#fff" icon=faFileExport size=20px style="margin-left: 15px;"/><span>Export All Boards</span></div>
-    {/if}
-
-
-    {#if $allBoards.status == "pending"}
-        <div class="spinning" style="display:inline-block"> <SvgIcon icon=faSpinner  color="black"></SvgIcon></div>
-    {:else if $allBoards.status == "complete"}
-        <sl-dropdown skidding=15>
-            <sl-button slot="trigger" caret><SvgIcon icon=faClone size=20px style="margin-right: 10px"/><span>New Board From </span></sl-button>
-            <sl-menu>
-                {#each Array.from($allBoards.value.entries()) as [key,board]}
-                    <sl-menu-item on:click={()=>{
-                        createBoardFrom(board.latestState)
-                    }} >
-                        {board.latestState.name}
-                    </sl-menu-item>
-                {/each}
-            </sl-menu>
-        </sl-dropdown>
-    {:else if $allBoards.status == "error"}
-        Error: {$allBoards.error}
-    {/if}
-
-    <input style="display:none" type="file" accept=".json" on:change={(e)=>onFileSelected(e)} bind:this={fileinput} >
+    
     </div>
 </sl-dialog>
 

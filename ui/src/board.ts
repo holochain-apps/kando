@@ -5,6 +5,7 @@ import { type AgentPubKey, type EntryHash, type EntryHashB64, encodeHashToBase64
 import { BoardType } from "./boardList";
 import { cloneDeep } from "lodash";
 import type { WALUrl } from "./util";
+import { NotificationType } from "./store";
 
 export class LabelDef {
     type: uuidv1
@@ -359,6 +360,86 @@ export interface BoardState {
     return state
   }
 
+  const _getCardFromDelta = (state: BoardState, cardId: uuidv1):Card|undefined=> {
+    const c = _getCard(state, cardId)
+    if (c) {
+      const [card,i] = c
+      if (card) {
+        return card
+      }
+    }
+    return undefined
+
+  }
+
+  export const feedItemShouldNotify = (me: AgentPubKeyB64, state: BoardState, feedItem: FeedItem, notifications:{[key: string]: NotificationType}): NotificationType => {
+    const delta = feedItem.content.delta
+    const context = feedItem.content.context
+    let feedText = ""
+    switch (delta.type) {
+      case "create": 
+        return notifications['addBoard']
+      case "set-status": 
+      case "set-state":
+      case "set-name":
+      case "set-props":
+      case "add-group":
+      case "set-groups":
+      case "set-group-order":
+      case "set-label-defs":
+      case "set-category-defs":
+        return notifications['updateBoard']
+      case "add-card":
+        return notifications['addCard']
+      case "update-card-group":{
+        const card = _getCardFromDelta(state, delta.id)
+        console.log("update-card-group", card, delta)
+        if (card) {
+            if (card.creator == me || card.props.agents.includes(me))
+              return notifications['moveMy']
+            else
+              return notifications['moveAny']
+          }
+        }
+        break;
+      case "add-card-checklist": 
+      case "update-card-checklist":
+      case "add-checklist-item":
+      case "delete-checklist-item":
+      case "set-checklist-item-state":
+      case "convert-checklist-item":
+      case "delete-card-checklist":
+      case "update-card-props": {
+        const card = _getCardFromDelta(state, delta.id)
+        if (card) {
+            if (card.creator == me || card.props.agents.includes(me))
+              return notifications['updateMy']
+            else
+              return notifications['updateAny']
+          }
+        }
+        break;
+      case "set-card-agents":
+        if (delta.agents.includes(me))
+          return notifications['assignedMe']
+        else
+          return notifications['assignedAny']
+        break;
+        case "update-card-comment":
+        case "update-card-comment":{
+        const card = _getCardFromDelta(state, delta.id)
+        if (card) {
+            if (card.creator == me || card.props.agents.includes(me))
+              return notifications['commentMy']
+            else
+              return notifications['commentAny']
+          }
+        }
+        break;
+    }
+    return NotificationType.None
+  }
+
   export const deltaToFeedString = (state: BoardState, content: FeedContent):string => {
     const delta = content.delta
     const context = content.context
@@ -395,7 +476,7 @@ export interface BoardState {
         feedText = `updated the categories`
         break;
       case "add-card":
-        feedText = `added a card titled "${delta.value.props.title}" to ${context.group.name}`
+        feedText = `added a card titled "${delta.value.props.title}"${context ? `to ${context.group.name}` : ""}`
         break;
       case "update-card-group":{
         const c = _getCard(state, delta.id)
