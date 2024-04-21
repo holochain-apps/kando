@@ -138,7 +138,6 @@ export class KanDoStore {
                     this.setLatestComment(decodeHashFromBase64(boardHashB64),cardId, parseInt(timestampStr))
                     break;
                 case "notifications":
-                    console.log(localStorage.getItem(key))
                     const notifications:NotificationOptions = JSON.parse(localStorage.getItem(key))
                     this.setUIprops({notifications})
                     break;
@@ -163,11 +162,8 @@ export class KanDoStore {
 
     setNotifications(name:string, value: NotificationType) {
         const notifications = get(this.uiProps).notifications
-        //const notifications = {}
-        console.log("setting",notifications)
 
         notifications[name] = value
-        console.log("setting",notifications)
 
         this.setUIprops({notifications})
         localStorage.setItem("notifications", JSON.stringify(notifications))

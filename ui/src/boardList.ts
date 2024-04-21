@@ -5,7 +5,7 @@ import {toPromise, type AsyncReadable, pipe, joinAsync, asyncDerived, sliceAndJo
 import { SynStore, WorkspaceStore, type Commit, stateFromCommit } from "@holochain-syn/core";
 import type { ProfilesStore } from "@holochain-open-dev/profiles";
 import { cloneDeep } from "lodash";
-import { Board, feedItems, type BoardDelta, type BoardState, deltaToFeedString, feedItemShouldNotify } from "./board";
+import { Board, feedItems, type BoardDelta, type BoardState, deltaToFeedString, feedItemShouldNotify, MAX_FEED_ITEMS } from "./board";
 import { hashEqual } from "./util";
 import type { WeClient } from "@lightningrodlabs/we-applet";
 import { NotificationType, SeenType } from "./store";
@@ -36,7 +36,28 @@ export class BoardList {
     activeBoardHash: Writable<EntryHash| undefined> = writable(undefined)
     activeBoardHashB64: Readable<string| undefined> = derived(this.activeBoardHash, s=> s ? encodeHashToBase64(s): undefined)
     boardCount: AsyncReadable<number>
-    notifiedItems = {}
+    notifiedItems: {[key:string]: number}
+    lastNotifiedCount: number
+    notificationsInterval = setInterval(() => {
+
+
+        // update the saved notified items in the local store
+        let entries = Object.entries(this.notifiedItems)
+
+        if (this.lastNotifiedCount != entries.length) {
+            entries = entries.sort(([_ka,a],[_kb,b])=>b-a)
+            
+            if (entries.length > MAX_FEED_ITEMS) {
+                for (let i = MAX_FEED_ITEMS;i<entries.length;i+=1) {
+                    const [key,_ ] = entries[i]
+                    delete this.notifiedItems[key]
+                }
+            }
+            this.lastNotifiedCount = Object.keys(this.notifiedItems).length
+
+            localStorage.setItem("notifiedItems",JSON.stringify(this.notifiedItems))
+        }
+      }, 10000);
 
     boardData2 = new LazyHoloHashMap( documentHash => {
         const docStore = this.synStore.documents.get(documentHash)
@@ -58,12 +79,12 @@ export class BoardList {
                                     const feed = feedItems(boardState.feed)
                                     const me = encodeHashToBase64(this.synStore.client.client.myPubKey)
                                     const notifications = []
-                                    feed.forEach(feedItem=> { 
-                                        const key = `${feedItem.author}.${feedItem.timestamp.getTime()}`
-                                        if (! this.notifiedItems[key] ) {
+                                    feed.forEach(feedItem=> {
+                                        const timestamp = feedItem.timestamp.getTime()
+                                        const key = `${feedItem.author}.${timestamp}`
+                                        if (!this.notifiedItems[key] ) {
                                             const notifyType:NotificationType = feedItemShouldNotify(me, boardState, feedItem, get(this.notifications))
                                             if (notifyType) {
-                                                console.log("notifying", key, notifyType, feedItem)  
                                                 let body = `${feedItem.author} ${deltaToFeedString(boardState, feedItem.content)}`
                                                 if (feedItem.content.delta.type == 'set-card-agents') {
                                                     body=`${body} to:`
@@ -75,17 +96,19 @@ export class BoardList {
                                                     notification_type: "change",
                                                     icon_src: undefined,
                                                     urgency: notifyType,
-                                                    timestamp: Date.now()
+                                                    timestamp
                                                 })
                                             }
-                                            this.notifiedItems[key] = true
+                                            this.notifiedItems[key] = timestamp
                                         }
                                     })
-                                    this.weClient.notifyFrame(notifications)
+                                    if (notifications.length > 0) {
+                                        this.weClient.notifyFrame(notifications)
+                                    }
                                 }
                             }
                         } catch(e) {
-                            console.log("Error notifying We", e)
+                            console.log("Error sending notification to frame", e)
                         }
                     })
                 }
@@ -175,6 +198,11 @@ export class BoardList {
         this.boardCount =  asyncDerived(joined,
             ([boards,archived]) => boards.length + archived.length
         )
+
+        const notifiedItemsEncoded = localStorage.getItem("notifiedItems")
+        if (notifiedItemsEncoded) this.notifiedItems = JSON.parse(notifiedItemsEncoded)
+        else this.notifiedItems = {}
+        this.lastNotifiedCount = Object.keys(this.notifiedItems).length
     }
     
     async getBoard(documentHash: EntryHash) : Promise<Board | undefined> {
@@ -201,7 +229,7 @@ export class BoardList {
                 console.log("joined")
                 this.activeBoard.update((n) => {return board} )
             } else {
-                console.log("NO BOARD")
+                console.log("Board not found on setActiveBoard")
             }
         } else {
             this.activeBoard.update((n) => {return undefined} )
@@ -233,7 +261,7 @@ export class BoardList {
             if (leave) {
                 const board = await this.getBoard(hash)
                 if (board) await board.leave()
-                else console.log("Board Not Found!")
+                else console.log("Board Not Found on closeActiveBoard")
             }
             this.setActiveBoard(undefined)
         }

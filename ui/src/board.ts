@@ -73,7 +73,7 @@ export type BoardProps = {
   attachments: Array<WALUrl>
 }
 
-const MAX_FEED_ITEMS = 50
+export const MAX_FEED_ITEMS = 50
 export type FeedContent = {
   delta: BoardDelta,
   context: any,  // used to hold info important to generating the feed item description
@@ -347,14 +347,14 @@ export interface BoardState {
     if (!state.feed) state.feed = {}
     
     state.feed[newFeedKey(author)] = {delta, context}
-    const keys = Object.keys(state)
+    const keys = Object.keys(state.feed)
     if (keys.length > MAX_FEED_ITEMS) {
       const keysToRemove = keys.map(key=>{
         const [auth, date] = key.split(".")
         return [auth,parseInt(date)]
       }).sort(([_x, a],[_y,b]) => 
         // @ts-ignore
-        a-b).slice(MAX_FEED_ITEMS)
+        b-a).slice(MAX_FEED_ITEMS)
       keysToRemove.forEach( ([a,d])=> delete state.feed[`${a}.${d}`])
     }
     return state
@@ -393,7 +393,6 @@ export interface BoardState {
         return notifications['addCard']
       case "update-card-group":{
         const card = _getCardFromDelta(state, delta.id)
-        console.log("update-card-group", card, delta)
         if (card) {
             if (card.creator == me || card.props.agents.includes(me))
               return notifications['moveMy']

@@ -6,7 +6,7 @@
   import type { KanDoStore } from "./store";
   import LabelSelector from "./LabelSelector.svelte";
   import { v1 as uuidv1 } from "uuid";
-  import { type Card, Group, UngroupedId, type CardProps, type Comment, type Checklists, Board, type BoardProps, type Feed, type FeedItem, sortedFeedKeys, feedItems, deltaToFeedString } from "./board";
+  import { type Card, Group, UngroupedId, type CardProps, type Comment, type Checklists, Board, type BoardProps, type Feed, type FeedItem, sortedFeedKeys, feedItems, deltaToFeedString, MAX_FEED_ITEMS } from "./board";
   import EditBoardDialog from "./EditBoardDialog.svelte";
   import Avatar from "./Avatar.svelte";
   import { decodeHashFromBase64, type Timestamp } from "@holochain/client";
@@ -499,7 +499,7 @@
            class:hidden={feedHidden}
       >
       <div class="feed-header">
-        <span><strong>Activity</strong> (latest 50)</span>
+        <span><strong>Activity</strong> (latest {MAX_FEED_ITEMS})</span>
         <div class="details-button" title="Close" on:click={(e)=>{feedHidden = !feedHidden}}>
           <SvgIcon icon=faClose size="18px"/>
         </div>
