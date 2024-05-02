@@ -1,30 +1,12 @@
 <script lang="ts">
-    import { getContext } from "svelte";
     import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
-    import SvgIcon from "./SvgIcon.svelte";
-    import type { KanDoStore } from "./store";
-    import {asyncDerived, toPromise} from '@holochain-open-dev/stores'
-    import { BoardType } from "./boardList";
-    import type { Board, BoardEphemeralState, BoardState } from "./board";
-    import { deserializeExport, exportBoards } from "./export";
-    import { DocumentStore, WorkspaceStore } from "@holochain-syn/core";
-    import { encodeHashToBase64 } from "@holochain/client";
-
-
-    const { getStore } :any = getContext('store');
-
-    const store:KanDoStore = getStore();
-
 
     let dialog
     export const open = ()=>{dialog.show()}
-
-
-
 </script>
 
 
-<sl-dialog label="KanDo!: UI v0.9.7 for DNA v0.9.0" bind:this={dialog} width={600} >
+<sl-dialog label="KanDo!: UI v0.9.8 for DNA v0.9.0" bind:this={dialog} width={600} >
     <div class="about">
         <p>KanDo! is a demonstration Holochain app built by the Holochain Foundation.</p>
         <p> <b>Developers:</b>

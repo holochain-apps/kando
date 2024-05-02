@@ -10,6 +10,7 @@
     import KDLogoIcon from "./icons/KDLogoIcon.svelte";
     import BoardMenuItem from "./BoardMenuItem.svelte";
     import { BoardType } from "./boardList";
+    import { isWeContext } from "@lightningrodlabs/we-applet";
     export let wide = false
 
     let newBoardDialog
@@ -50,7 +51,9 @@
 <div class="board-menu"
     class:wide={wide} >
 
-    <GroupParticipants/>
+    {#if !isWeContext()}
+        <GroupParticipants/>
+    {/if}
         <h3 class="type-header">Boards</h3>
         <div class="boards-section">
             <div class="new-board" on:click={()=>newBoardDialog.open()} title="New Board"><SvgIcon color="white" size=25px icon=faSquarePlus style="margin-left: 15px;"/><span>New Board</span></div>

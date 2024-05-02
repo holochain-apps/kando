@@ -5,15 +5,57 @@
     import type { KanDoStore } from "./store";
     import Avatar from './Avatar.svelte';
     import "@holochain-open-dev/stores/dist/debug-store.js"
-    import type { AgentPubKey } from "@holochain/client";
-  
+    import { encodeHashToBase64, type AgentPubKey } from "@holochain/client";
+    import {type AsyncReadable, pipe, joinAsync, asyncDerived, sliceAndJoin} from '@holochain-open-dev/stores'
+    import type { BoardAndLatestState } from "./boardList";
+    import  { HoloHashMap, LazyHoloHashMap } from "@holochain-open-dev/utils";
+
     const { getStore } :any = getContext('store');
     const store:KanDoStore = getStore();
   
-    //$: agents = store.profilesStore.agentsWithProfile
-    $: agents = store.boardList.allAuthorAgents
-    $: agentBoards = store.boardList.allAgentBoards
-    $: agentBoardHashes = store.boardList.agentBoardHashes
+
+    const allDocumentAuthors: AsyncReadable<Uint8Array[][]> = pipe(store.boardList.activeBoardHashes,
+            documentHashes => joinAsync(documentHashes.map(documentHash=>store.synStore.documents.get(documentHash).allAuthors), {errors: "filter_out"}),
+            )
+    const allAuthorAgents:AsyncReadable<AgentPubKey[]>  = asyncDerived(allDocumentAuthors, (docAuthors) => {
+          const authors: HoloHashMap<AgentPubKey, boolean> = new HoloHashMap()
+          for (let v of Array.from(docAuthors.values())) {
+              v.forEach((a)=> authors.set(a, true))
+          }
+          return Array.from(authors.keys())
+      })
+    const allAgentBoards:AsyncReadable<ReadonlyMap<AgentPubKey, Array<BoardAndLatestState>>> = pipe(store.profilesStore.agentsWithProfile,
+            agents=>{
+                console.log("allAgentBoards") 
+                return sliceAndJoin(agentBoardHashes, agents, {errors: "filter_out"})
+            }
+        )
+    const agentBoardHashesMap: LazyHoloHashMap<AgentPubKey, AsyncReadable<Array<BoardAndLatestState>>> = new LazyHoloHashMap(agent =>
+        pipe(store.boardList.activeBoardHashes,
+            documentHashes => joinAsync(documentHashes.map(documentHash=>store.synStore.documents.get(documentHash).allAuthors), {errors: "filter_out"}),
+            (documentsAuthors, documentHashes) => {
+                const agentBoardHashes: AsyncReadable<BoardAndLatestState>[] = []
+                const b64 = encodeHashToBase64(agent)
+                for (let i = 0; i< documentsAuthors.length; i+=1) {
+                    if (documentsAuthors[i].find(a=>encodeHashToBase64(a) == b64)) {
+                        const hash = documentHashes[i]
+                        //const state = this.boardData2.get(hash).workspace.latestSnapshot
+                        //agentDocuments.push(asyncDerived(state, state=>{return {hash, state}}))
+                        const x = store.boardList.boardData2.get(hash)
+                        if (x) {
+                            console.log("agentBoardHashes")
+                            agentBoardHashes.push(x)
+                        }
+                    }
+                }
+                return joinAsync(agentBoardHashes, {errors: "filter_out"})
+            },
+        )
+    )
+    //$: agents = store.profilesStore.agentsWithProfile 
+    $: agents = allAuthorAgents
+    $: agentBoards = allAgentBoards
+    $: agentBoardHashes = agentBoardHashesMap
     
     //__debugStore(store.boardList.allAgentBoards)
     //.status=="complete" ? sliceAndJoin( store.boardList.boardParticipants, $agents.value): undefined
@@ -37,7 +79,7 @@
               {#if $agentBoards.status == "pending"}
                 agentBoard: <sl-skeleton effect="pulse" style="height: 40px; width: 100%" ></sl-skeleton>
               {:else if $agentBoards.status == "error"}
-                <div>Error loading agent boards</div>
+                <div>Error loading agent boards: {$agentBoards.error} </div>
               {:else if $agentBoards.status=="complete"}
                 <div class="participant-list">
                   {#each $agents.value as agentPubKey}
