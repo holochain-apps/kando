@@ -4,7 +4,7 @@
   import ControllerBoard from './ControllerBoard.svelte'
   import ControllerCard from './ControllerCard.svelte'
   import ControllerBlockActiveBoards from './ControllerBlockActiveBoards.svelte'
-  import { AppAgentWebsocket, AdminWebsocket, type AppAgentClient } from '@holochain/client';
+  import { AppWebsocket, AdminWebsocket, type AppClient } from '@holochain/client';
   import '@shoelace-style/shoelace/dist/themes/light.css';
   import 'highlight.js/styles/github.css';
   import { WeClient, isWeContext, initializeHotReload, type WAL } from '@lightningrodlabs/we-applet';
@@ -21,7 +21,7 @@
   const adminPort = import.meta.env.VITE_ADMIN_PORT
   const url = `ws://localhost:${appPort}`;
 
-  let client: AppAgentClient
+  let client: AppClient
   let weClient: WeClient
   let profilesStore : ProfilesStore|undefined = undefined
 
@@ -64,7 +64,7 @@
 
         }
         console.log("appPort and Id is", appPort, appId)
-        client = await AppAgentWebsocket.connect(appId,{url: new URL(url)})
+        client = await AppWebsocket.connect({url: new URL(url)})
         profilesClient = new ProfilesClient(client, appId);
     }
     else {

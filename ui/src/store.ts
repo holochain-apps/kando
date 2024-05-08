@@ -1,8 +1,8 @@
 import {
-    type AppAgentClient,
+    type AppClient,
     type EntryHash,
     type AgentPubKeyB64,
-    type AppAgentCallZomeRequest,
+    type AppCallZomeRequest,
     type RoleName,
     encodeHashToBase64,
     type EntryHashB64,
@@ -29,10 +29,10 @@ TimeAgo.addDefaultLocale(en)
 const ZOME_NAME = 'syn'
 
 export class KanDoService {
-    constructor(public client: AppAgentClient, public roleName, public zomeName = ZOME_NAME) {}
+    constructor(public client: AppClient, public roleName, public zomeName = ZOME_NAME) {}
 
     private callZome(fnName: string, payload: any) {
-        const req: AppAgentCallZomeRequest = {
+        const req: AppCallZomeRequest = {
             role_name: this.roleName,
             zome_name: this.zomeName,
             fn_name: fnName,
@@ -87,7 +87,7 @@ export class KanDoStore {
     boardList: BoardList;
     updating = false
     synStore: SynStore;
-    client: AppAgentClient;
+    client: AppClient;
     uiProps: Writable<UIProps>
     unsub: Unsubscriber
     dnaHash: DnaHash
@@ -95,7 +95,7 @@ export class KanDoStore {
     constructor(
         public weClient : WeClient,
         public profilesStore: ProfilesStore,
-        protected clientIn: AppAgentClient,
+        protected clientIn: AppClient,
         protected roleName: RoleName,
         protected zomeName: string = ZOME_NAME
     ) {

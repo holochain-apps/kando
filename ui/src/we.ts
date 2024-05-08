@@ -5,7 +5,7 @@ import { BoardType } from './boardList';
 import { LazyHoloHashMap } from '@holochain-open-dev/utils';
 import type { AppletHash, AppletServices, AssetInfo, WAL, WeServices } from '@lightningrodlabs/we-applet';
 import { getMyDna } from './util';
-import type { AppAgentClient, RoleName, ZomeName } from '@holochain/client';
+import type { AppClient, RoleName, ZomeName } from '@holochain/client';
 
 const ROLE_NAME = "kando"
 const ZOME_NAME = "syn"
@@ -30,12 +30,12 @@ export const appletServices: AppletServices = {
         view: "applet-view",
       },      
     },
-    bindAsset: async (appletClient: AppAgentClient,
+    bindAsset: async (appletClient: AppClient,
       srcWal: WAL, dstWal: WAL): Promise<void> => {
       console.log("Bind requested.  Src:", srcWal, "  Dst:", dstWal)
     },
     getAssetInfo: async (
-      appletClient: AppAgentClient,
+      appletClient: AppClient,
       roleName: RoleName,
       integrityZomeName: ZomeName,
       entryType: string,
@@ -68,7 +68,7 @@ export const appletServices: AppletServices = {
       }
     },
     search: async (
-      appletClient: AppAgentClient,
+      appletClient: AppClient,
       appletHash: AppletHash,
       weServices: WeServices,
       searchFilter: string
