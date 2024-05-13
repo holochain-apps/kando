@@ -4,7 +4,7 @@
   import ControllerBoard from './ControllerBoard.svelte'
   import ControllerCard from './ControllerCard.svelte'
   import ControllerBlockActiveBoards from './ControllerBlockActiveBoards.svelte'
-  import { AppWebsocket, AdminWebsocket, type AppClient } from '@holochain/client';
+  import { AppWebsocket, AdminWebsocket, type AppClient, type AppWebsocketConnectionOptions } from '@holochain/client';
   import '@shoelace-style/shoelace/dist/themes/light.css';
   import 'highlight.js/styles/github.css';
   import { WeClient, isWeContext, initializeHotReload, type WAL } from '@lightningrodlabs/we-applet';
@@ -50,12 +50,14 @@
         console.warn("Could not initialize applet hot-reloading. This is only expected to work in a We context in dev mode.")
       }
     }
+    let tokenResp
     if (!isWeContext()) {
         console.log("adminPort is", adminPort)
         if (adminPort) {
           const url = `ws://localhost:${adminPort}`
           console.log("connecting to admin port at:", url)
           const adminWebsocket = await AdminWebsocket.connect({url: new URL(url)})
+          tokenResp = await adminWebsocket.issueAppAuthenticationToken({installed_app_id:appId})
           const x = await adminWebsocket.listApps({})
           console.log("apps", x)
           const cellIds = await adminWebsocket.listCellIds()
@@ -64,7 +66,9 @@
 
         }
         console.log("appPort and Id is", appPort, appId)
-        client = await AppWebsocket.connect({url: new URL(url)})
+        const params: AppWebsocketConnectionOptions = {url: new URL(url)}
+        if (tokenResp) params.token = tokenResp.token
+        client = await AppWebsocket.connect(params)
         profilesClient = new ProfilesClient(client, appId);
     }
     else {
