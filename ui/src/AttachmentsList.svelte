@@ -35,7 +35,7 @@
       class:attachment-item-with-delete={allowDelete}
       class:attachment-item={!allowDelete}
     >
-      {#await store.weClient.assetInfo(wal)}
+      {#await store.weaveClient.assetInfo(wal)}
         <div style="cursor:pointer; padding: 0 5px 0 5px; border: dashed 1px;margin-right:5px" title={`Resolving WAL: ${hrlToString(wal.hrl)}?${JSON.stringify(wal.context)}`}> ...</div>
       {:then data}
         {#if data}
@@ -45,7 +45,7 @@
                 e.stopPropagation()
                 try {
   //                embedLink = index
-                  await store.weClient.openWal(wal)
+                  await store.weaveClient.openWal(wal)
                 } catch(e) {
                   alert(`Error opening link: ${e}`)
                 }

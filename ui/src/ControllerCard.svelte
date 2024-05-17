@@ -10,13 +10,13 @@
 
     export let roleName = ""
     export let client : AppClient
-    export let weClient : WeClient
+    export let weaveClient : WeClient
     export let profilesStore : ProfilesStore
     export let board : EntryHash
     export let cardId : uuidv1
 
     let store: KanDoStore = new KanDoStore (
-      weClient,
+      weaveClient,
       profilesStore,
       client,
       roleName,

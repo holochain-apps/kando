@@ -7,7 +7,7 @@
   import { AppWebsocket, AdminWebsocket, type AppClient, type AppWebsocketConnectionOptions } from '@holochain/client';
   import '@shoelace-style/shoelace/dist/themes/light.css';
   import 'highlight.js/styles/github.css';
-  import { WeClient, isWeContext, initializeHotReload, type WAL } from '@lightningrodlabs/we-applet';
+  import { WeaveClient, isWeContext, initializeHotReload, type WAL } from '@lightningrodlabs/we-applet';
   import { ProfilesClient, ProfilesStore } from '@holochain-open-dev/profiles';
   import "@holochain-open-dev/profiles/dist/elements/profiles-context.js";
   import "@holochain-open-dev/profiles/dist/elements/profile-prompt.js";
@@ -22,7 +22,7 @@
   const url = `ws://localhost:${appPort}`;
 
   let client: AppClient
-  let weClient: WeClient
+  let weaveClient: WeaveClient
   let profilesStore : ProfilesStore|undefined = undefined
 
   let connected = false
@@ -72,50 +72,50 @@
         profilesClient = new ProfilesClient(client, appId);
     }
     else {
-      weClient = await WeClient.connect(appletServices);
+      weaveClient = await WeaveClient.connect(appletServices);
 
-      switch (weClient.renderInfo.type) {
+      switch (weaveClient.renderInfo.type) {
         case "applet-view":
-          switch (weClient.renderInfo.view.type) {
+          switch (weaveClient.renderInfo.view.type) {
             case "main":
               // here comes your rendering logic for the main view
               break;
             case "block":
-              switch(weClient.renderInfo.view.block) {
+              switch(weaveClient.renderInfo.view.block) {
                 case "active_boards":
                   renderType = RenderType.BlockActiveBoards
                   break;
                 default:
-                  throw new Error("Unknown applet-view block type:"+weClient.renderInfo.view.block);
+                  throw new Error("Unknown applet-view block type:"+weaveClient.renderInfo.view.block);
               }
               break;
             case "asset":
-              switch (weClient.renderInfo.view.roleName) {
+              switch (weaveClient.renderInfo.view.roleName) {
                 case "kando":
-                  switch (weClient.renderInfo.view.integrityZomeName) {
+                  switch (weaveClient.renderInfo.view.integrityZomeName) {
                     case "syn_integrity":
-                      switch (weClient.renderInfo.view.entryType) {
+                      switch (weaveClient.renderInfo.view.entryType) {
                         case "document":
                           renderType = RenderType.Hrl
-                          wal = weClient.renderInfo.view.wal
+                          wal = weaveClient.renderInfo.view.wal
                           break;
                         default:
-                          throw new Error("Unknown entry type:"+weClient.renderInfo.view.entryType);
+                          throw new Error("Unknown entry type:"+weaveClient.renderInfo.view.entryType);
                       }
                       break;
                     default:
-                      throw new Error("Unknown integrity zome:"+weClient.renderInfo.view.integrityZomeName);
+                      throw new Error("Unknown integrity zome:"+weaveClient.renderInfo.view.integrityZomeName);
                   }
                   break;
                 default:
-                  throw new Error("Unknown role name:"+weClient.renderInfo.view.roleName);
+                  throw new Error("Unknown role name:"+weaveClient.renderInfo.view.roleName);
               }
               break;
             case "creatable":
-              switch (weClient.renderInfo.view.name) {
+              switch (weaveClient.renderInfo.view.name) {
                 case "board":
                   renderType = RenderType.CreateBoard
-                  createView = weClient.renderInfo.view
+                  createView = weaveClient.renderInfo.view
               }              
               break;
             default:
@@ -123,7 +123,7 @@
           }
           break;
         case "cross-applet-view":
-          switch (this.weClient.renderInfo.view.type) {
+          switch (this.weaveClient.renderInfo.view.type) {
             case "main":
               // here comes your rendering logic for the cross-applet main view
               //break;
@@ -139,9 +139,9 @@
 
       }
       
-      client = weClient.renderInfo.appletClient;
+      client = weaveClient.renderInfo.appletClient;
 
-      profilesClient = weClient.renderInfo.profilesClient;
+      profilesClient = weaveClient.renderInfo.profilesClient;
     }
     profilesStore = new ProfilesStore(profilesClient);
     connected = true
@@ -168,15 +168,15 @@
    Error when loading profile: {$prof.error}
   {:else}
     {#if renderType== RenderType.CreateBoard}
-      <ControllerCreate  view={createView} client={client} weClient={weClient} profilesStore={profilesStore} roleName={roleName}></ControllerCreate>
+      <ControllerCreate  view={createView} client={client} weaveClient={weaveClient} profilesStore={profilesStore} roleName={roleName}></ControllerCreate>
     {:else if renderType== RenderType.App}
-      <Controller  client={client} weClient={weClient} profilesStore={profilesStore} roleName={roleName}></Controller>
+      <Controller  client={client} weaveClient={weaveClient} profilesStore={profilesStore} roleName={roleName}></Controller>
     {:else if  renderType== RenderType.Hrl && !wal.context}
-      <ControllerBoard  board={wal.hrl[1]} client={client} weClient={weClient} profilesStore={profilesStore} roleName={roleName}></ControllerBoard>
+      <ControllerBoard  board={wal.hrl[1]} client={client} weaveClient={weaveClient} profilesStore={profilesStore} roleName={roleName}></ControllerBoard>
     {:else if  renderType== RenderType.Hrl && wal.context}
-      <ControllerCard  board={wal.hrl[1]} cardId={wal.context} client={client} weClient={weClient} profilesStore={profilesStore} roleName={roleName}></ControllerCard>
+      <ControllerCard  board={wal.hrl[1]} cardId={wal.context} client={client} weaveClient={weaveClient} profilesStore={profilesStore} roleName={roleName}></ControllerCard>
     {:else if  renderType== RenderType.BlockActiveBoards}
-      <ControllerBlockActiveBoards client={client} weClient={weClient} profilesStore={profilesStore} roleName={roleName}></ControllerBlockActiveBoards>
+      <ControllerBlockActiveBoards client={client} weaveClient={weaveClient} profilesStore={profilesStore} roleName={roleName}></ControllerBlockActiveBoards>
     {/if}
   {/if}
 

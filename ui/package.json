@@ -15,7 +15,7 @@
     "@holochain-open-dev/utils": "^0.400.0-dev.0",
     "@holochain-syn/core": "^0.400.0-dev.0",
     "@holochain/client": "^0.18.0-dev.0",
-    "@lightningrodlabs/we-applet": "^0.16.1",
+    "@lightningrodlabs/we-applet": "^0.17.0-dev.0",
     "@lightningrodlabs/we-elements": "^0.5.0",
     "@mdi/js": "^7.1.96",
     "@ts-stack/markdown": "^1.5.0",

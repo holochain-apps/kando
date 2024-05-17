@@ -65,7 +65,7 @@ export class BoardList {
         const board = pipe(docStore.allWorkspaces,
             workspaces => {
                 const board = new Board(docStore,  new WorkspaceStore(docStore, Array.from(workspaces.keys())[0]), this.synStore.client.client.myPubKey)
-                if (this.weClient) {
+                if (this.weaveClient) {
                     board.workspace.tip.subscribe((tip)=>{
                         try {
                             if (tip.status=="complete" && tip.value) {
@@ -103,7 +103,7 @@ export class BoardList {
                                         }
                                     })
                                     if (notifications.length > 0) {
-                                        this.weClient.notifyFrame(notifications)
+                                        this.weaveClient.notifyFrame(notifications)
                                     }
                                 }
                             }
@@ -126,7 +126,7 @@ export class BoardList {
             return {board,latestState, tip: tip ? tip.entryHash: undefined}}))
     })
         
-    constructor(public profilesStore: ProfilesStore, public synStore: SynStore, public weClient : WeClient, public notifications: Readable<{[key: string]: NotificationType}>) {
+    constructor(public profilesStore: ProfilesStore, public synStore: SynStore, public weaveClient : WeClient, public notifications: Readable<{[key: string]: NotificationType}>) {
     
         const boardHashes = asyncDerived(this.synStore.documentsByTag.get(BoardType.active),x=>Array.from(x.keys()))
         this.activeBoardHashes = boardHashes

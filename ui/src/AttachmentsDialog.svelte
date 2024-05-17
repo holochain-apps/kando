@@ -38,11 +38,11 @@
   }
 
   const addAttachment = async () => {
-    const wal = await store.weClient.userSelectWal()
+    const wal = await store.weaveClient.userSelectWal()
     if (wal) {
       const dnaHash = await getMyDna(store.service.roleName, store.client)
       const srcHrl: WAL = card ? {hrl:[dnaHash, activeBoard.hash],context:card.id}: {hrl:[dnaHash, activeBoard.hash]}
-      await store.weClient.requestBind(srcHrl, wal)
+      await store.weaveClient.requestBind(srcHrl, wal)
       _addAttachment(wal)
     }
   }

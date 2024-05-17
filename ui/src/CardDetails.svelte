@@ -257,11 +257,11 @@
 
   const walToPocket = () => {
     const attachment: WAL = { hrl: [store.dnaHash, $activeBoard.hash], context: cardId }
-    store.weClient?.walToPocket(attachment)
+    store.weaveClient?.walToPocket(attachment)
   }
 </script>
 
-{#if store.weClient}
+{#if store.weaveClient}
   <AttachmentsDialog activeBoard={$activeBoard} bind:this={attachmentsDialog}></AttachmentsDialog>
 {/if}
 
@@ -293,7 +293,7 @@
         {#if showControls}
           <div class="card-controls">
             
-            {#if store.weClient}
+            {#if store.weaveClient}
               <div class="details-button pocket-button" title="Add this card to pocket" on:click={()=>walToPocket()}>
                 <SvgIcon icon=addToPocket size="25px"/>
               </div>
@@ -524,7 +524,7 @@
 
     </div>
     {/if}
-    {#if store.weClient}
+    {#if store.weaveClient}
       <div style="display:flex; flex-wrap:wrap; align-items: center; margin-bottom:10px;">
         <div style="margin-left:10px; margin-right:10px;">
           <button title="Manage Card Attachments" class="attachment-button" on:click={()=>attachmentsDialog.open(card)} >          

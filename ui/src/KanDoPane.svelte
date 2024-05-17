@@ -421,7 +421,7 @@
 
   const walToPocket = () => {
     const attachment: WAL = { hrl: [store.dnaHash, activeBoard.hash], context: "" }
-    store.weClient?.walToPocket(attachment)
+    store.weaveClient?.walToPocket(attachment)
   }
   let feedHidden = true
   
@@ -463,7 +463,7 @@
           </sl-menu>
         </sl-dropdown>
 
-        {#if store.weClient}
+        {#if store.weaveClient}
           <AttachmentsDialog activeBoard={activeBoard} bind:this={attachmentsDialog}></AttachmentsDialog>
           {#if $state.boundTo.length>0}
             <div style="margin-left:10px;display:flex; align-items: center">
@@ -683,7 +683,7 @@
                           <SvgIcon color="rgba(86, 94, 109, 1.0)" size=11px icon=faCheck /> {checkedChecklistItems(checklists)} / {totalChecklistItems(checklists)}
                         </div>
                       {/if}
-                      {#if store.weClient && props.attachments.length>0}
+                      {#if store.weaveClient && props.attachments.length>0}
                       <div class="attachments-count">
                         <SvgIcon color="rgba(86, 94, 109, 1.0)" size=11px icon=link /> {props.attachments.length}
                       </div>

@@ -93,7 +93,7 @@ export class KanDoStore {
     dnaHash: DnaHash
 
     constructor(
-        public weClient : WeClient,
+        public weaveClient : WeClient,
         public profilesStore: ProfilesStore,
         protected clientIn: AppClient,
         protected roleName: RoleName,
@@ -143,7 +143,7 @@ export class KanDoStore {
                     break;
             }
         }
-        this.boardList = new BoardList(profilesStore, this.synStore, weClient, derived(this.uiProps, props=>props.notifications))
+        this.boardList = new BoardList(profilesStore, this.synStore, weaveClient, derived(this.uiProps, props=>props.notifications))
         this.boardList.activeBoard.subscribe((board)=>{
             if (this.unsub) {
                 this.unsub()
