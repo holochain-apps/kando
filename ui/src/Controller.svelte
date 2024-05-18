@@ -1,84 +1,84 @@
 <script lang="ts">
-    import Toolbar from './Toolbar.svelte'
-    import KanDoPane from './KanDoPane.svelte'
-    import { KanDoStore } from './store'
-    import { setContext } from 'svelte';
-    import type { AppAgentClient } from '@holochain/client';
-    import type { SynStore } from '@holochain-syn/store';
-    import type { ProfilesStore } from "@holochain-open-dev/profiles";
-    import BoardMenu from "./BoardMenu.svelte";
-    import type { WeClient } from '@lightningrodlabs/we-applet';
+  import Toolbar from "./Toolbar.svelte";
+  import KanDoPane from "./KanDoPane.svelte";
+  import { KanDoStore } from "./store";
+  import { setContext } from "svelte";
+  import type { AppAgentClient } from "@holochain/client";
+  import type { SynStore } from "@holochain-syn/store";
+  import type { ProfilesStore } from "@holochain-open-dev/profiles";
+  import BoardMenu from "./BoardMenu.svelte";
+  import type { WeClient } from "@lightningrodlabs/we-applet";
+  import FeedbackPane from "./FeedbackPane.svelte";
 
-    export let roleName = ""
-    export let client : AppAgentClient
-    export let weClient : WeClient
-    export let profilesStore : ProfilesStore
+  export let roleName = "";
+  export let client: AppAgentClient;
+  export let weClient: WeClient;
+  export let profilesStore: ProfilesStore;
 
-    let store: KanDoStore = new KanDoStore (
-      weClient,
-      profilesStore,
-      client,
-      roleName,
-    );
-    let synStore: SynStore = store.synStore
+  let store: KanDoStore = new KanDoStore(
+    weClient,
+    profilesStore,
+    client,
+    roleName
+  );
+  let synStore: SynStore = store.synStore;
 
-    $: activeBoardHash = store.boardList.activeBoardHash
-    $: activeBoard = store.boardList.activeBoard
+  $: activeBoardHash = store.boardList.activeBoardHash;
+  $: activeBoard = store.boardList.activeBoard;
 
-    setContext('synStore', {
-      getStore: () => synStore,
-    });
+  setContext("synStore", {
+    getStore: () => synStore,
+  });
 
-    setContext('store', {
-      getStore: () => store,
-    });
-    const DEFAULT_KD_BG_IMG = "none"
-    //const DEFAULT_KD_BG_IMG = "https://img.freepik.com/free-photo/studio-background-concept-abstract-empty-light-gradient-purple-studio-room-background-product-plain-studio-background_1258-54461.jpg"
-    const NO_BOARD_IMG = "none"
-    $: uiProps = store.uiProps
-    $: boardCount = store.boardList.boardCount
+  setContext("store", {
+    getStore: () => store,
+  });
+  const DEFAULT_KD_BG_IMG = "none";
+  //const DEFAULT_KD_BG_IMG = "https://img.freepik.com/free-photo/studio-background-concept-abstract-empty-light-gradient-purple-studio-room-background-product-plain-studio-background_1258-54461.jpg"
+  const NO_BOARD_IMG = "none";
+  $: uiProps = store.uiProps;
+  $: boardCount = store.boardList.boardCount;
 
-    $: bgUrl = DEFAULT_KD_BG_IMG  // FIXME$activeBoard ?   ($activeBoard.state.props && $boardState.props.bgUrl) ? $boardState.props.bgUrl : DEFAULT_KD_BG_IMG
-    $: bgImage = `background-image: url("`+ bgUrl+`");`
-    let menuVisible = false
-  </script>
+  $: bgUrl = DEFAULT_KD_BG_IMG; // FIXME$activeBoard ?   ($activeBoard.state.props && $boardState.props.bgUrl) ? $boardState.props.bgUrl : DEFAULT_KD_BG_IMG
+  $: bgImage = `background-image: url("` + bgUrl + `");`;
+  let menuVisible = false;
+</script>
 
-  <div class="flex-scrollable-parent">
-    <div class="flex-scrollable-container">
-      <div class='app'>
-
+<div class="flex-scrollable-parent">
+  <div class="flex-scrollable-container">
+    <div class="app">
       <div class="wrapper">
+        <div class="header">
+          <Toolbar {profilesStore} />
+        </div>
+        <div class="workspace" style="display:flex">
+          {#if $uiProps.showFeedback}
+            <FeedbackPane></FeedbackPane>
+          {:else if $uiProps.showMenu && $boardCount.status == "complete"}
+            {#if $activeBoardHash === undefined}
+              <div class="board-menu">
+                <BoardMenu wide={true}></BoardMenu>
+              </div>
+            {:else}
+              <div class="board-menu">
+                <BoardMenu wide={false}></BoardMenu>
+              </div>
+            {/if}
+          {:else}
+            <div class="board-menu slideOut">
+              <BoardMenu wide={false}></BoardMenu>
+            </div>
+          {/if}
 
-      <div class="header">
-        <Toolbar
-          profilesStore={profilesStore}/>
+          {#if $activeBoardHash !== undefined}
+            <KanDoPane activeBoard={$activeBoard} />
+          {/if}
+        </div>
       </div>
-      <div class="workspace" style="display:flex">
-      {#if $uiProps.showMenu && $boardCount.status == "complete"}
-        {#if $activeBoardHash === undefined}
-         <div class="board-menu" >
-            <BoardMenu wide={true}></BoardMenu>
-          </div>
-        {:else}
-          <div class="board-menu">
-            <BoardMenu wide={false}></BoardMenu>
-          </div>
-        {/if}
-      {:else}
-        <div class="board-menu slideOut">
-          <BoardMenu wide={false}></BoardMenu>
-        </div>
-      {/if}
-
-
-        {#if $activeBoardHash !== undefined}
-          <KanDoPane activeBoard={$activeBoard}/>
-        {/if}
-        </div>
-        </div>
     </div>
   </div>
 </div>
+
 <style>
   .app {
     margin: 0;
@@ -93,39 +93,36 @@
   }
 
   .board-menu {
-      animation-duration: .3s;
-      animation-name: slideIn;
-      animation-iteration-count: 1;
-      animation-timing-function: cubic-bezier(0.42, 0, 0.58, 1.1);
-      z-index: 199;
-      --margin-end-position: 0px;
-      --margin-start-position: -330px;
-      margin-left: 0;
+    animation-duration: 0.3s;
+    animation-name: slideIn;
+    animation-iteration-count: 1;
+    animation-timing-function: cubic-bezier(0.42, 0, 0.58, 1.1);
+    z-index: 199;
+    --margin-end-position: 0px;
+    --margin-start-position: -330px;
+    margin-left: 0;
+  }
 
+  .board-menu.slideOut {
+    animation-duration: 0.3s;
+    animation-name: slideIn;
+    --margin-end-position: -330px;
+    animation-timing-function: cubic-bezier(0.42, 0, 0.58, 1.1);
+    --margin-start-position: 0px;
+    margin-left: -330px;
+  }
+
+  @keyframes slideIn {
+    from {
+      margin-left: var(--margin-start-position);
+      backdrop-filter: blur(10px);
     }
 
-    .board-menu.slideOut {
-      animation-duration: .3s;
-      animation-name: slideIn;
-      --margin-end-position: -330px;
-      animation-timing-function: cubic-bezier(0.42, 0, 0.58, 1.1);
-      --margin-start-position: 0px;
-      margin-left: -330px;
+    to {
+      margin-left: var(--margin-end-position);
+      backdrop-filter: blur(0px);
     }
-
-    @keyframes slideIn {
-        from {
-            margin-left: var(--margin-start-position);
-            backdrop-filter: blur(10px);
-        }
-
-        to {
-            margin-left: var(--margin-end-position);
-            backdrop-filter: blur(0px);
-        }
-    }
-
-
+  }
 
   :global(:root) {
     --resizeable-height: 200px;
@@ -153,12 +150,20 @@
     display: inline-block;
   }
   @-webkit-keyframes spin {
-    0% { -webkit-transform: rotate(0deg); }
-    100% { -webkit-transform: rotate(360deg); }
+    0% {
+      -webkit-transform: rotate(0deg);
+    }
+    100% {
+      -webkit-transform: rotate(360deg);
+    }
   }
   @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
   }
   .flex-scrollable-parent {
     position: relative;

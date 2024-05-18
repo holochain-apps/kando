@@ -28,6 +28,9 @@
   </div>
   <div class="items"><Search></Search></div>
   <div class="items">
+    <div
+      on:click={()=>store.setUIprops({showFeedback:!$uiProps.showFeedback})}
+    >FB</div>
     <Folk></Folk>
     <a href="https://github.com/holochain-apps/kando/issues" title="Report a problem in our GitHub repo" target="_blank">
       <div class="nav-button"><SvgIcon color="#fff" icon="faBug" size=20px /></div>

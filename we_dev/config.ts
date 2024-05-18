@@ -87,7 +87,7 @@ export default defineConfig({
     //   description: 'Real-time notetaking based on syn',
     //   icon: {
     //     type: 'https',
-    //     url: 'https://lightningrodlabs.org/projects/notebooks.png',
+    //     url: 'https://lightningrodlabs.org/projects/notebooks_logo.svg',
     //   },
     //   source: {
     //     type: 'https',

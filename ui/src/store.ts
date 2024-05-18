@@ -75,6 +75,7 @@ export enum NotificationType {
 export interface UIProps {
     showArchived: {[key: string]: boolean},
     showMenu: boolean,
+    showFeedback: boolean,
     tips: HoloHashMap<EntryHash,EntryHash>,
     latestComment: {[key: string]: Timestamp}
     notifications: {[key: string]: NotificationType}
@@ -114,6 +115,7 @@ export class KanDoStore {
         this.uiProps = writable({
             showArchived: {},
             showMenu: true,
+            showFeedback: false,
             tips: new HoloHashMap,
             latestComment: {},
             notifications: {

@@ -29,6 +29,7 @@ export type CardProps = {
   labels: Array<uuidv1>,
   attachments: Array<WALUrl>
 }
+export const DEFAULT_PROPS = {title:"", description:"", category: "", agents:[], labels:[], attachments:[]}
 
 export type Comment = {
   id: uuidv1;
@@ -52,6 +53,7 @@ export type Checklist = {
 
 export type Checklists = {[key: string]: Checklist}
 export type Comments = {[key: string]: Comment}
+
 
 export type Card = {
     id: uuidv1;

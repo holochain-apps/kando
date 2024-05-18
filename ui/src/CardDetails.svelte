@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { UngroupedId, type CardProps, type CategoryDef, type LabelDef } from "./board";
+  import { DEFAULT_PROPS, UngroupedId, type CardProps, type CategoryDef, type LabelDef } from "./board";
   import '@shoelace-style/shoelace/dist/components/select/select.js';
   import '@shoelace-style/shoelace/dist/components/option/option.js';
   import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
@@ -33,8 +33,6 @@
   $: selectedLabels = calcSelectedLabels(props.labels)
   $: selectedAvatars = cloneDeep(props.agents)
   $: allProfiles = store.profilesStore.allProfiles
-
-  const DEFAULT_PROPS = {title:"", description:"", category: "", agents:[], labels:[], attachments:[]}
 
   export let cardId:uuidv1
   export let showControls = true
