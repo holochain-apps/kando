@@ -12,6 +12,9 @@
   } from "./board";
   import { v1 as uuidv1 } from "uuid";
   import FeedbackItems from "./FeedbackItems.svelte";
+  import KDLogoIcon from "./icons/KDLogoIcon.svelte";
+  import SvgIcon from "./SvgIcon.svelte";
+  import AboutDialog from "./AboutDialog.svelte"
 
   const { getStore }: any = getContext("store");
 
@@ -76,7 +79,11 @@
   };
 
   $: valid = selectedBoardHashB64 && props.title && props.description && !creating
+
+  let aboutDialog
+
 </script>
+<AboutDialog bind:this={aboutDialog} />
 
 <div class="board-menu">
   <div class="boards-section">
@@ -175,6 +182,11 @@
       </div>
     {/if}
   </div>
+  <div class="footer"> 
+    <div on:click={()=>store.setUIprops({showFeedback:!$uiProps.showFeedback})} class="logo" title="About KanDo!"><KDLogoIcon /></div>
+    <div on:click={()=>aboutDialog.open()}><SvgIcon icon=info color="#fff"></SvgIcon></div>
+</div>
+
 </div>
 
 <style>

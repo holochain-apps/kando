@@ -72,6 +72,8 @@ export enum NotificationType {
     High="high"
 } 
 
+export const USING_FEEDBACK: boolean = true
+
 export interface UIProps {
     showArchived: {[key: string]: boolean},
     showMenu: boolean,
@@ -115,7 +117,7 @@ export class KanDoStore {
         this.uiProps = writable({
             showArchived: {},
             showMenu: true,
-            showFeedback: false,
+            showFeedback: USING_FEEDBACK,
             tips: new HoloHashMap,
             latestComment: {},
             notifications: {

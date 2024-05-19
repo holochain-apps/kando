@@ -1,6 +1,6 @@
 <script lang="ts">
     import { getContext } from "svelte";
-    import type { KanDoStore } from "./store";
+    import { USING_FEEDBACK, type KanDoStore } from "./store";
     import type {  EntryHash } from '@holochain/client';
     import GroupParticipants from './GroupParticipants.svelte';
     import NewBoardDialog from './NewBoardDialog.svelte';
@@ -113,7 +113,12 @@
     <NewBoardDialog bind:this={newBoardDialog}></NewBoardDialog>
     <div class="footer" 
         class:slideOut={$uiProps.showMenu == false}>   
-        <div class="logo" title="About KanDo!"><KDLogoIcon /></div>
+        <div class="logo" title="About KanDo!"
+            on:click={()=>{
+                if (USING_FEEDBACK) {
+                    store.setUIprops({showFeedback:!$uiProps.showFeedback})}
+                }}
+        ><KDLogoIcon /></div>
         <div on:click={()=>aboutDialog.open()}><SvgIcon icon=info color="#fff"></SvgIcon></div>
 
         <div on:click={()=>settingsDialog.open()} style="margin-left:10px;"><SvgIcon icon=faCog size="20px" color="#fff"/></div>
