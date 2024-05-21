@@ -23,6 +23,8 @@ import type { WeClient } from '@lightningrodlabs/we-applet';
 import { HoloHashMap } from '@holochain-open-dev/utils';
 import { getMyDna } from './util';
 
+// @ts-ignore
+export const USING_FEEDBACK :boolean | undefined = window.__USING_FEEDBACK || (import.meta as any).env.VITE_USING_FEEDBACK
 
 TimeAgo.addDefaultLocale(en)
 
@@ -72,7 +74,6 @@ export enum NotificationType {
     High="high"
 } 
 
-export const USING_FEEDBACK: boolean = true
 
 export interface UIProps {
     showArchived: {[key: string]: boolean},

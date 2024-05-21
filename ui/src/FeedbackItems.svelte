@@ -26,11 +26,10 @@
             //@ts-ignore
             const index = itemIds.findIndex((id) => id === cardId)
             if (index >= 0) {
-                state.grouping[groupId].splice(index,1)
-            }
-            const gIndex = state.groups.findIndex((g) => g.id === groupId)
-            if (gIndex>=0){
-                return state.groups[gIndex].name
+              const gIndex = state.groups.findIndex((g) => g.id === groupId)
+              if (gIndex>=0){
+                  return state.groups[gIndex].name
+              }
             }
         }
     }
