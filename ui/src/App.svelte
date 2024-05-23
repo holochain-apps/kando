@@ -39,9 +39,6 @@
   let renderType = RenderType.App
   let wal: WAL
 
-  // @ts-ignore
-  export const USING_FEEDBACK :boolean | undefined = window.__USING_FEEDBACK || (import.meta as any).env.USING_FEEDBACK
-
   initialize()
 
   async function initialize() : Promise<void> {

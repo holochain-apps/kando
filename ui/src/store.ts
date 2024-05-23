@@ -24,7 +24,7 @@ import { HoloHashMap } from '@holochain-open-dev/utils';
 import { getMyDna } from './util';
 
 // @ts-ignore
-export const USING_FEEDBACK :boolean | undefined = window.__USING_FEEDBACK || (import.meta as any).env.VITE_USING_FEEDBACK
+export const USING_FEEDBACK :boolean | undefined = true// window.__USING_FEEDBACK || (import.meta as any).env.VITE_USING_FEEDBACK
 
 TimeAgo.addDefaultLocale(en)
 

@@ -12,7 +12,8 @@ import { NotificationType, SeenType } from "./store";
 
 export enum BoardType {
     active = "active",
-    archived = "archived"
+    archived = "archived",
+    deleted = "deleted"
 }
 
 export interface TypedHash {
@@ -209,6 +210,15 @@ export class BoardList {
     async unarchiveBoard(documentHash: EntryHash) {
         await this.synStore.client.removeDocumentTag(documentHash, BoardType.archived)
         await this.synStore.client.tagDocument(documentHash, BoardType.active)
+    }
+
+    async deleteBoard(documentHash: EntryHash) {
+        await this.synStore.client.removeDocumentTag(documentHash, BoardType.active)
+        await this.synStore.client.removeDocumentTag(documentHash, BoardType.archived)
+        await this.synStore.client.tagDocument(documentHash, BoardType.deleted)
+        if (encodeHashToBase64(get(this.activeBoardHash)) == encodeHashToBase64(documentHash)) {
+            await this.setActiveBoard(undefined)
+        }
     }
 
     async closeActiveBoard(leave: boolean) {
