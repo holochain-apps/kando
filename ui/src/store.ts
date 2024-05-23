@@ -82,6 +82,7 @@ export interface UIProps {
     tips: HoloHashMap<EntryHash,EntryHash>,
     latestComment: {[key: string]: Timestamp}
     notifications: {[key: string]: NotificationType}
+    showArchivedBoards: boolean
   }
 
 export class KanDoStore {
@@ -117,6 +118,7 @@ export class KanDoStore {
         this.synStore = new SynStore(new SynClient(this.client,this.roleName,this.zomeName))
         this.uiProps = writable({
             showArchived: {},
+            showArchivedBoards: false,
             showMenu: true,
             showFeedback: USING_FEEDBACK,
             tips: new HoloHashMap,

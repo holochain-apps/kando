@@ -96,18 +96,33 @@
             {/if}
         </div>
     {/if} -->
-    {#if $archivedBoards.status == "complete" && $archivedBoards.value.length > 0}
+    <div style="display:flex; align-items:center;margin-top:20px;">
         <h3 class="type-header">Archived Boards</h3>
-        <div class="boards-section">
-            {#each $archivedBoards.value as hash}
-                <div
-                    on:click={()=>unarchiveBoard(hash)}
-                    class="board" >
-                    <BoardMenuItem boardType={BoardType.archived} boardHash={hash}></BoardMenuItem>
-                    <div class="board-bg" style="background-image: url({bgUrl});"></div>
+        <sl-checkbox
+            style="margin-left:10px;color:#ccc"
+            checked={$uiProps.showArchivedBoards}
+            on:sl-input={(e)=>store.setUIprops({showArchivedBoards:e.target.checked})}
+            >
+            Show
+        </sl-checkbox>
+    </div>
+    {#if $uiProps.showArchivedBoards}
+        {#if $archivedBoards.status == "complete"}
+            {#if $archivedBoards.value.length > 0}
+                <div class="boards-section">
+                    {#each $archivedBoards.value as hash}
+                        <div
+                            on:click={()=>unarchiveBoard(hash)}
+                            class="board" >
+                            <BoardMenuItem boardType={BoardType.archived} boardHash={hash}></BoardMenuItem>
+                            <div class="board-bg" style="background-image: url({bgUrl});"></div>
+                        </div>
+                    {/each}
                 </div>
-            {/each}
-        </div>
+            {:else}
+                <p style="color:#ccc;margin-left:40px;">(no archived boards)</p>
+            {/if}
+        {/if}
     {/if}
 
     <NewBoardDialog bind:this={newBoardDialog}></NewBoardDialog>
@@ -175,12 +190,9 @@
     }
 
     .type-header {
-        font-size: 12px;
+        font-size: 16px;
         font-weight: normal;
-        color: #fff;
-        opacity: .6;
-        margin-top: 20px;
-        margin-bottom: 10px;
+        color: #ccc;
         margin-left: 5px;
     }
 
