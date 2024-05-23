@@ -125,7 +125,9 @@
   $: x = hashChanged($activeHashB64)
 
   const sorted = (itemIds, sortFn)=> {
-    var items = itemIds.map((id)=>cardsMap[id])
+    // The filter removes any undefineds for cards that end up not existing in the map.
+    // TODO: find out how that happens!
+    var items = itemIds.map((id)=>cardsMap[id]).filter(x=>x)  
     // if (sortOption) {
     //   items = sortFn(items) 
     // }
@@ -1280,6 +1282,7 @@
     margin-bottom: 5px;
     border: solid 1px blue;
     background-color: rgba( 0, 0, 255, 0.1);
+    max-width: 370px;
   }
   .idle {
     opacity: 0.5;

@@ -12,7 +12,8 @@ import { NotificationType, SeenType } from "./store";
 
 export enum BoardType {
     active = "active",
-    archived = "archived"
+    archived = "archived",
+    deleted = "deleted"
 }
 
 export interface TypedHash {
@@ -211,6 +212,15 @@ export class BoardList {
         await this.synStore.client.tagDocument(documentHash, BoardType.active)
     }
 
+    async deleteBoard(documentHash: EntryHash) {
+        await this.synStore.client.removeDocumentTag(documentHash, BoardType.active)
+        await this.synStore.client.removeDocumentTag(documentHash, BoardType.archived)
+        await this.synStore.client.tagDocument(documentHash, BoardType.deleted)
+        if (encodeHashToBase64(get(this.activeBoardHash)) == encodeHashToBase64(documentHash)) {
+            await this.setActiveBoard(undefined)
+        }
+    }
+
     async closeActiveBoard(leave: boolean) {
         const hash = get(this.activeBoardHash)
         if (hash) {
@@ -223,11 +233,15 @@ export class BoardList {
         }
     }
 
-    async cloneBoard(board: BoardState) : Promise<Board>  {
+    async cloneBoard(board: BoardState, name: string | undefined) : Promise<Board>  {
         const newBoard = cloneDeep(board) as BoardState
         newBoard.cards = []
+        newBoard.feed = {}
+        newBoard.boundTo = []
+        newBoard.props.attachments = []
+
         Object.keys(newBoard.grouping).forEach(key=>newBoard.grouping[key] = [])
-        newBoard.name = `copy of ${newBoard.name}`
+        newBoard.name = name ? name : `copy of ${newBoard.name}`
         return this.makeBoard(newBoard)
     }
 

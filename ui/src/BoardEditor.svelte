@@ -12,6 +12,7 @@
     import { cloneDeep } from "lodash";
     import type { KanDoStore } from './store';
     import { encodeHashToBase64, type EntryHash } from '@holochain/client';
+  import { BoardType } from './boardList';
 
     const { getStore } :any = getContext('store');
 
@@ -20,6 +21,7 @@
 
     export let handleSave
     export let handleDelete = undefined
+    export let canDelete = false
     export let cancelEdit
 
     let boardHash:EntryHash|undefined = undefined
@@ -257,9 +259,15 @@
     </div>
     {/if}
     <div class='controls'>
-      {#if handleDelete}
-        <sl-button class="board-control" on:click={handleDelete}>
-          Archive
+      {#if canDelete}
+        <sl-button class="board-control" style="margin-right:10px; width:70px;"
+        on:click={async ()=> {
+          await store.boardList.deleteBoard(boardHash)
+          store.setUIprops({showMenu:true, bgUrl:""})
+
+          }
+          }  variant="warning">
+          Delete
         </sl-button>
       {/if}
       <sl-button on:click={cancelEdit} class="board-control">

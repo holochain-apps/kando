@@ -19,9 +19,17 @@
 
     export const  open = async (hash: EntryHash)=> {
         boardHash = hash
-        boardEditor.edit(hash)
-        dialog.show()
+        const board: Board | undefined = await store.boardList.getBoard(boardHash)
+        if (board) {
+            const state = board.state()
+            console.log("FISGH", state.steward , board.myAgentKeyB64)
+            canDelete = state.steward === board.myAgentKeyB64
+            boardEditor.edit(hash)
+            dialog.show()
+        }
     }
+
+    let canDelete
 
     const { getStore } :any = getContext('store');
 
@@ -87,5 +95,5 @@ on:sl-request-close={(event)=>{
     if (event.detail.source === 'overlay') {
     event.preventDefault();    
 }}}>
-    <BoardEditor bind:this={boardEditor} handleSave={updateBoard} cancelEdit={close}/>
+    <BoardEditor bind:this={boardEditor} handleSave={updateBoard} {canDelete} cancelEdit={close}/>
 </sl-dialog>

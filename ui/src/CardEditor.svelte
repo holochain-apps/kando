@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { CardProps, CategoryDef, LabelDef } from "./board";
+  import { DEFAULT_PROPS, type CardProps, type CategoryDef, type LabelDef } from "./board";
   import '@shoelace-style/shoelace/dist/components/select/select.js';
   import '@shoelace-style/shoelace/dist/components/option/option.js';
   import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
@@ -23,8 +23,6 @@
   export let labelTypes: Array<LabelDef>
   export let categories: Array<CategoryDef>
   export let title
-
-  const DEFAULT_PROPS = {title:"", description:"", category: "", agents:[], labels:[], attachments: []}
 
   let props:CardProps = DEFAULT_PROPS
   let cardId:uuidv1 = ""

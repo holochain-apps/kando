@@ -29,6 +29,7 @@ export type CardProps = {
   labels: Array<uuidv1>,
   attachments: Array<WALUrl>
 }
+export const DEFAULT_PROPS = {title:"", description:"", category: "", agents:[], labels:[], attachments:[]}
 
 export type Comment = {
   id: uuidv1;
@@ -52,6 +53,7 @@ export type Checklist = {
 
 export type Checklists = {[key: string]: Checklist}
 export type Comments = {[key: string]: Comment}
+
 
 export type Card = {
     id: uuidv1;
@@ -124,7 +126,8 @@ export interface BoardState {
   categoryDefs: CategoryDef[];
   props: BoardProps;
   boundTo: Array<WALUrl>
-  feed: Feed
+  feed: Feed,
+  steward: AgentPubKeyB64
 }
   
   export type BoardDelta =
@@ -657,7 +660,8 @@ export interface BoardState {
         categoryDefs: [],
         props: {bgUrl:"", attachments:[]},
         boundTo: [],
-        feed: {}
+        feed: {},
+        steward: ""
       }
       if (init) {
         Object.assign(state, init);
@@ -903,7 +907,11 @@ export class Board {
     }
 
   public static async Create(synStore: SynStore, init: Partial<BoardState>|undefined = undefined) {
+
     const initState = boardGrammar.initialState(init)
+    if (!initState.steward) {
+      initState.steward = encodeHashToBase64(synStore.client.client.myPubKey)
+    }
   
     const documentStore = await synStore.createDocument(initState,{})
 

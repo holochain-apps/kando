@@ -23,6 +23,8 @@ import type { WeClient } from '@lightningrodlabs/we-applet';
 import { HoloHashMap } from '@holochain-open-dev/utils';
 import { getMyDna } from './util';
 
+// @ts-ignore
+export const USING_FEEDBACK :boolean | undefined = window.__USING_FEEDBACK || (import.meta as any).env.VITE_USING_FEEDBACK
 
 TimeAgo.addDefaultLocale(en)
 
@@ -72,12 +74,15 @@ export enum NotificationType {
     High="high"
 } 
 
+
 export interface UIProps {
     showArchived: {[key: string]: boolean},
     showMenu: boolean,
+    showFeedback: boolean,
     tips: HoloHashMap<EntryHash,EntryHash>,
     latestComment: {[key: string]: Timestamp}
     notifications: {[key: string]: NotificationType}
+    showArchivedBoards: boolean
   }
 
 export class KanDoStore {
@@ -113,7 +118,9 @@ export class KanDoStore {
         this.synStore = new SynStore(new SynClient(this.client,this.roleName,this.zomeName))
         this.uiProps = writable({
             showArchived: {},
+            showArchivedBoards: false,
             showMenu: true,
+            showFeedback: USING_FEEDBACK,
             tips: new HoloHashMap,
             latestComment: {},
             notifications: {
