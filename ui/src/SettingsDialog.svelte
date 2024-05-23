@@ -49,7 +49,7 @@
         reader.readAsText(file);
     };
     const createBoardFrom = async (oldBoard: BoardState) => {
-        const board = await store.boardList.cloneBoard(oldBoard)
+        const board = await store.boardList.cloneBoard(oldBoard, undefined)
         store.setUIprops({showMenu:false})
         store.setActiveBoard(board.hash)
     }

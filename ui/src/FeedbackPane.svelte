@@ -1,11 +1,18 @@
 <script lang="ts">
-  import { getContext } from "svelte";
+  import { getContext, onMount } from "svelte";
   import type { KanDoStore } from "./store";
   import type { BoardAndLatestState } from "./boardList";
   import { isWeContext } from "@lightningrodlabs/we-applet";
-  import { get, pipe } from "@holochain-open-dev/stores";
   import {
+    get,
+    pipe,
+    sliceAndJoin,
+    toPromise,
+  } from "@holochain-open-dev/stores";
+  import {
+    Board,
     DEFAULT_PROPS,
+    type BoardState,
     type Card,
     type CardProps,
     type LabelDef,
@@ -14,23 +21,63 @@
   import FeedbackItems from "./FeedbackItems.svelte";
   import KDLogoIcon from "./icons/KDLogoIcon.svelte";
   import SvgIcon from "./SvgIcon.svelte";
-  import AboutDialog from "./AboutDialog.svelte"
+  import AboutDialog from "./AboutDialog.svelte";
+  import { encodeHashToBase64, type ActionHash } from "@holochain/client";
 
   const { getStore }: any = getContext("store");
 
   const store: KanDoStore = getStore();
 
+  type StateAndHash = {
+    hashB64: string;
+    hash: ActionHash;
+    board: Board;
+    state: BoardState;
+  };
+
   $: activeBoards = store.boardList.activeBoardHashes;
 
   $: uiProps = store.uiProps;
 
-  $: boardData = store.boardList.boardData2
+  $: boardData = store.boardList.boardData2;
 
   $: boards = pipe(store.boardList.activeBoardHashes, (boardHashes) =>
-    boardHashes.map((boardHash) =>
-      get(store.boardList.boardData2.get(boardHash))
-    )
+    boardHashes.map((boardHash) => get(boardData.get(boardHash)))
   );
+
+  let boardStates: StateAndHash[] = [];
+
+  const activeBoardStates = async () => {
+    const states = [];
+    const boards: ReadonlyMap<Uint8Array, BoardAndLatestState> =
+      await toPromise(
+        pipe(store.boardList.activeBoardHashes, (docHashes) => {
+          return sliceAndJoin(store.boardList.boardData2, docHashes, {
+            errors: "filter_out",
+          });
+        })
+      );
+    for (let [hash, b] of Array.from(boards.entries())) {
+      const bas: StateAndHash = {
+        state: b.latestState,
+        hash,
+        board: b.board,
+        hashB64: encodeHashToBase64(hash),
+      };
+      states.push(bas);
+    }
+    boardStates = states;
+  };
+  onMount(async () => {
+    while (boardStates.length == 0) {
+      await activeBoardStates();
+      if (boardStates.length > 0) {
+        break;
+      }
+      await new Promise((r) => setTimeout(r, 10000));
+      console.log("trying again");
+    }
+  });
 
   let titleElement;
   let descriptionElement;
@@ -43,10 +90,10 @@
 
   let props: CardProps = DEFAULT_PROPS;
 
-  const updateBoard = async (board: BoardAndLatestState) => {
+  const updateBoard = async (board: StateAndHash) => {
     selectedLabels = [];
     selectedBoardHashB64 = board.board.hashB64;
-    selectedBoardState = board.latestState;
+    selectedBoardState = board.state;
     selectedBoard = board.board;
   };
 
@@ -57,10 +104,11 @@
     return options;
   };
 
-  let creating = false
+  let creating = false;
   const addCard = async () => {
-    creating = true
-    if (selectedBoardState.labelDefs.length > 0) props.labels = labelSelect.value;
+    creating = true;
+    if (selectedBoardState.labelDefs.length > 0)
+      props.labels = labelSelect.value;
     const card: Card = {
       id: uuidv1(),
       comments: {},
@@ -75,44 +123,141 @@
     titleElement.value = "";
     descriptionElement.value = "";
     props = DEFAULT_PROPS;
-    creating = false
+    creating = false;
   };
 
-  $: valid = selectedBoardHashB64 && props.title && props.description && !creating
+  $: valid =
+    selectedBoardHashB64 && props.title && props.description && !creating;
 
-  let aboutDialog
-
+  let aboutDialog;
+  let newTopicDialog;
+  let topicInput;
+  let newTopicName;
+  let topicSelect;
+  let creatingTopic = false;
 </script>
-<AboutDialog bind:this={aboutDialog} />
 
+<AboutDialog bind:this={aboutDialog} />
+<sl-dialog
+  bind:this={newTopicDialog}
+  label="New Topic"
+  on:sl-initial-focus={(e) => {
+    topicInput.focus();
+    e.preventDefault();
+  }}
+  on:sl-request-close={(event) => {
+    if (event.detail.source === "overlay") {
+      event.preventDefault();
+    }
+  }}
+>
+  <sl-input
+    class="textarea"
+    on:sl-input={(e) => (newTopicName = e.target.value)}
+    maxlength="60"
+    bind:this={topicInput}
+  ></sl-input>
+  {#if creatingTopic}
+    <p>Please be patient, this can take a bit...</p>
+  {/if}
+  <sl-button
+    slot="footer"
+    style="margin-left:5px"
+    on:click={() => {
+      newTopicDialog.hide();
+    }}
+  >
+    Cancel
+  </sl-button>
+  <sl-button
+    slot="footer"
+    style="margin-left:5px"
+    variant="primary"
+    loading={creatingTopic}
+    disabled={!newTopicName}
+    on:click={async () => {
+      creatingTopic = true;
+      const boards = await toPromise(store.boardList.allBoards);
+      const keys = Array.from(boards.keys());
+      if (keys.length > 0) {
+        const board = boards.get(keys[0]);
+        const newBoard = await store.boardList.cloneBoard(
+          board.latestState,
+          newTopicName
+        );
+        let newBoardIndex = -1;
+        while (newBoardIndex < 0) {
+          await activeBoardStates();
+          newBoardIndex = boardStates.findIndex(
+            (s) => s.hashB64 == newBoard.hashB64
+          );
+          if (newBoardIndex >= 0) {
+            const s = boardStates[newBoardIndex];
+            topicSelect.value = s.hashB64;
+            updateBoard(s);
+          } else {
+            await new Promise((r) => setTimeout(r, 1000));
+            console.log("trying again");
+          }
+        }
+      } else {
+        console.log("no source board found");
+      }
+      creatingTopic = false;
+      newTopicDialog.hide();
+    }}
+  >
+    Create
+  </sl-button>
+</sl-dialog>
 <div class="board-menu">
   <div class="boards-section">
-    {#if $boards.status == "complete" && $boards.value.length > 0}
+    {#if boardStates.length == 0}
+      <div style="display:flex;width:100%;justify-content:center">
+        <p style="margin:auto;color:white">
+          Syncronizing with the network, please be patient, this can take a
+          bit...
+        </p>
+      </div>
+    {:else}
       <div class="add-feedback">
         <div class="type-header">Add Feedback</div>
 
         <div class="card-elements">
-          <sl-select label="Topic" placeholder="Choose a topic">
-            {#each $boards.value as board}
-              {#if board.status == "complete"}
+          <div style="display:flex; align-items: flex-end;">
+            <sl-select
+              label="Topic"
+              placeholder="Choose a topic"
+              bind:this={topicSelect}
+            >
+              {#each boardStates as board}
                 <sl-option
                   on:click={async () => {
-                    await updateBoard(board.value);
+                    await updateBoard(board);
                   }}
-                  value={board.value.board.hashB64}
-                  >{board.value.latestState.name}
+                  value={board.hashB64}
+                  >{board.state.name}
                 </sl-option>
-              {/if}
-            {/each}
-          </sl-select>
-
+              {/each}
+            </sl-select>
+            <sl-button
+              style="margin-left:5px;"
+              on:click={() => {
+                newTopicName = "";
+                topicInput.value = "";
+                newTopicDialog.show();
+              }}
+            >
+              New Topic
+            </sl-button>
+          </div>
           <div style="display:flex; flex-direction:row;align-items:flex-end">
             {#if selectedBoardState && selectedBoardState.categoryDefs.length > 0}
               <sl-select
                 label="Category"
                 on:sl-change={(e) => {
                   props.category = e.target.value;
-                  props = props
+                  props = props;
                 }}
               >
                 <sl-option value={""}>No Category</sl-option>
@@ -140,8 +285,8 @@
             class="textarea"
             bind:this={titleElement}
             on:sl-input={(e) => {
-                props.title = e.target.value
-                props = props
+              props.title = e.target.value;
+              props = props;
             }}
           ></sl-input>
           <sl-textarea
@@ -150,11 +295,9 @@
             class="textarea"
             bind:this={descriptionElement}
             on:sl-input={(e) => {
-                props.description = e.target.value
-                props = props
-            }
-            }
-            ><sl-textarea> </sl-textarea></sl-textarea
+              props.description = e.target.value;
+              props = props;
+            }}><sl-textarea> </sl-textarea></sl-textarea
           >
         </div>
         <div class="controls">
@@ -174,24 +317,31 @@
 
       <div class="my-feedback">
         <div class="type-header">My Feedback</div>
-        {#if $activeBoards.status == "complete" && $activeBoards.value.length > 0}
-        {#each $activeBoards.value as hash}
-            <FeedbackItems boardHash={hash}></FeedbackItems>
+        {#each boardStates as board}
+          <FeedbackItems boardHash={board.hash}></FeedbackItems>
         {/each}
-        {/if}
       </div>
     {/if}
   </div>
-  <div class="footer"> 
-    <div on:click={()=>store.setUIprops({showFeedback:!$uiProps.showFeedback})} class="logo" title="About KanDo!"><KDLogoIcon /></div>
-    <div on:click={()=>aboutDialog.open()}><SvgIcon icon=info color="#fff"></SvgIcon></div>
-</div>
-
+  <div class="footer">
+    <div
+      on:click={() =>
+        store.setUIprops({ showFeedback: !$uiProps.showFeedback })}
+      class="logo"
+      title="About KanDo!"
+    >
+      <KDLogoIcon />
+    </div>
+    <div on:click={() => aboutDialog.open()}>
+      <SvgIcon icon="info" color="#fff"></SvgIcon>
+    </div>
+  </div>
 </div>
 
 <style>
   .boards-section {
     display: flex;
+    width: 100%;
   }
 
   .board-menu {

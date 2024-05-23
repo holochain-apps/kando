@@ -223,11 +223,15 @@ export class BoardList {
         }
     }
 
-    async cloneBoard(board: BoardState) : Promise<Board>  {
+    async cloneBoard(board: BoardState, name: string | undefined) : Promise<Board>  {
         const newBoard = cloneDeep(board) as BoardState
         newBoard.cards = []
+        newBoard.feed = {}
+        newBoard.boundTo = []
+        newBoard.props.attachments = []
+
         Object.keys(newBoard.grouping).forEach(key=>newBoard.grouping[key] = [])
-        newBoard.name = `copy of ${newBoard.name}`
+        newBoard.name = name ? name : `copy of ${newBoard.name}`
         return this.makeBoard(newBoard)
     }
 
