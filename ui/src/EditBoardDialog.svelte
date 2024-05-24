@@ -22,7 +22,6 @@
         const board: Board | undefined = await store.boardList.getBoard(boardHash)
         if (board) {
             const state = board.state()
-            console.log("FISGH", state.steward , board.myAgentKeyB64)
             canDelete = state.steward === board.myAgentKeyB64
             boardEditor.edit(hash)
             dialog.show()
