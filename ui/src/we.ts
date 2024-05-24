@@ -3,9 +3,9 @@ import type { BoardEphemeralState, BoardState } from './board';
 import { asyncDerived, pipe, sliceAndJoin, toPromise } from '@holochain-open-dev/stores';
 import { BoardType } from './boardList';
 import { LazyHoloHashMap } from '@holochain-open-dev/utils';
-import type { AppletHash, AppletServices, AssetInfo, WAL, WeaveServices } from '@lightningrodlabs/we-applet';
+import type { AppletHash, AppletServices, AssetInfo, RecordInfo, WAL, WeaveServices } from '@lightningrodlabs/we-applet';
 import { getMyDna } from './util';
-import type { AppClient, RoleName, ZomeName } from '@holochain/client';
+import type { AppClient, RoleName } from '@holochain/client';
 
 const ROLE_NAME = "kando"
 const ZOME_NAME = "syn"
@@ -36,35 +36,41 @@ export const appletServices: AppletServices = {
     },
     getAssetInfo: async (
       appletClient: AppClient,
-      roleName: RoleName,
-      integrityZomeName: ZomeName,
-      entryType: string,
-      wal: WAL
+      wal: WAL,
+      recordInfo: RecordInfo,
     ): Promise<AssetInfo | undefined> => {
-      if (entryType == "document") {
-        const synClient = new SynClient(appletClient, roleName, ZOME_NAME);
-        const synStore = new SynStore(synClient);
-        const documentHash = wal.hrl[1]
-        const docStore = new DocumentStore<BoardState, BoardEphemeralState> (synStore, documentHash)
-        const workspaces = await toPromise(docStore.allWorkspaces)
-        const workspace = new WorkspaceStore(docStore, Array.from(workspaces.keys())[0])
-        const latestState = await toPromise(workspace.latestState)
+      if (recordInfo) {
+        const roleName: RoleName = recordInfo.roleName
+        // const integrityZomeName: ZomeName = recordInfo.integrityZomeName
+        const entryType: string = recordInfo.entryType
 
-        if (wal.context) {
-          const card = latestState.cards.find(c=>c.id === wal.context)
-          if (card) {
-            return {
-              icon_src: CARD_ICON_SRC,
-              name: `${latestState.name}: ${card.props.title}`,
-            };    
+        if (entryType == "document") {
+          const synClient = new SynClient(appletClient, roleName, ZOME_NAME);
+          const synStore = new SynStore(synClient);
+          const documentHash = wal.hrl[1]
+          const docStore = new DocumentStore<BoardState, BoardEphemeralState> (synStore, documentHash)
+          const workspaces = await toPromise(docStore.allWorkspaces)
+          const workspace = new WorkspaceStore(docStore, Array.from(workspaces.keys())[0])
+          const latestState = await toPromise(workspace.latestState)
+
+          if (wal.context) {
+            const card = latestState.cards.find(c=>c.id === wal.context)
+            if (card) {
+              return {
+                icon_src: CARD_ICON_SRC,
+                name: `${latestState.name}: ${card.props.title}`,
+              };    
+            }
           }
+          return {
+            icon_src: BOARD_ICON_SRC,
+            name: latestState.name,
+          };
+        } else {
+          throw new Error("Kando doesn't know about entry type:"+ entryType)
         }
-        return {
-          icon_src: BOARD_ICON_SRC,
-          name: latestState.name,
-        };
       } else {
-        throw new Error("unknown entry type:"+ entryType)
+        throw new Error("Null WAL not supported, must supply a recordInfo")
       }
     },
     search: async (
