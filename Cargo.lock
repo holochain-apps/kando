@@ -4,11 +4,11 @@ version = 3
 
 [[package]]
 name = "addr2line"
-version = "0.21.0"
+version = "0.22.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8a30b2e23b9e17a9f90641c7ab1549cd9b44f296d3ccbf309d2863cfe398a0cb"
+checksum = "6e4503c46a5c0c7844e948c9a4d6acd9f50cccb4de1c48eb9e291ea17470c678"
 dependencies = [
- "gimli 0.28.1",
+ "gimli 0.29.0",
 ]
 
 [[package]]
@@ -72,9 +72,9 @@ checksum = "0c4b4d0bd25bd0b74681c0ad21497610ce1b7c91b1022cd21c80c6fbdd9476b0"
 
 [[package]]
 name = "backtrace"
-version = "0.3.71"
+version = "0.3.72"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "26b05800d2e817c8b3b4b54abd461726265fa9789ae34330622f2db9ee696f9d"
+checksum = "17c6a35df3749d2e8bb1b7b21a976d82b15548788d2735b9d82f329268f71a11"
 dependencies = [
  "addr2line",
  "cc",
@@ -477,7 +477,7 @@ dependencies = [
  "ident_case",
  "proc-macro2",
  "quote",
- "syn 2.0.65",
+ "syn 2.0.66",
 ]
 
 [[package]]
@@ -499,7 +499,7 @@ checksum = "733cabb43482b1a1b53eee8583c2b9e8684d592215ea83efd305dd31bc2f0178"
 dependencies = [
  "darling_core 0.20.9",
  "quote",
- "syn 2.0.65",
+ "syn 2.0.66",
 ]
 
 [[package]]
@@ -599,7 +599,7 @@ dependencies = [
  "darling 0.20.9",
  "proc-macro2",
  "quote",
- "syn 2.0.65",
+ "syn 2.0.66",
 ]
 
 [[package]]
@@ -682,7 +682,7 @@ checksum = "87750cf4b7a4c0625b1529e4c543c2182106e4dedc60a2a6455e00d212c489ac"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.65",
+ "syn 2.0.66",
 ]
 
 [[package]]
@@ -770,9 +770,9 @@ dependencies = [
 
 [[package]]
 name = "gimli"
-version = "0.28.1"
+version = "0.29.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4271d37baee1b8c7e4b708028c57d816cf9d2434acb33a549475f78c181f6253"
+checksum = "40ecd4077b5ae9fd2e9e169b102c6c330d0605168eb0e8bf79952b256dbefffd"
 
 [[package]]
 name = "hashbrown"
@@ -792,7 +792,7 @@ checksum = "e5274423e17b7c9fc20b6e7e208532f9b19825d82dfd615708b70edd83df41f1"
 [[package]]
 name = "hc_zome_profiles_coordinator"
 version = "0.2.0"
-source = "git+https://github.com/holochain-open-dev/profiles?branch=for-hdk-v0.4.0-dev#b530eb6f4c27d755df5698256cc31436d0be4c67"
+source = "git+https://github.com/holochain-open-dev/profiles?branch=for-hdk-v0.4.0-dev.1#316f38e148f6442e630205c62824a339e002bccc"
 dependencies = [
  "derive_more",
  "hc_zome_profiles_integrity",
@@ -803,7 +803,7 @@ dependencies = [
 [[package]]
 name = "hc_zome_profiles_integrity"
 version = "0.2.0"
-source = "git+https://github.com/holochain-open-dev/profiles?branch=for-hdk-v0.4.0-dev#b530eb6f4c27d755df5698256cc31436d0be4c67"
+source = "git+https://github.com/holochain-open-dev/profiles?branch=for-hdk-v0.4.0-dev.1#316f38e148f6442e630205c62824a339e002bccc"
 dependencies = [
  "derive_more",
  "hdi",
@@ -813,7 +813,7 @@ dependencies = [
 [[package]]
 name = "hc_zome_syn_coordinator"
 version = "0.1.0"
-source = "git+https://github.com/holochain/syn?branch=for-hdk-v0.4.0-dev#40d668523f0ad1d28fe309b018ac4a12436df0da"
+source = "git+https://github.com/holochain/syn?branch=for-hdk-v0.4.0-dev.1#ee366fca6ed78b44ffcabedd0e3eb10a75c396c2"
 dependencies = [
  "hc_zome_syn_integrity",
  "hdk",
@@ -824,7 +824,7 @@ dependencies = [
 [[package]]
 name = "hc_zome_syn_integrity"
 version = "0.1.0"
-source = "git+https://github.com/holochain/syn?branch=for-hdk-v0.4.0-dev#40d668523f0ad1d28fe309b018ac4a12436df0da"
+source = "git+https://github.com/holochain/syn?branch=for-hdk-v0.4.0-dev.1#ee366fca6ed78b44ffcabedd0e3eb10a75c396c2"
 dependencies = [
  "hdi",
  "serde",
@@ -832,9 +832,9 @@ dependencies = [
 
 [[package]]
 name = "hdi"
-version = "0.5.0-dev.4"
+version = "0.5.0-dev.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cb73158c410eeb6b5b172c00b057ff916f1805a665aac75739ea541b5fc0c5ab"
+checksum = "367fb15bb6f1bf07c73dd3da85830a2fe2a37de5eceac5a0450e241222b0d9be"
 dependencies = [
  "getrandom",
  "hdk_derive",
@@ -850,9 +850,9 @@ dependencies = [
 
 [[package]]
 name = "hdk"
-version = "0.4.0-dev.4"
+version = "0.4.0-dev.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "eac5038e0696958ba3cd9045a2afe193d3d7c776192ed26b04afa7ac3cc7185a"
+checksum = "08966c37dccd8a205b22799f6143b25455378a7ac8b8af0a8826c6f2dc5c0070"
 dependencies = [
  "getrandom",
  "hdi",
@@ -870,9 +870,9 @@ dependencies = [
 
 [[package]]
 name = "hdk_derive"
-version = "0.4.0-dev.4"
+version = "0.4.0-dev.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "39fa4f26289fc026f3a363409806ea40cd656f0038f37b1f013ea362e85a352a"
+checksum = "6d73ba220510d0b83c0fe717d20b763f343229d0e59b248796f7a8ae94bb0b69"
 dependencies = [
  "darling 0.14.4",
  "heck 0.5.0",
@@ -904,9 +904,9 @@ checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
 
 [[package]]
 name = "holo_hash"
-version = "0.4.0-dev.4"
+version = "0.4.0-dev.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "51d2f95da536e19d06765a5a109a6f64dbea986ff266d00aa46e86297a4c3899"
+checksum = "439389b876b16eeddb280e4daf68002c8792103e40ed332bb9bef6a898f7a367"
 dependencies = [
  "base64",
  "blake2b_simd",
@@ -922,9 +922,9 @@ dependencies = [
 
 [[package]]
 name = "holochain_integrity_types"
-version = "0.4.0-dev.4"
+version = "0.4.0-dev.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9204b54c28dd120db597c5fe06d819137c70b9c46d1bba80c7fdf99a2a3e0f20"
+checksum = "9c204c0e9f64f0c04e4980df7049e99dac459311d81298f352e1e2e38946ecf8"
 dependencies = [
  "holo_hash",
  "holochain_secure_primitive",
@@ -1000,9 +1000,9 @@ dependencies = [
 
 [[package]]
 name = "holochain_wasmer_common"
-version = "0.0.94"
+version = "0.0.93"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c9f7d17668e4a4997b5e121c7a951ea9606331ef206b991f1e81420c84d98485"
+checksum = "5e77c4d54b5bf86dfa0266588d43fc913b0442799f34c8fc04b0e8eda0260bd4"
 dependencies = [
  "holochain_serialized_bytes",
  "serde",
@@ -1014,9 +1014,9 @@ dependencies = [
 
 [[package]]
 name = "holochain_wasmer_guest"
-version = "0.0.94"
+version = "0.0.93"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e292e12fda0716ce36b566c7cf3dad8443fdc7c56950e42c5a3ba81988e792d0"
+checksum = "10fcb10d7d455c5222a13b2343e2a438bcbbf3f97ef79f16c9e01203f6616dd0"
 dependencies = [
  "holochain_serialized_bytes",
  "holochain_wasmer_common",
@@ -1028,9 +1028,9 @@ dependencies = [
 
 [[package]]
 name = "holochain_zome_types"
-version = "0.4.0-dev.4"
+version = "0.4.0-dev.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1a31f9c67ac16732d0252011af4a81c85dd3125ed9fb08e652303799df171b2b"
+checksum = "1ab039f61375d1aa5b33de73971ae176775040e8aad8f65ec72cf274ce50b178"
 dependencies = [
  "derive_more",
  "holo_hash",
@@ -1159,9 +1159,9 @@ dependencies = [
 
 [[package]]
 name = "kitsune_p2p_bin_data"
-version = "0.4.0-dev.4"
+version = "0.4.0-dev.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8417bbfc7c6753611bcce99d59d0cac8f9e994ad098e070aa0e43aaea994fdba"
+checksum = "f0a6a1f169c55972780aecd280a2a4548a6fb1b55ff8c3039a8dfef50c4e2985"
 dependencies = [
  "base64",
  "derive_more",
@@ -1174,9 +1174,9 @@ dependencies = [
 
 [[package]]
 name = "kitsune_p2p_block"
-version = "0.4.0-dev.4"
+version = "0.4.0-dev.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1c1085fa521d9c9e4891818edc5cff10ba161b62b1aec91cd227d895ebb35237"
+checksum = "88d374982ce2b07d4253ef7ecb9e2ec89d1e10e8e92c8aaba71d679684bc3abe"
 dependencies = [
  "kitsune_p2p_bin_data",
  "kitsune_p2p_timestamp",
@@ -1185,9 +1185,9 @@ dependencies = [
 
 [[package]]
 name = "kitsune_p2p_dht_arc"
-version = "0.4.0-dev.4"
+version = "0.4.0-dev.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "17063b967b75b18404625dc231a943b443b401b0047bb9a67680d7cb760459a4"
+checksum = "894bc48429be17d4d2d57d71e5d117086f81e529f7d733d98882335f8e5bd2df"
 dependencies = [
  "derive_more",
  "gcollections",
@@ -1327,9 +1327,9 @@ dependencies = [
 
 [[package]]
 name = "object"
-version = "0.32.2"
+version = "0.35.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a6a622008b6e321afc04970976f62ee297fdbaa6f95318ca343e3eebb9648441"
+checksum = "b8ec7ab813848ba4522158d5517a6093db1ded27575b070f4177b8d12b41db5e"
 dependencies = [
  "memchr",
 ]
@@ -1342,9 +1342,9 @@ checksum = "3fdb12b2476b595f9358c5161aa467c2438859caa136dec86c26fdd2efe17b92"
 
 [[package]]
 name = "parking_lot"
-version = "0.12.2"
+version = "0.12.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7e4af0ca4f6caed20e900d564c242b8e5d4903fdacf31d3daf527b66fe6f42fb"
+checksum = "f1bf18183cf54e8d6059647fc3063646a1801cf30896933ec2311622cc4b9a27"
 dependencies = [
  "lock_api",
  "parking_lot_core",
@@ -1418,9 +1418,9 @@ dependencies = [
 
 [[package]]
 name = "proc-macro2"
-version = "1.0.83"
+version = "1.0.84"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0b33eb56c327dec362a9e55b3ad14f9d2f0904fb5a5b03b513ab5465399e9f43"
+checksum = "ec96c6a92621310b51366f1e28d05ef11489516e93be030060e5fc12024a49d6"
 dependencies = [
  "unicode-ident",
 ]
@@ -1744,7 +1744,7 @@ checksum = "7eb0b34b42edc17f6b7cac84a52a1c5f0e1bb2227e997ca9011ea3dd34e8610b"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.65",
+ "syn 2.0.66",
 ]
 
 [[package]]
@@ -1881,9 +1881,9 @@ dependencies = [
 
 [[package]]
 name = "syn"
-version = "2.0.65"
+version = "2.0.66"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d2863d96a84c6439701d7a38f9de935ec562c8832cc55d1dde0f513b52fad106"
+checksum = "c42f3f41a2de00b01c0aaad383c5a45241efc8b2d1eda5661812fda5f3cdcff5"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1983,7 +1983,7 @@ checksum = "46c3384250002a6d5af4d114f2845d37b57521033f30d5c3f46c4d70e1197533"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.65",
+ "syn 2.0.66",
 ]
 
 [[package]]
@@ -2033,7 +2033,7 @@ checksum = "34704c8d6ebcbc939824180af020566b01a7c01f80641264eba0999f6c2b6be7"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.65",
+ "syn 2.0.66",
 ]
 
 [[package]]
@@ -2142,7 +2142,7 @@ dependencies = [
  "once_cell",
  "proc-macro2",
  "quote",
- "syn 2.0.65",
+ "syn 2.0.66",
  "wasm-bindgen-shared",
 ]
 
@@ -2164,7 +2164,7 @@ checksum = "e94f17b526d0a461a191c78ea52bbce64071ed5c04c9ffe424dcb38f74171bb7"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.65",
+ "syn 2.0.66",
  "wasm-bindgen-backend",
  "wasm-bindgen-shared",
 ]
