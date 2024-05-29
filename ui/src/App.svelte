@@ -113,7 +113,7 @@
             case "asset":
               if (!weaveClient.renderInfo.view.recordInfo) {
                 throw new Error(
-                  "The KanDo does not implement asset views pointing to DNAs instead of Records."
+                  "KanDo does not implement asset views pointing to DNAs instead of Records."
                 );
               } else {
                 switch (weaveClient.renderInfo.view.recordInfo.roleName) {
