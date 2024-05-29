@@ -30,7 +30,6 @@
 <sl-drawer class="edit-card" bind:this={dialog}
   style="--size:500px"
   no-header
-  on:sl-hide={()=>dialog.close()}
   >
   <CardDetails bind:this={details} cardId={cardId} />
 </sl-drawer>
