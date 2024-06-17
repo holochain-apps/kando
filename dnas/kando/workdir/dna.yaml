@@ -6,7 +6,7 @@ integrity:
   network_seed: ~
   properties:
     type: "KanDo"
-  origin_time: 2023-11-03T00:00:00.0Z
+  origin_time: 2024-06-17T00:00:00.0Z
   zomes:
     - name: syn_integrity
       bundled: ../../../target/wasm32-unknown-unknown/release/syn_integrity.wasm
