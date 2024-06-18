@@ -259,7 +259,7 @@ export interface BoardState {
         id: string;
       };
 
-  const _getCard = (state: BoardState, cardId: uuidv1) : [Card, number] |undefined => {
+  export const _getCard = (state: BoardState, cardId: uuidv1) : [Card, number] |undefined => {
     const index = state.cards.findIndex((card) => card.id === cardId)
     if (index >=0) {
       return [state.cards[index], index]
@@ -267,7 +267,7 @@ export interface BoardState {
     return undefined
   }
 
-  const _getGroup = (state: BoardState, groupId: uuidv1) : [Group, number]|undefined => {
+  export const _getGroup = (state: BoardState, groupId: uuidv1) : [Group, number]|undefined => {
     const index = state.groups.findIndex((g) => g.id === groupId)
     if (index >=0) {
       return [state.groups[index],index]
