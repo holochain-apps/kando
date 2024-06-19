@@ -159,15 +159,15 @@
       {#if card}
         updated checklist {delta.title} on <span class="card-sel" on:click={()=>dispatch("select-card", card.id)}> {card.props.title}</span>
       {:else}
-        updated a checklist "{delta.title}" on card "{context.card}"
+        updated a checklist {delta.title} on card "{context.card}"
       {/if}
     {/if}
     {#if delta.type == "add-checklist-item"}
       {@const card = getCard(delta.id)}
       {#if card}
         {@const list = card.checklists[delta.checklistId]}
-        added item "{delta.item.text}" to "<span class="card-sel" on:click={()=>dispatch("select-card", card.id)}> {card.props.title}</span>
-        {list ? `:${list.title}` : ""}"
+        added item "{delta.item.text}" to <span class="card-sel" on:click={()=>dispatch("select-card", card.id)}> {card.props.title}</span>
+        {list ? `:${list.title}` : ""}
       {:else}
         added checklist item {delta.item.text} to card "{context.card}"
       {/if}
@@ -177,9 +177,9 @@
       {#if card}
         {@const list = card.checklists[delta.checklistId]}
         {#if list}
-          deleted item "{context.item}" from "<span class="card-sel" on:click={()=>dispatch("select-card", card.id)}> {card.props.title}</span>:{list.title}"
+          deleted item "{context.item}" from <span class="card-sel" on:click={()=>dispatch("select-card", card.id)}> {card.props.title}</span>:{list.title}
         {:else}
-          deleted a checklist item from card "{context.card}"
+          deleted a checklist item from <span class="card-sel" on:click={()=>dispatch("select-card", card.id)}> {card.props.title}</span>
         {/if}
       {:else}
         deleted a checklist item from card "{context.card}"
@@ -192,9 +192,12 @@
         {@const list = card.checklists[delta.checklistId]}
         {#if list}
           {@const item = list.items[delta.itemId]}
-          set item ${item ? ` "{item.text}"` : ""} on "<span class="card-sel" on:click={()=>dispatch("select-card", card.id)}> {card.props.title}</span>: {list.title}"
+          set item {item ? ` "${item.text}"` : ""} on <span class="card-sel" on:click={()=>dispatch("select-card", card.id)}> {card.props.title}</span>: {list.title} 
           to {itemStateStr}
-        {/if}
+        {:else}
+          set item from deleted checklist in <span class="card-sel" on:click={()=>dispatch("select-card", card.id)}> {card.props.title}</span>
+          to {itemStateStr}
+      {/if}
       {:else}
         set item a checklist item from card "{context.card}" to {itemStateStr}
       {/if}
@@ -205,15 +208,22 @@
         {@const list = card.checklists[delta.checklistId]}
         {#if list}
           {@const item = list.items[delta.itemId]}
-          converted item "{context.item}" from "<span class="card-sel" on:click={()=>dispatch("select-card", card.id)}> {card.props.title}</span>: {list.title}"
+          converted item "{context.item}" from <span class="card-sel" on:click={()=>dispatch("select-card", card.id)}> {card.props.title}</span>: {list.title}
           to a card
+        {:else}
+          converted item "{context.item}" from deleted checklist in <span class="card-sel" on:click={()=>dispatch("select-card", card.id)}> {card.props.title}</span> to a card
         {/if}
       {:else}
         converted a checklist item from card "{context.card}" to a card
       {/if}
     {/if}
     {#if delta.type == "delete-card-checklist"}
-      deleted checklist {context.checklist} on card "{context.card}"
+      {@const card = getCard(delta.id)}
+      {#if card}
+        deleted checklist {context.checklist} on <span class="card-sel" on:click={()=>dispatch("select-card", card.id)}> {card.props.title}</span>
+      {:else}
+        deleted checklist {context.checklist} on card "{context.card}"
+      {/if}
     {/if}
     {#if delta.type == "delete-card"}
       deleted card "{context.card}"
