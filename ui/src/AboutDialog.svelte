@@ -50,5 +50,8 @@
         display: block;
         padding: 0 15px;
     }
+    a {
+        text-decoration:underline
+    }
 </style>
   
