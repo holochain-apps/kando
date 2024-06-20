@@ -51,7 +51,7 @@
 <div class="board-menu"
     class:wide={wide} >
 
-    {#if !isWeContext()}
+    {#if !isWeContext() && !USING_FEEDBACK}
         <GroupParticipants/>
     {/if}
         <h3 class="type-header">Boards</h3>
