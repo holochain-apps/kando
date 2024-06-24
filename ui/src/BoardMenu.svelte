@@ -135,8 +135,10 @@
                 }}
         ><KDLogoIcon /></div>
         <div on:click={()=>aboutDialog.open()}><SvgIcon icon=info color="#fff"></SvgIcon></div>
-
         <div on:click={()=>settingsDialog.open()} style="margin-left:10px;"><SvgIcon icon=faCog size="20px" color="#fff"/></div>
+        {#if USING_FEEDBACK}
+            <sl-button style="margin-left:10px" size="small" pill on:click={()=>store.setUIprops({showFeedback:!$uiProps.showFeedback})}>My Feedback Items</sl-button>
+        {/if}
     </div>
 </div>
 

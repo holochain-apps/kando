@@ -24,6 +24,7 @@
   import "@holochain-open-dev/profiles/dist/elements/create-profile.js";
   import KDLogoIcon from "./icons/KDLogoIcon.svelte";
   import { appletServices } from "./we";
+  import { USING_FEEDBACK } from "./store";
 
   const appId = import.meta.env.VITE_APP_ID
     ? import.meta.env.VITE_APP_ID
@@ -196,7 +197,17 @@
       <div class="loading"><div class="loader"></div></div>
     {:else if $prof.status == "complete" && $prof.value == undefined}
       <div class="create-profile">
-        <div class="welcome-text"><KDLogoIcon /></div>
+        {#if USING_FEEDBACK}
+          <div class="welcome-text-feedback" >
+            <h2 style="display:flex;justify-content:center">Welcome to the Moss feedback boards</h2>
+            <p style="display:flex;justify-content:center">powered by <span style="margin-left:10px;width:100px;" class="logo-frame"><KDLogoIcon color="#3498db"/></span></p>
+            <p style="display:flex;justify-content:center;font-size:110%;width:500px;">Our feedback system is public so the community can learn what others are saying about Moss and the various tools.  Thus that profile info you enter below will be visible to all Moss users.</p>
+          </div>
+        {:else}
+          <div class="welcome-text logo-frame">
+            <KDLogoIcon />
+          </div>
+        {/if}
         <create-profile on:profile-created={() => {}}></create-profile>
       </div>
     {:else if $prof.status == "error"}
@@ -247,6 +258,9 @@
     margin: 40px;
     border-radius: 20px;
     background-color: #3498db;
+  }
+  .welcome-text-feedback {
+    margin-bottom:50px;
   }
   .create-profile {
     padding-top: 100px;

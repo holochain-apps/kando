@@ -323,7 +323,7 @@
       </div>
     {/if}
   </div>
-  <div class="footer">
+  <div class="footer" style="width:100%">
     <div
       on:click={() =>
         store.setUIprops({ showFeedback: !$uiProps.showFeedback })}
@@ -335,6 +335,9 @@
     <div on:click={() => aboutDialog.open()}>
       <SvgIcon icon="info" color="#fff"></SvgIcon>
     </div>
+    {#if boardStates.length > 0}
+        <sl-button style="margin-left:10px" size="small" pill on:click={()=>store.setUIprops({showFeedback:!$uiProps.showFeedback})}>All Boards</sl-button>
+    {/if}
   </div>
 </div>
 
