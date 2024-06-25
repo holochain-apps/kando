@@ -75,7 +75,6 @@
         break;
       }
       await new Promise((r) => setTimeout(r, 10000));
-      console.log("trying again");
     }
   });
 
@@ -197,7 +196,6 @@
             updateBoard(s);
           } else {
             await new Promise((r) => setTimeout(r, 1000));
-            console.log("trying again");
           }
         }
       } else {
