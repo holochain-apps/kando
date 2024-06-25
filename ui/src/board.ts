@@ -62,7 +62,8 @@ export type Card = {
     checklists: Checklists
     creator: AgentPubKeyB64
 };
-  
+
+export const UngroupedName = "Archived"
 export const UngroupedId = "_"
 export class Group {
       id: uuidv1
@@ -740,7 +741,7 @@ export interface BoardState {
           const [card,i] = _getCard(state, delta.id)
           if (card) {
             _removeCardFromGroups(state, delta.id)
-            _addCardToGroup(state, delta.group, delta.id, delta.index)
+            _addCardToGroup(state, delta.group, delta.id, delta.index < 0 ? 0 : delta.index)
             feedContext = {card: card.props.title}
           }}
           break;

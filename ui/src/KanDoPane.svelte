@@ -6,7 +6,7 @@
   import type { KanDoStore } from "./store";
   import LabelSelector from "./LabelSelector.svelte";
   import { v1 as uuidv1 } from "uuid";
-  import { type Card, Group, UngroupedId, type CardProps, type Comment, type Checklists, Board, type BoardProps, feedItems, MAX_FEED_ITEMS } from "./board";
+  import { type Card, Group, UngroupedId, type CardProps, type Comment, type Checklists, Board, type BoardProps, feedItems, MAX_FEED_ITEMS, UngroupedName } from "./board";
   import EditBoardDialog from "./EditBoardDialog.svelte";
   import Avatar from "./Avatar.svelte";
   import { decodeHashFromBase64, type Timestamp } from "@holochain/client";
@@ -576,7 +576,7 @@
           <div class="column-item column-title">
             <div style="width:100%">
             {#if columnId === UngroupedId}
-              Archived
+              {UngroupedName}
             {:else}
             <ClickEdit
               text={columns[columnId].name} 

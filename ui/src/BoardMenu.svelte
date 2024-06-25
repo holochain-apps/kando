@@ -11,6 +11,7 @@
     import BoardMenuItem from "./BoardMenuItem.svelte";
     import { BoardType } from "./boardList";
     import { isWeContext } from "@lightningrodlabs/we-applet";
+  import { UngroupedName } from "./board";
     export let wide = false
 
     let newBoardDialog
@@ -97,7 +98,7 @@
         </div>
     {/if} -->
     <div style="display:flex; align-items:center;margin-top:20px;">
-        <h3 class="type-header">Archived Boards</h3>
+        <h3 class="type-header">{UngroupedName} Boards</h3>
         <sl-checkbox
             style="margin-left:10px;color:#ccc"
             checked={$uiProps.showArchivedBoards}
