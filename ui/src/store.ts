@@ -18,7 +18,7 @@ import en from 'javascript-time-ago/locale/en'
 import type { v1 as uuidv1 } from "uuid";
 import { derived, get, writable, type Unsubscriber, type Writable } from "svelte/store";
 import type { ProfilesStore } from '@holochain-open-dev/profiles';
-import type { BoardState } from './board';
+import { UngroupedName, type BoardState } from './board';
 import type { WeClient } from '@lightningrodlabs/we-applet';
 import { HoloHashMap } from '@holochain-open-dev/utils';
 import { getMyDna } from './util';
@@ -255,7 +255,7 @@ export class KanDoStore {
     getCardGroupName(cardId: uuidv1, state: BoardState) : string  {
         const gId = this.getCardGroupId(cardId, state)
         if (gId === "_") {
-            return "Archived"
+            return UngroupedName
         }
         const g = (state.groups.find((g)=>g.id == gId))
         if (g) {
