@@ -1,12 +1,12 @@
 <script lang="ts">
-  import { DEFAULT_PROPS, UngroupedId, type CardProps, type CategoryDef, type LabelDef } from "./board";
+  import { DEFAULT_PROPS, UngroupedId, UngroupedName, type CardProps, type CategoryDef} from "./board";
   import '@shoelace-style/shoelace/dist/components/select/select.js';
   import '@shoelace-style/shoelace/dist/components/option/option.js';
   import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
   import '@shoelace-style/shoelace/dist/components/input/input.js';
   import { cloneDeep, isEqual } from "lodash";
   import { v1 as uuidv1 } from "uuid";
-  import { getContext, onMount } from 'svelte';
+  import { getContext } from 'svelte';
   import type { KanDoStore } from './store';
   import Avatar from './Avatar.svelte';
   import { decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
@@ -65,7 +65,7 @@
       if (idx >=0)
         cols.splice(idx,1)
 
-      return cols.concat({id:UngroupedId,name:"Archived"})
+      return cols.concat({id:UngroupedId,name:UngroupedName})
   }
 
   const setColumn = (id:string) => {

@@ -30,26 +30,6 @@
      .small {
         font-size: 80%;
      }
-     .export-import {
-        box-sizing: border-box;
-        position: relative;
-        width: 100%;
-        height: 50px;
-        background: #243076;
-        border: 1px solid #4A559D;
-        margin-top: 5px;
-        color: #fff;
-        display: flex;
-        align-items: center;
-        border-radius: 5px;
-        cursor: pointer;
-    }
-
-    .export-import span {
-        color: #fff;
-        display: block;
-        padding: 0 15px;
-    }
     a {
         text-decoration:underline
     }
