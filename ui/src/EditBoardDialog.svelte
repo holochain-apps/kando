@@ -8,7 +8,7 @@
     import '@shoelace-style/shoelace/dist/components/button/button.js';
     import type SlDialog from '@shoelace-style/shoelace/dist/components/dialog/dialog';
     import type { Board, BoardProps, BoardState, CategoryDef, Group, LabelDef } from './board';
-  import { get } from 'svelte/store';
+    import { get } from 'svelte/store';
 
     let boardHash:EntryHash|undefined = undefined
 

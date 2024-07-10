@@ -2,7 +2,6 @@
   import { getContext, onMount } from "svelte";
   import type { KanDoStore } from "./store";
   import type { BoardAndLatestState } from "./boardList";
-  import { isWeContext } from "@lightningrodlabs/we-applet";
   import {
     get,
     pipe,

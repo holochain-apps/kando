@@ -11,7 +11,7 @@
     import BoardMenuItem from "./BoardMenuItem.svelte";
     import { BoardType } from "./boardList";
     import { isWeContext } from "@lightningrodlabs/we-applet";
-  import { UngroupedName } from "./board";
+    import { UngroupedName } from "./board";
     export let wide = false
 
     let newBoardDialog

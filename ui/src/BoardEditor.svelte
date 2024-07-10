@@ -12,7 +12,6 @@
     import { cloneDeep } from "lodash";
     import type { KanDoStore } from './store';
     import { encodeHashToBase64, type EntryHash } from '@holochain/client';
-  import { BoardType } from './boardList';
 
     const { getStore } :any = getContext('store');
 
