@@ -6,7 +6,7 @@
   import type { KanDoStore } from "./store";
   import LabelSelector from "./LabelSelector.svelte";
   import { v1 as uuidv1 } from "uuid";
-  import { type Card, Group, UngroupedId, type CardProps, type Comment, type Checklists, Board, type BoardProps, feedItems, MAX_FEED_ITEMS, UngroupedName } from "./board";
+  import { type Card, Group, UngroupedId, type CardProps, type Comment, type Checklists, Board, type BoardProps, feedItemsGroupedByCard, MAX_FEED_ITEMS, UngroupedName } from "./board";
   import EditBoardDialog from "./EditBoardDialog.svelte";
   import Avatar from "./Avatar.svelte";
   import { decodeHashFromBase64, type Timestamp } from "@holochain/client";
@@ -510,12 +510,12 @@
       </div>
         {#if state}
         <div class="feed-items">
-          {#each feedItems($state.feed) as item}
+          {#each feedItemsGroupedByCard($state) as item}
             <FeedElement on:select-card={(e)=>{
               feedHidden = true
               cardDetails(e.detail)
             }}
-              state={state} item={item}> </FeedElement>
+              state={state} items={item}> </FeedElement>
 
           {/each}
         </div>

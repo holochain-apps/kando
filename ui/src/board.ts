@@ -117,6 +117,86 @@ export const feedItems = (feed: Feed): FeedItem[] => {
   })
 }
 
+export const isCardDelta = (deltaType:string) : boolean => {
+  switch (deltaType) {
+    case "add-card":
+    case "update-card-group":
+    case "update-card-props": 
+    case "set-card-agents":
+    case "add-card-comment":
+    case "update-card-comment":
+    case "delete-card-comment":
+    case "add-card-checklist": 
+    case "update-card-checklist":
+    case "add-checklist-item":
+    case "delete-checklist-item":
+    case "set-checklist-item-state":
+    case "convert-checklist-item":
+    case "delete-card-checklist":
+      return true
+    default:
+      return false
+  }
+}
+
+export const getDeltaCardData = (state: BoardState, delta: BoardDelta) => {
+  switch (delta.type) {
+    case "add-card":
+      return [delta.value.id, delta.value.props.title]
+    case "update-card-group":
+    case "update-card-props": 
+    case "set-card-agents":
+    case "add-card-comment":
+    case "update-card-comment":
+    case "delete-card-comment":
+    case "add-card-checklist": 
+    case "update-card-checklist":
+    case "add-checklist-item":
+    case "delete-checklist-item":
+    case "set-checklist-item-state":
+    case "convert-checklist-item":
+    case "delete-card-checklist":
+      const c = _getCard(state, delta.id);
+      if (c) {
+        const [card, i] = c;
+        if (card) {
+          return [card.id, card.props.title]
+        }
+      }
+  }
+  return []
+}
+
+export const feedItemsGroupedByCard = (state: BoardState): Array<FeedItem[]> => {
+  const items = feedItems(state.feed);
+  const groupedItems: Array<FeedItem[]> = []
+  let cardItems = []
+  let currentCardId = 0;
+  for (const i of items) {
+    const [id,] = getDeltaCardData(state,i.content.delta)
+
+    if (cardItems.length>0 && (!id || currentCardId != id)) {
+      groupedItems.push(cardItems)
+      cardItems = []
+      currentCardId == -1
+    }
+
+    if (id) {
+      if (cardItems.length==0 || currentCardId == id) {
+        cardItems.push(i)
+        currentCardId = id
+      } 
+    } else {
+      groupedItems.push([i])
+    }
+  }
+  if (cardItems.length>0) {
+    groupedItems.push(cardItems)
+  }
+  return groupedItems
+}
+
+
 export interface BoardState {
   status: string;
   name: string;
