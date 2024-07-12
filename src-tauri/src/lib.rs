@@ -117,24 +117,21 @@ fn signal_url() -> Url2 {
 }
 
 fn holochain_dir() -> PathBuf {
-    if tauri::is_dev() {
-        let tmp_dir = tempdir::TempDir::new("kando").expect("Could not create temporary directory");
-
-        // Convert `tmp_dir` into a `Path`, destroying the `TempDir`
-        // without deleting the directory.
-        let tmp_path = tmp_dir.into_path();
-        tmp_path
+    let data_type = if tauri::is_dev() {
+        app_dirs2::AppDataType::UserData
     } else {
-        app_dirs2::app_root(
-            app_dirs2::AppDataType::UserData,
-            &app_dirs2::AppInfo {
-                name: "kando",
-                author: std::env!("CARGO_PKG_AUTHORS"),
-            },
-        )
-        .expect("Could not get app root")
-        .join("holochain")
-    }
+        app_dirs2::AppDataType::UserCache
+    };
+
+    app_dirs2::app_root(
+        data_type,
+        &app_dirs2::AppInfo {
+            name: "kando",
+            author: std::env!("CARGO_PKG_AUTHORS"),
+        },
+    )
+    .expect("Could not get app root")
+    .join("holochain")
 }
 
 fn vec_to_locked(mut pass_tmp: Vec<u8>) -> std::io::Result<BufRead> {
