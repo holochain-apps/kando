@@ -121,14 +121,14 @@ fn signal_url() -> Url2 {
 }
 
 fn holochain_dir() -> PathBuf {
-    let data_type = if tauri::is_dev() {
-        app_dirs2::AppDataType::UserData
-    } else {
+    let app_data_type = if tauri::is_dev() {
         app_dirs2::AppDataType::UserCache
+    } else {
+        app_dirs2::AppDataType::UserData
     };
 
     app_dirs2::app_root(
-        data_type,
+        app_data_type,
         &app_dirs2::AppInfo {
             name: "kando",
             author: std::env!("CARGO_PKG_AUTHORS"),
