@@ -33,14 +33,18 @@ pub fn run() {
         ))
         .setup(|app| {
             let handle = app.handle().clone();
-            tauri::async_runtime::block_on(async move {
-                setup(handle).await
-            })?;
+            let result: anyhow::Result<()> = tauri::async_runtime::block_on(async move {
+                setup(handle).await?;
 
-            // After set up we can be sure our app is installed and up to date, so we can just open it
-            app.holochain()?
-                .main_window_builder(String::from("main"), false, Some(String::from("kando")), None)?
-                .build()?;
+                // After set up we can be sure our app is installed and up to date, so we can just open it
+                app.holochain()?
+                    .main_window_builder(String::from("main"), false, Some(String::from("kando")), None).await?
+                    .build()?;
+
+                Ok(())
+            });
+
+            result?;
 
             Ok(())
         })
