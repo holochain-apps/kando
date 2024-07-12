@@ -428,15 +428,14 @@
   let feedHidden = true
   
 </script>
+<div class="background">
+  <div class="background-overlay"></div>
+  <div class="background-image"
+    style={$state.props.bgUrl ? `background-size:cover; background-image: url(${encodeURI($state.props.bgUrl)})`: ""}></div>
+</div>
+
 <div class="board" >
-
-  <div class="background">
-    <div class="background-overlay"></div>
-    <div class="background-image"
-      style={$state.props.bgUrl ? `background-size:cover; background-image: url(${encodeURI($state.props.bgUrl)})`: ""}></div>
-  </div>
-
-    <EditBoardDialog bind:this={editBoardDialog}></EditBoardDialog>
+  <EditBoardDialog bind:this={editBoardDialog}></EditBoardDialog>
   <div class="top-bar">
     <div class="left-items">
       {#if standAlone}
