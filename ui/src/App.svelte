@@ -244,7 +244,7 @@
 
 <style>
   .welcome-text {
-    margin: 40px;
+    margin: 40px 10px 40px 10px;
     border-radius: 20px;
     background-color: #3498db;
   }
