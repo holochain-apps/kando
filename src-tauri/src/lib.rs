@@ -23,6 +23,7 @@ pub fn run() {
                 .level(log::LevelFilter::Warn)
                 .build(),
         )
+        .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_holochain::init(
             vec_to_locked(vec![]).expect("Can't build passphrase"),
             HolochainPluginConfig {

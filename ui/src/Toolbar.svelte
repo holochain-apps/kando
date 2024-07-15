@@ -5,7 +5,7 @@
   import { getContext } from "svelte";
   import type { KanDoStore } from "./store";
   import SvgIcon from "./SvgIcon.svelte";
-
+  import { open } from '@tauri-apps/plugin-shell';
   const { getStore } :any = getContext("store");
   let store: KanDoStore = getStore();
 
@@ -13,6 +13,8 @@
   $: activeHash = store.boardList.activeBoardHash;
 
   export let profilesStore: ProfilesStore|undefined
+
+  const openBugReportLink = () => open("https://github.com/holochain-apps/kando/issues");
 
 </script>
 
@@ -29,7 +31,7 @@
   <div class="items"><Search></Search></div>
   <div class="items">
     <Folk></Folk>
-    <a href="https://github.com/holochain-apps/kando/issues" title="Report a problem in our GitHub repo" target="_blank">
+    <a title="Report a problem in our GitHub repo" target="_blank" on:click={openBugReportLink}>
       <div class="nav-button"><SvgIcon color="#fff" icon="faBug" size=20px /></div>
     </a>
   </div>
