@@ -252,6 +252,12 @@
     padding: 8%;
     width: 100%;
   }
+
+  @media screen and (min-width: 475px) {
+    .welcome-text {
+      width: 150%;
+    }
+  }
   .create-profile {
     padding-top: 100px;
     margin-left: auto;
