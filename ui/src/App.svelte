@@ -196,7 +196,9 @@
       <div class="loading"><div class="loader"></div></div>
     {:else if $prof.status == "complete" && $prof.value == undefined}
       <div class="create-profile">
-        <div class="welcome-text"><KDLogoIcon /></div>
+        <div class="welcome-text">
+          <div><KDLogoIcon /></div>
+        </div>
         <create-profile on:profile-created={() => {}}></create-profile>
       </div>
     {:else if $prof.status == "error"}
@@ -247,6 +249,8 @@
     margin: 40px 10px 40px 10px;
     border-radius: 20px;
     background-color: #3498db;
+    padding: 8%;
+    width: 100%;
   }
   .create-profile {
     padding-top: 100px;
