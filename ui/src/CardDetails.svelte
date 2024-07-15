@@ -590,13 +590,15 @@
         </sl-input>
         {#if commentingFocused}
           <sl-button
+            style="margin-top: 10px;"
             disabled={!commentText}
             on:mousedown={()=>{
               addComment(cardId, commentElement.value)
             }}>
               <SvgIcon icon=faPaperPlane size="20px"/>
           </sl-button>
-          <sl-button 
+          <sl-button
+            style="margin-top: 10px;"
             on:mousedown={()=>{
             commentingFocused = false
             commentElement.value = ""
