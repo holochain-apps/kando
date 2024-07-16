@@ -99,9 +99,9 @@
     {/if}
     {#if delta.type == "add-card"}
       added
-      {context
-        ? `to ${context.group.name}`
-        : ""}
+      {#if context}
+        to <strong>${context.group.name}</strong>
+      {/if}
     {/if}
     {#if delta.type == "update-card-group"}
       {@const card = getCard(delta.id)}
@@ -183,7 +183,9 @@
       {#if card}
         {@const list = card.checklists[delta.checklistId]}
         added item "{delta.item.text}"
-        {list ? `:${list.title}` : ""}
+        {#if list}
+          :<strong>{list.title}</strong>
+        {/if}
       {:else}
         added checklist item {delta.item.text} to card <span class="deleted-card">{context.card}</span>
       {/if}
@@ -208,7 +210,7 @@
         {@const list = card.checklists[delta.checklistId]}
         {#if list}
           {@const item = list.items[delta.itemId]}
-          set item {item ? ` "${item.text}"` : ""} <strong>{list.title}</strong> 
+          set item {#if item}{item.text}{/if} <strong>{list.title}</strong> 
           to {itemStateStr}
         {:else}
           set item from deleted checklist
