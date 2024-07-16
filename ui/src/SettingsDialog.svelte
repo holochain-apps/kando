@@ -10,7 +10,7 @@
     import { DocumentStore, WorkspaceStore } from "@holochain-syn/core";
     import { encodeHashToBase64 } from "@holochain/client";
     import { isWeContext } from "@lightningrodlabs/we-applet";
-
+    import DisableForOs from "./DisableForOs.svelte";
 
     const { getStore } :any = getContext('store');
 
@@ -100,47 +100,48 @@
                 </div>
             </div>
         {/if}
-        <div class="import-export">
-            <h3>Import/Export</h3>
-            {#if importing}
-                <div class="export-import" title="Import Boards">
-                    <div class="spinning" style="margin:auto"><SvgIcon icon=faSpinner color="#fff"></SvgIcon></div>
-                </div>
-            {:else}
-                <div class="export-import" on:click={()=>{fileinput.click();}} title="Import Boards">
-                    <SvgIcon color="#fff" icon=faFileImport size=20px style="margin-left: 15px;"/><span>Import Boards </span>
-                </div>
-            {/if}
-            {#if exporting}
-                <div class="export-import" title="Import Boards">
-                    <div class="spinning" style="margin:auto"><SvgIcon icon=faSpinner  color="#fff"></SvgIcon></div>
-                </div>
-            {:else}
-                <div class="export-import" on:click={()=>{exportAllBoards()}} title="Export All Boards"><SvgIcon color="#fff" icon=faFileExport size=20px style="margin-left: 15px;"/><span>Export All Boards</span></div>
-            {/if}
 
+        <DisableForOs os={["android", "ios"]}>
+            <div class="import-export">
+                <h3>Import/Export</h3>
+                {#if importing}
+                    <div class="export-import" title="Import Boards">
+                        <div class="spinning" style="margin:auto"><SvgIcon icon=faSpinner color="#fff"></SvgIcon></div>
+                    </div>
+                {:else}
+                    <div class="export-import" on:click={()=>{fileinput.click();}} title="Import Boards">
+                        <SvgIcon color="#fff" icon=faFileImport size=20px style="margin-left: 15px;"/><span>Import Boards </span>
+                    </div>
+                {/if}
+                {#if exporting}
+                    <div class="export-import" title="Import Boards">
+                        <div class="spinning" style="margin:auto"><SvgIcon icon=faSpinner  color="#fff"></SvgIcon></div>
+                    </div>
+                {:else}
+                    <div class="export-import" on:click={()=>{exportAllBoards()}} title="Export All Boards"><SvgIcon color="#fff" icon=faFileExport size=20px style="margin-left: 15px;"/><span>Export All Boards</span></div>
+                {/if}
+            </div>
+            <input style="display:none" type="file" accept=".json" on:change={(e)=>onFileSelected(e)} bind:this={fileinput} >
+        </DisableForOs>
 
-            {#if $allBoards.status == "pending"}
-                <div class="spinning" style="display:inline-block"> <SvgIcon icon=faSpinner  color="black"></SvgIcon></div>
-            {:else if $allBoards.status == "complete"}
-                <sl-dropdown skidding=15>
-                    <sl-button slot="trigger" caret><SvgIcon icon=faClone size=20px style="margin-right: 10px"/><span>New Board From </span></sl-button>
-                    <sl-menu>
-                        {#each Array.from($allBoards.value.entries()) as [key,board]}
-                            <sl-menu-item on:click={()=>{
-                                createBoardFrom(board.latestState)
-                            }} >
-                                {board.latestState.name}
-                            </sl-menu-item>
-                        {/each}
-                    </sl-menu>
-                </sl-dropdown>
-            {:else if $allBoards.status == "error"}
-                Error: {$allBoards.error}
-            {/if}
-        </div>
-        <input style="display:none" type="file" accept=".json" on:change={(e)=>onFileSelected(e)} bind:this={fileinput} >
-        
+        {#if $allBoards.status == "pending"}
+            <div class="spinning" style="display:inline-block"> <SvgIcon icon=faSpinner  color="black"></SvgIcon></div>
+        {:else if $allBoards.status == "complete"}
+            <sl-dropdown skidding=15>
+                <sl-button slot="trigger" caret><SvgIcon icon=faClone size=20px style="margin-right: 10px"/><span>New Board From </span></sl-button>
+                <sl-menu>
+                    {#each Array.from($allBoards.value.entries()) as [key,board]}
+                        <sl-menu-item on:click={()=>{
+                            createBoardFrom(board.latestState)
+                        }} >
+                            {board.latestState.name}
+                        </sl-menu-item>
+                    {/each}
+                </sl-menu>
+            </sl-dropdown>
+        {:else if $allBoards.status == "error"}
+            Error: {$allBoards.error}
+        {/if}
     </div>
 
 </sl-dialog>

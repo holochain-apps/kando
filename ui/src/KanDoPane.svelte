@@ -22,6 +22,7 @@
   import AttachmentsList from './AttachmentsList.svelte';
   import AttachmentsDialog from "./AttachmentsDialog.svelte"
   import type { WAL } from "@lightningrodlabs/we-applet";
+  import DisableForOs from "./DisableForOs.svelte";
 
   onMount(async () => {
         onVisible(columnNameElem,()=>{
@@ -450,9 +451,11 @@
             <sl-menu-item on:click={()=> editBoardDialog.open(cloneDeep(activeBoard.hash))} class="board-settings" >
                 <SvgIcon icon="faCog"  style="background: transparent; opacity: .5; position: relative; top: -2px;" size="14px"/> <span>Settings</span>
             </sl-menu-item>
-            <sl-menu-item on:click={() => exportBoard($state)} title="Export" class="board-export" >
-              <SvgIcon icon="faFileExport"  style="background: transparent; opacity: .5; position: relative; top: -2px;" size="14px" /> <span>Export</span>
+            <DisableForOs os={["android", "ios"]}>
+              <sl-menu-item on:click={() => exportBoard($state)} title="Export" class="board-export" >
+                <SvgIcon icon="faFileExport"  style="background: transparent; opacity: .5; position: relative; top: -2px;" size="14px" /> <span>Export</span>
             </sl-menu-item>
+            </DisableForOs>
             <sl-menu-item on:click={() => {
               store.archiveBoard(activeBoard.hash)
               }} title="Archive" class="board-archive" >
