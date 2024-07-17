@@ -27,7 +27,7 @@
     "tauri": "tauri"
   },
   "devDependencies": {
-    "@lightningrodlabs/we-dev-cli": "^0.12.0-dev.1",
+    "@lightningrodlabs/we-dev-cli": "^0.12.0-dev.6",
     "@holochain/hc-spin": "^0.400.0-dev.0",
     "@holochain-playground/cli": "^0.1.1",
     "@rollup/plugin-typescript": "^8.0.0",

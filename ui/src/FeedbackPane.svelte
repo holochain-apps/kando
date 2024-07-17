@@ -2,7 +2,6 @@
   import { getContext, onMount } from "svelte";
   import type { KanDoStore } from "./store";
   import type { BoardAndLatestState } from "./boardList";
-  import { isWeContext } from "@lightningrodlabs/we-applet";
   import {
     get,
     pipe,
@@ -75,7 +74,6 @@
         break;
       }
       await new Promise((r) => setTimeout(r, 10000));
-      console.log("trying again");
     }
   });
 
@@ -197,7 +195,6 @@
             updateBoard(s);
           } else {
             await new Promise((r) => setTimeout(r, 1000));
-            console.log("trying again");
           }
         }
       } else {
@@ -323,7 +320,7 @@
       </div>
     {/if}
   </div>
-  <div class="footer">
+  <div class="footer" style="width:100%">
     <div
       on:click={() =>
         store.setUIprops({ showFeedback: !$uiProps.showFeedback })}
@@ -335,6 +332,9 @@
     <div on:click={() => aboutDialog.open()}>
       <SvgIcon icon="info" color="#fff"></SvgIcon>
     </div>
+    {#if boardStates.length > 0}
+        <sl-button style="margin-left:10px" size="small" pill on:click={()=>store.setUIprops({showFeedback:!$uiProps.showFeedback})}>All Boards</sl-button>
+    {/if}
   </div>
 </div>
 

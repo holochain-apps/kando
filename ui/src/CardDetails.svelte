@@ -1,12 +1,12 @@
 <script lang="ts">
-  import { DEFAULT_PROPS, UngroupedId, type CardProps, type CategoryDef, type LabelDef } from "./board";
+  import { DEFAULT_PROPS, UngroupedId, UngroupedName, type CardProps, type CategoryDef} from "./board";
   import '@shoelace-style/shoelace/dist/components/select/select.js';
   import '@shoelace-style/shoelace/dist/components/option/option.js';
   import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
   import '@shoelace-style/shoelace/dist/components/input/input.js';
   import { cloneDeep, isEqual } from "lodash";
   import { v1 as uuidv1 } from "uuid";
-  import { getContext, onMount } from 'svelte';
+  import { getContext } from 'svelte';
   import type { KanDoStore } from './store';
   import Avatar from './Avatar.svelte';
   import { decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
@@ -58,7 +58,21 @@
         })
   }
 
-  const setCategory= (type) => {
+  $: sortedColumns = () => {
+      // make sure the archive is at the end.
+      let cols = $state.groups
+      const idx = cols.findIndex(g => g.id == UngroupedId)
+      if (idx >=0)
+        cols.splice(idx,1)
+
+      return cols.concat({id:UngroupedId,name:UngroupedName})
+  }
+
+  const setColumn = (id:string) => {
+    requestChanges([{ type: "update-card-group", id:cardId, group:id, index: 0 }])
+  }
+
+  const setCategory = (type) => {
     props.category  = type
     props = props
     handleSave(props)
@@ -312,10 +326,25 @@
           </div>
         {/if}
       </div>
-      <div class="belongs-to" style="display:flex; align-items: center;">
-        <div >In column <strong>{store.getCardGroupName(cardId, $state)}</strong></div>
+      <div class="belongs-to" style="display:flex; align-items: center; justify-content:space-between">
+        <div style="display:flex; align-items: center;">
+          <span style="margin-right:5px;">In: </span>
+          <sl-select style="z-index:10000"
+          value={store.getCardGroupId(cardId, $state)}
+          size="small"
+          on:sl-change={(e)=>{
+            setColumn(e.target.value)
+          }}
+          >
+          {#each sortedColumns() as col }
+            <sl-option value={col.id}>{col.name}</sl-option>
+          {/each}
+        </sl-select>
+        </div>
         {#if card && card.creator}
-          <div style="margin-left:20px;margin-right:5px;">Created by:</div><Avatar size={20}  agentPubKey={decodeHashFromBase64(card.creator)}/>
+          <div style="display:flex; align-items: center;">
+            <div style="margin-left:20px;margin-right:5px;">Created by:</div><Avatar size={20}  agentPubKey={decodeHashFromBase64(card.creator)}/>
+          </div>
         {/if}
       </div>
       {#if editingDescription}
@@ -642,6 +671,9 @@
   </div>
 </div>
 <style>
+  .select-column {
+
+  }
   .category-selected {
     border: solid 2px rgba(35, 32, 74, .5);
   }
@@ -725,42 +757,13 @@
     height: 35px;
   }
 
-  .controls {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: flex-end;
-    padding-left: 7px;
-    padding-top: 10px;
-  }
-
-  .comment-time-and-controls {
-    display: flex;
-  }
-
-  .edit-card::part(base) {
-    height: calc(100vh - 97px);
-    bottom: 0;
-    top: initial;
-    z-index: 150;
-  }
-
-  .edit-card::part(body) {
-    padding: 0;
-  }
-
-  .edit-card::part(panel) {
-    box-shadow: 0px 10px 15px rgba(35, 32, 74, 0.2);
-  }
-
-  .edit-card::part(overlay) {
-    display: none;
-  }
-
   .belongs-to {
-    opacity: .6;
+    display: flex;
     margin-top: 0;
     font-size: 14px;
+  }
+
+  .belongs-to sl-select {
   }
 
   .details {

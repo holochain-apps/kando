@@ -62,7 +62,8 @@ export type Card = {
     checklists: Checklists
     creator: AgentPubKeyB64
 };
-  
+
+export const UngroupedName = "Archived"
 export const UngroupedId = "_"
 export class Group {
       id: uuidv1
@@ -115,6 +116,86 @@ export const feedItems = (feed: Feed): FeedItem[] => {
     return item
   })
 }
+
+export const isCardDelta = (deltaType:string) : boolean => {
+  switch (deltaType) {
+    case "add-card":
+    case "update-card-group":
+    case "update-card-props": 
+    case "set-card-agents":
+    case "add-card-comment":
+    case "update-card-comment":
+    case "delete-card-comment":
+    case "add-card-checklist": 
+    case "update-card-checklist":
+    case "add-checklist-item":
+    case "delete-checklist-item":
+    case "set-checklist-item-state":
+    case "convert-checklist-item":
+    case "delete-card-checklist":
+      return true
+    default:
+      return false
+  }
+}
+
+export const getDeltaCardData = (state: BoardState, delta: BoardDelta) => {
+  switch (delta.type) {
+    case "add-card":
+      return [delta.value.id, delta.value.props.title]
+    case "update-card-group":
+    case "update-card-props": 
+    case "set-card-agents":
+    case "add-card-comment":
+    case "update-card-comment":
+    case "delete-card-comment":
+    case "add-card-checklist": 
+    case "update-card-checklist":
+    case "add-checklist-item":
+    case "delete-checklist-item":
+    case "set-checklist-item-state":
+    case "convert-checklist-item":
+    case "delete-card-checklist":
+      const c = _getCard(state, delta.id);
+      if (c) {
+        const [card, i] = c;
+        if (card) {
+          return [card.id, card.props.title]
+        }
+      }
+  }
+  return []
+}
+
+export const feedItemsGroupedByCard = (state: BoardState): Array<FeedItem[]> => {
+  const items = feedItems(state.feed);
+  const groupedItems: Array<FeedItem[]> = []
+  let cardItems = []
+  let currentCardId = 0;
+  for (const i of items) {
+    const [id,] = getDeltaCardData(state,i.content.delta)
+
+    if (cardItems.length>0 && (!id || currentCardId != id)) {
+      groupedItems.push(cardItems)
+      cardItems = []
+      currentCardId == -1
+    }
+
+    if (id) {
+      if (cardItems.length==0 || currentCardId == id) {
+        cardItems.push(i)
+        currentCardId = id
+      } 
+    } else {
+      groupedItems.push([i])
+    }
+  }
+  if (cardItems.length>0) {
+    groupedItems.push(cardItems)
+  }
+  return groupedItems
+}
+
 
 export interface BoardState {
   status: string;
@@ -259,7 +340,7 @@ export interface BoardState {
         id: string;
       };
 
-  const _getCard = (state: BoardState, cardId: uuidv1) : [Card, number] |undefined => {
+  export const _getCard = (state: BoardState, cardId: uuidv1) : [Card, number] |undefined => {
     const index = state.cards.findIndex((card) => card.id === cardId)
     if (index >=0) {
       return [state.cards[index], index]
@@ -267,7 +348,7 @@ export interface BoardState {
     return undefined
   }
 
-  const _getGroup = (state: BoardState, groupId: uuidv1) : [Group, number]|undefined => {
+  export const _getGroup = (state: BoardState, groupId: uuidv1) : [Group, number]|undefined => {
     const index = state.groups.findIndex((g) => g.id === groupId)
     if (index >=0) {
       return [state.groups[index],index]
@@ -740,7 +821,7 @@ export interface BoardState {
           const [card,i] = _getCard(state, delta.id)
           if (card) {
             _removeCardFromGroups(state, delta.id)
-            _addCardToGroup(state, delta.group, delta.id, delta.index)
+            _addCardToGroup(state, delta.group, delta.id, delta.index < 0 ? 0 : delta.index)
             feedContext = {card: card.props.title}
           }}
           break;

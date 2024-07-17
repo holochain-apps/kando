@@ -6,7 +6,7 @@
   import type { KanDoStore } from "./store";
   import LabelSelector from "./LabelSelector.svelte";
   import { v1 as uuidv1 } from "uuid";
-  import { type Card, Group, UngroupedId, type CardProps, type Comment, type Checklists, Board, type BoardProps, type Feed, type FeedItem, sortedFeedKeys, feedItems, deltaToFeedString, MAX_FEED_ITEMS } from "./board";
+  import { type Card, Group, UngroupedId, type CardProps, type Comment, type Checklists, Board, type BoardProps, feedItemsGroupedByCard, MAX_FEED_ITEMS, UngroupedName } from "./board";
   import EditBoardDialog from "./EditBoardDialog.svelte";
   import Avatar from "./Avatar.svelte";
   import { decodeHashFromBase64, type Timestamp } from "@holochain/client";
@@ -23,6 +23,7 @@
   import AttachmentsDialog from "./AttachmentsDialog.svelte"
   import type { WAL } from "@lightningrodlabs/we-applet";
   import DisableForOs from "./DisableForOs.svelte";
+  import FeedElement from "./FeedElement.svelte";
 
   onMount(async () => {
         onVisible(columnNameElem,()=>{
@@ -509,21 +510,18 @@
         </div>
 
       </div>
-      <div class="feed-items">
-        {#each feedItems($state.feed) as item}
-          <div class="feed-item">
-            <Avatar agentPubKey={decodeHashFromBase64(item.author)} showNickname={false} size={20} />
-            <span>{deltaToFeedString($state,item.content)}
-              {#if item.content.delta.type == 'set-card-agents'} to:
-                {#each item.content.delta.agents as agent}
-                  <Avatar agentPubKey={decodeHashFromBase64(agent)} showNickname={false} size={20} />
-                {/each}
-              {/if}
-            </span>
-            {store.timeAgo.format(item.timestamp)}
-          </div>
-        {/each}
+        {#if state}
+        <div class="feed-items">
+          {#each feedItemsGroupedByCard($state) as item}
+            <FeedElement on:select-card={(e)=>{
+              feedHidden = true
+              cardDetails(e.detail)
+            }}
+              state={state} items={item}> </FeedElement>
+
+          {/each}
         </div>
+        {/if}
       </div>
 
       {#if $participants}
@@ -580,7 +578,7 @@
           <div class="column-item column-title">
             <div style="width:100%">
             {#if columnId === UngroupedId}
-              Archived
+              {UngroupedName}
             {:else}
             <ClickEdit
               text={columns[columnId].name} 
@@ -1277,14 +1275,6 @@
     overflow: auto;
     border-top: solid 1px gray;
     padding-top: 5px;
-  }
-  .feed-item {
-    padding: 4px;
-    border-radius: 5px;
-    margin-bottom: 5px;
-    border: solid 1px blue;
-    background-color: rgba( 0, 0, 255, 0.1);
-    max-width: 370px;
   }
   .idle {
     opacity: 0.5;

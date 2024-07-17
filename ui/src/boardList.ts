@@ -2,12 +2,12 @@ import { LazyHoloHashMap } from "@holochain-open-dev/utils";
 import { derived, get, writable, type Readable, type Writable } from "svelte/store";
 import { type EntryHash, type EntryHashB64, encodeHashToBase64 } from "@holochain/client";
 import {toPromise, type AsyncReadable, pipe, joinAsync, asyncDerived, sliceAndJoin, alwaysSubscribed} from '@holochain-open-dev/stores'
-import { SynStore, WorkspaceStore, type Commit, stateFromCommit } from "@holochain-syn/core";
+import { SynStore, WorkspaceStore, stateFromCommit } from "@holochain-syn/core";
 import type { ProfilesStore } from "@holochain-open-dev/profiles";
 import { cloneDeep } from "lodash";
-import { Board, feedItems, type BoardDelta, type BoardState, deltaToFeedString, feedItemShouldNotify, MAX_FEED_ITEMS } from "./board";
+import { Board, feedItems, type BoardState, deltaToFeedString, feedItemShouldNotify, MAX_FEED_ITEMS } from "./board";
 import { hashEqual } from "./util";
-import type { WeClient } from "@lightningrodlabs/we-applet";
+import type { WeaveClient } from "@lightningrodlabs/we-applet";
 import { NotificationType, SeenType } from "./store";
 
 export enum BoardType {
@@ -127,7 +127,7 @@ export class BoardList {
             return {board,latestState, tip: tip ? tip.entryHash: undefined}}))
     })
         
-    constructor(public profilesStore: ProfilesStore, public synStore: SynStore, public weaveClient : WeClient, public notifications: Readable<{[key: string]: NotificationType}>) {
+    constructor(public profilesStore: ProfilesStore, public synStore: SynStore, public weaveClient : WeaveClient, public notifications: Readable<{[key: string]: NotificationType}>) {
     
         const boardHashes = asyncDerived(this.synStore.documentsByTag.get(BoardType.active),x=>Array.from(x.keys()))
         this.activeBoardHashes = boardHashes

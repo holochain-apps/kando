@@ -11,6 +11,7 @@
     import BoardMenuItem from "./BoardMenuItem.svelte";
     import { BoardType } from "./boardList";
     import { isWeContext } from "@lightningrodlabs/we-applet";
+    import { UngroupedName } from "./board";
     export let wide = false
 
     let newBoardDialog
@@ -51,7 +52,7 @@
 <div class="board-menu"
     class:wide={wide} >
 
-    {#if !isWeContext()}
+    {#if !isWeContext() && !USING_FEEDBACK}
         <GroupParticipants/>
     {/if}
         <h3 class="type-header">Boards</h3>
@@ -97,7 +98,7 @@
         </div>
     {/if} -->
     <div style="display:flex; align-items:center;margin-top:20px;">
-        <h3 class="type-header">Archived Boards</h3>
+        <h3 class="type-header">{UngroupedName} Boards</h3>
         <sl-checkbox
             style="margin-left:10px;color:#ccc"
             checked={$uiProps.showArchivedBoards}
@@ -133,11 +134,16 @@
                 if (USING_FEEDBACK) {
                     store.setUIprops({showFeedback:!$uiProps.showFeedback})}
                 }}
-        ><KDLogoIcon /></div>
-            <div>
+        >
+            <KDLogoIcon />
+        </div>
+        <div>
             <div on:click={()=>aboutDialog.open()}><SvgIcon icon=info color="#fff"></SvgIcon></div>
 
             <div on:click={()=>settingsDialog.open()} style="margin-left:10px;"><SvgIcon icon=faCog size="20px" color="#fff"/></div>
+            {#if USING_FEEDBACK}
+                <sl-button style="margin-left:10px" size="small" pill on:click={()=>store.setUIprops({showFeedback:!$uiProps.showFeedback})}>My Feedback Items</sl-button>
+            {/if}
         </div>
     </div>
 </div>
