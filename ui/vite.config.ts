@@ -5,6 +5,10 @@ import { version, dnaVersion } from './package.json';  // Import version from pa
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  plugins: [svelte()],
+  build: {
+    minify: false
+  },
   server: {
     host: "0.0.0.0",
     port: 1420,
@@ -17,10 +21,6 @@ export default defineConfig({
     watch: {
       usePolling: true
     }
-  },
-  plugins: [svelte()],
-  build: {
-    minify: false
   },
   define: {
     '__APP_VERSION__': JSON.stringify(version),  // Define a global constant

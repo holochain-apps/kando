@@ -6,6 +6,7 @@
   import type { KanDoStore } from "./store";
   import SvgIcon from "./SvgIcon.svelte";
   import { open } from '@tauri-apps/plugin-shell';
+  
   const { getStore } :any = getContext("store");
   let store: KanDoStore = getStore();
 

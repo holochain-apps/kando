@@ -1,9 +1,8 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { type } from "@tauri-apps/plugin-os";
+  import { OsType, type } from "@tauri-apps/plugin-os";
 
-  // See
-  export let os: string | string[] = [];
+  export let os: OsType | OsType[] = [];
   
   $: disabled = (Array.isArray(os) && os.includes(osType))
     || (typeof os === "string" && os === osType);
