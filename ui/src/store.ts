@@ -20,7 +20,7 @@ import TimeAgo from "javascript-time-ago"
 import en from 'javascript-time-ago/locale/en'
 import type { v1 as uuidv1 } from "uuid";
 import { derived, get, writable, type Unsubscriber, type Writable } from "svelte/store";
-import type { ProfilesStore } from '@holochain-open-dev/profiles';
+import { ProfilesClient, ProfilesStore } from '@holochain-open-dev/profiles';
 import { UngroupedName, type BoardState } from './board';
 import type { WeaveClient } from '@lightningrodlabs/we-applet';
 import { HoloHashMap } from '@holochain-open-dev/utils';
@@ -34,7 +34,7 @@ export const USING_FEEDBACK :boolean | undefined = window.__USING_FEEDBACK || (i
 TimeAgo.addDefaultLocale(en)
 
 const ZOME_NAME = 'syn'
-const ROLE_NAME = 'kando'
+export const ROLE_NAME = 'kando'
 
 export enum SeenType {
     Tip="t",
@@ -85,16 +85,15 @@ export class KanDoStore {
     synStore: SynStore;
     uiProps: Writable<UIProps>
     unsub: Unsubscriber
-    profilesStore: ProfilesStore
     weaveClient: WeaveClient
     client: AppClient
 
     constructor(
         public managerStore: KanDoCloneManagerStore,
+        public profilesStore: ProfilesStore,
         public dnaHash: DnaHash,
         public roleName: RoleName,
     ) {
-        this.profilesStore = this.managerStore.profilesStore;
         this.weaveClient = this.managerStore.weaveClient;
         this.client = this.managerStore.client;
 
@@ -261,9 +260,8 @@ export class KanDoCloneManagerStore {
     activeStore: Loadable<KanDoStore>;
 
     constructor(
-        public weaveClient : WeaveClient,
-        public profilesStore: ProfilesStore,
         public client: AppClient,
+        public weaveClient?: WeaveClient,
     ) {
         this.activeDnaHash = writable<DnaHash>();
         this.activeDnaHash.subscribe(this._saveActiveDnaHash);
@@ -288,7 +286,9 @@ export class KanDoCloneManagerStore {
         });
         this.activeStore = asyncDerived([this.activeDnaHash, this.activeRoleName], async ([$activeDnaHash, $activeRoleName]) => {
             await this.activeRoleName.load();
-            return new KanDoStore(this, $activeDnaHash, $activeRoleName)
+            
+            const profilesClient = this.weaveClient !== undefined ? weaveClient.renderInfo.profilesClient : new ProfilesClient(this.client, $activeRoleName);
+            return new KanDoStore(this, new ProfilesStore(profilesClient), $activeDnaHash, $activeRoleName)
         });
         this._loadActiveDnaHash();
     }

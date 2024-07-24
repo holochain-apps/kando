@@ -24,7 +24,7 @@
   import "@holochain-open-dev/profiles/dist/elements/create-profile.js";
   import KDLogoIcon from "./icons/KDLogoIcon.svelte";
   import { appletServices } from "./we";
-  import { KanDoCloneManagerStore, KanDoStore, USING_FEEDBACK } from "./store";
+  import { KanDoCloneManagerStore, KanDoStore, ROLE_NAME, USING_FEEDBACK } from "./store";
   import { setContext } from "svelte";
 
   const appId = import.meta.env.VITE_APP_ID
@@ -38,7 +38,6 @@
 
   let client: AppClient;
   let weaveClient: WeaveClient;
-  let profilesStore: ProfilesStore | undefined = undefined;
   let kandoCloneManagerStore: KanDoCloneManagerStore | undefined = undefined;
 
   let connected = false;
@@ -90,7 +89,6 @@
       const params: AppWebsocketConnectionOptions = { url: new URL(url) };
       if (tokenResp) params.token = tokenResp.token;
       client = await AppWebsocket.connect(params);
-      profilesClient = new ProfilesClient(client, appId);
     } else {
       weaveClient = await WeaveClient.connect(appletServices);
 
@@ -182,14 +180,11 @@
       }
 
       client = weaveClient.renderInfo.appletClient;
-
-      profilesClient = weaveClient.renderInfo.profilesClient;
     }
-    profilesStore = new ProfilesStore(profilesClient);
+  
     kandoCloneManagerStore = new KanDoCloneManagerStore(
-      weaveClient,
-      profilesStore,
-      client
+      client,
+      weaveClient
     );
     await kandoCloneManagerStore.activeStore.load();
     connected = true;
@@ -199,8 +194,9 @@
     getStore: () => kandoCloneManagerStore,
   });
 
-  $: prof = profilesStore ? profilesStore.myProfile : undefined;
   $: kandoStore = kandoCloneManagerStore?.activeStore;
+  $: profilesStore = $kandoStore?.profilesStore;
+  $: prof = profilesStore?.myProfile;
 </script>
 
 <svelte:head></svelte:head>
