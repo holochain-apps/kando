@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { type OsType, type } from "@tauri-apps/plugin-os";
+  import { isTauriContext } from "./util";
 
   export let os: OsType | OsType[] = [];
   
@@ -8,7 +9,11 @@
     || (typeof os === "string" && os === osType);
 
   let osType;
-  onMount(async () => osType = await type());
+  onMount(async () => {
+    if(isTauriContext()) {
+      osType = await type();
+    }
+  });
 </script>
 
 {#if !disabled}

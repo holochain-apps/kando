@@ -78,6 +78,7 @@ async fn setup(handle: AppHandle) -> anyhow::Result<()> {
                 happ_bundle(),
                 HashMap::new(),
                 None,
+                None,
             )
             .await?;
 
