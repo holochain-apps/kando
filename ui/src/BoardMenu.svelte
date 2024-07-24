@@ -1,7 +1,7 @@
 <script lang="ts">
     import { getContext } from "svelte";
     import { USING_FEEDBACK, type KanDoStore } from "./store";
-    import type {  EntryHash } from '@holochain/client';
+    import { type EntryHash } from '@holochain/client';
     import GroupParticipants from './GroupParticipants.svelte';
     import NewBoardDialog from './NewBoardDialog.svelte';
     import SvgIcon from "./SvgIcon.svelte";
@@ -12,6 +12,7 @@
     import { BoardType } from "./boardList";
     import { isWeContext } from "@lightningrodlabs/we-applet";
     import { UngroupedName } from "./board";
+    import CloneManagerDialog from "./CloneManagerDialog.svelte";
     export let wide = false
 
     let newBoardDialog
@@ -44,11 +45,12 @@
 
     let aboutDialog
     let settingsDialog
-
+    let cloneManagerDialog
 </script>
 
 <AboutDialog bind:this={aboutDialog} />
 <SettingsDialog bind:this={settingsDialog} />
+<CloneManagerDialog bind:this={cloneManagerDialog} />
 <div class="board-menu"
     class:wide={wide} >
 
@@ -139,7 +141,7 @@
         </div>
         <div>
             <div on:click={()=>aboutDialog.open()}><SvgIcon icon=info color="#fff"></SvgIcon></div>
-
+            <div on:click={()=>cloneManagerDialog.open()} style="margin-left:10px;"><SvgIcon icon="faClone" size="20px" color="#fff"/></div>
             <div on:click={()=>settingsDialog.open()} style="margin-left:10px;"><SvgIcon icon=faCog size="20px" color="#fff"/></div>
             {#if USING_FEEDBACK}
                 <sl-button style="margin-left:10px" size="small" pill on:click={()=>store.setUIprops({showFeedback:!$uiProps.showFeedback})}>My Feedback Items</sl-button>

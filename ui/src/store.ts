@@ -273,7 +273,6 @@ export class KanDoCloneManagerStore {
             const appInfo = await this.client.appInfo();
             
             const cellInfo = appInfo.cell_info[ROLE_NAME].find((cellInfo: CellInfo) => {
-                console.log('cellInfo is', cellInfo);
                 if(CellType.Provisioned in cellInfo) {
                     return hashEqual(cellInfo[CellType.Provisioned].cell_id[0], $activeDnaHash);
                 } else if(CellType.Cloned in cellInfo) {
@@ -281,7 +280,7 @@ export class KanDoCloneManagerStore {
                 }
             });
 
-            if(CellType.Provisioned in cellInfo) {
+            if(cellInfo === undefined || CellType.Provisioned in cellInfo) {
                 return ROLE_NAME;
             } else if(CellType.Cloned in cellInfo) {
                 return cellInfo[CellType.Cloned].clone_id;
@@ -309,7 +308,7 @@ export class KanDoCloneManagerStore {
                     cellInfo: cell
                 };
             }
-        });
+        }).sort((a, b) => a.cellInfo[CellType.Provisioned]);
 
         return cellsNormalized;
     }
