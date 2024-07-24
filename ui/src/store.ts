@@ -254,9 +254,15 @@ export interface CellIdWithInfo {
     cellInfo: CellInfo;
 }
 
+export interface CellInfoNormalized {
+    roleName: string;
+    name: string;
+    networkSeed: string
+}
+
 export class KanDoCloneManagerStore {
     activeDnaHash: Writable<DnaHash>;
-    activeRoleName: Loadable<RoleName>;
+    activeCellInfoNormalized: Loadable<CellInfoNormalized>;
     activeStore: Loadable<KanDoStore>;
 
     constructor(
@@ -265,7 +271,7 @@ export class KanDoCloneManagerStore {
     ) {
         this.activeDnaHash = writable<DnaHash>();
         this.activeDnaHash.subscribe(this._saveActiveDnaHash);
-        this.activeRoleName = asyncDerived(this.activeDnaHash, async ($activeDnaHash) => {
+        this.activeCellInfoNormalized = asyncDerived(this.activeDnaHash, async ($activeDnaHash) => {
             if(!this.activeDnaHash) return;
 
             const appInfo = await this.client.appInfo();
@@ -279,16 +285,24 @@ export class KanDoCloneManagerStore {
             });
 
             if(cellInfo === undefined || CellType.Provisioned in cellInfo) {
-                return ROLE_NAME;
+                return {
+                    roleName: ROLE_NAME,
+                    name: cellInfo[CellType.Provisioned].name,
+                    networkSeed: cellInfo[CellType.Provisioned].dna_modifiers.network_seed,
+                };
             } else if(CellType.Cloned in cellInfo) {
-                return cellInfo[CellType.Cloned].clone_id;
+                return {
+                    roleName: cellInfo[CellType.Cloned].clone_id,
+                    name: cellInfo[CellType.Cloned].name,
+                    networkSeed: cellInfo[CellType.Cloned].dna_modifiers.network_seed
+                };
             }
         });
-        this.activeStore = asyncDerived([this.activeDnaHash, this.activeRoleName], async ([$activeDnaHash, $activeRoleName]) => {
-            await this.activeRoleName.load();
-            
-            const profilesClient = this.weaveClient !== undefined ? weaveClient.renderInfo.profilesClient : new ProfilesClient(this.client, $activeRoleName);
-            return new KanDoStore(this, new ProfilesStore(profilesClient), $activeDnaHash, $activeRoleName)
+        this.activeStore = asyncDerived([this.activeDnaHash, this.activeCellInfoNormalized], async ([$activeDnaHash, $activeCellInfoNormalized]) => {
+            await this.activeCellInfoNormalized.load();
+
+            const profilesClient = this.weaveClient !== undefined ? weaveClient.renderInfo.profilesClient : new ProfilesClient(this.client, $activeCellInfoNormalized.roleName);
+            return new KanDoStore(this, new ProfilesStore(profilesClient), $activeDnaHash, $activeCellInfoNormalized.roleName);
         });
         this._loadActiveDnaHash();
     }

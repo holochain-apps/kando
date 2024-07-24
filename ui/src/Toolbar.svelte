@@ -3,35 +3,45 @@
   import type { ProfilesStore } from "@holochain-open-dev/profiles";
   import Search from './Search.svelte';
   import { getContext } from "svelte";
-  import type { KanDoStore } from "./store";
+  import type { KanDoCloneManagerStore, KanDoStore } from "./store";
   import SvgIcon from "./SvgIcon.svelte";
   import ExternalLink from './ExternalLink.svelte';
   
   const { getStore } :any = getContext("store");
+  const { getStore: getCloneManagerStore } :any = getContext("cloneManagerStore");
+
   let store: KanDoStore = getStore();
+  let cloneManagerStore: KanDoCloneManagerStore = getCloneManagerStore();
 
   $: uiProps = store.uiProps
   $: activeHash = store.boardList.activeBoardHash;
 
   export let profilesStore: ProfilesStore|undefined
+
+  $: activeCellInfoNormalized = cloneManagerStore.activeCellInfoNormalized;
 </script>
 
 <div class='toolbar'>
-  <div class="items">
-    {#if $activeHash}
-      {#if $uiProps.showMenu}
-        <span style="display:flex;align-items:center;cursor:pointer" on:click={()=>{store.setUIprops({showMenu:false})}}><div class="close"  title="Hide Board Menu"><SvgIcon icon="faClose" size="20px" color="#fff" /></div></span>
-      {:else}
-        <div class="nav-button open" on:click={()=>{store.setUIprops({showMenu:true})}}  title="Show Board Menu"><SvgIcon size="20px" icon="faBars" color="#fff" /></div>
+  <div class="toolbar-row-1">
+    <div class="items">
+      {#if $activeHash}
+        {#if $uiProps.showMenu}
+          <span style="display:flex;align-items:center;cursor:pointer" on:click={()=>{store.setUIprops({showMenu:false})}}><div class="close"  title="Hide Board Menu"><SvgIcon icon="faClose" size="20px" color="#fff" /></div></span>
+        {:else}
+          <div class="nav-button open" on:click={()=>{store.setUIprops({showMenu:true})}}  title="Show Board Menu"><SvgIcon size="20px" icon="faBars" color="#fff" /></div>
+        {/if}
       {/if}
-    {/if}
+    </div>
+    <div class="items"><Search></Search></div>
+    <div class="items">
+      <Folk></Folk>
+      <ExternalLink href="https://github.com/holochain-apps/kando/issues" title="Report a problem in our GitHub repo">
+        <div class="nav-button"><SvgIcon color="#fff" icon="faBug" size=20px /></div>
+      </ExternalLink>
+    </div>
   </div>
-  <div class="items"><Search></Search></div>
-  <div class="items">
-    <Folk></Folk>
-    <ExternalLink href="https://github.com/holochain-apps/kando/issues" title="Report a problem in our GitHub repo">
-      <div class="nav-button"><SvgIcon color="#fff" icon="faBug" size=20px /></div>
-    </ExternalLink>
+  <div class="toolbar-row-2">
+    Network: {$activeCellInfoNormalized.name}
   </div>
 </div>
 
@@ -50,13 +60,26 @@
   }
   .toolbar {
     background: linear-gradient(90.1deg, #143C77 4.43%, #261492 99.36%);
-    align-items: center;
-    justify-content: space-between;
-    color: #fff;
-    height: 50px;
     position: relative;
     z-index: 250;
+  }
+
+  .toolbar-row-1 {
+    align-items: center;
+    justify-content: space-between;
     display: flex;
+    height: 50px;
+    color: #fff;
+  }
+
+  .toolbar-row-2 {
+    align-items: center;
+    justify-content: flex-end;
+    display: flex;
+    color:#fff;
+    padding-bottom: 5px;
+    padding-right: 10px;
+    font-weight: bold;
   }
 
   .close, .open {
