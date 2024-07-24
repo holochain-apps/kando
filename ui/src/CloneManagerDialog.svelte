@@ -6,7 +6,10 @@
     import { CellType } from "@holochain/client";
     import { hashEqual } from "./util";
     import { get } from "svelte/store";
+    import NewCloneDialog from "./NewCloneDialog.svelte";
+
     let dialog;
+    let newCloneDialog;
     export const open = () => { dialog.show() };
 
     let instances;
@@ -30,7 +33,7 @@
     listInstances();
 </script>
 
-<sl-dialog label="Manage Networks" bind:this={dialog} width={1000} >
+<sl-dialog label="Networks" bind:this={dialog} width={1000} >
     <div style="display:flex;flex-direction:column">
         {#if loading}
             <div class="spinning" style="display:inline-block"> <SvgIcon icon=faSpinner  color="black"></SvgIcon></div>
@@ -72,22 +75,56 @@
                         {/if}
                     </div>
                 </div>
-            {/each}
-
-            <div style="margin-top: 25px;">
-                <h3>Create Network</h3>
-
-                <sl-input value={newInstanceName} on:sl-input={(e)=>{
-                    newInstanceName = e.target.value
-                }}></sl-input>
-                <sl-button style="margin-top: 5px;" on:click={async () => {
-                    const res = await cloneManagerStore.create(newInstanceName);
-                    listInstances();
-                }}>Create</sl-button>
-            </div>            
+            {/each}          
+            
+            <div style="margin-top: 10px;">
+                <div class="new-clone" on:click={()=>newCloneDialog.open()} title="New Network"><SvgIcon color="white" size=25px icon=faSquarePlus style="margin-left: 15px;"/><span>New Network</span></div>
+            </div>
         {:else if error}
             Error: {error}
         {/if}
     </div>
 
 </sl-dialog>
+
+<NewCloneDialog bind:this={newCloneDialog} handleSave={async (name) => {
+    const res = await cloneManagerStore.create(name);
+    listInstances();
+}}></NewCloneDialog>
+
+<style>
+.new-clone {
+    box-sizing: border-box;
+    position: relative;
+    width: 290px;
+    height: 50px;
+    background: rgba(24, 55, 122, 1.0);
+    border: 1px solid #4A559D;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: bold;
+    transition: all .25s ease;
+    top: 3px;
+    padding: 15px 0;
+    box-shadow: 0px 4px 8px rgba(35, 32, 74, 0);
+}
+
+.new-clone:hover {
+    cursor: pointer;
+    padding: 15px 5px;
+    width: 300px;
+    border: 1px solid #252d5d;
+    background: rgb(10, 25, 57);
+    margin: 0 -5px 0 -5px;
+    box-shadow: 0px 4px 15px rgba(35, 32, 74, 0.8);
+}
+
+.new-clone span {
+    color: #fff;
+    display: block;
+    padding: 0 15px;
+}
+</style>
