@@ -10,7 +10,10 @@ import {
     decodeHashFromBase64,
     type Timestamp,
     type DnaHash,
-  } from '@holochain/client';
+    type CellInfo,
+    CellType,
+    type CellId,
+} from '@holochain/client';
 import { SynStore,  SynClient} from '@holochain-syn/core';
 import { BoardList } from './boardList';
 import TimeAgo from "javascript-time-ago"
@@ -21,7 +24,9 @@ import type { ProfilesStore } from '@holochain-open-dev/profiles';
 import { UngroupedName, type BoardState } from './board';
 import type { WeaveClient } from '@lightningrodlabs/we-applet';
 import { HoloHashMap } from '@holochain-open-dev/utils';
-import { getMyDna } from './util';
+import { v7 as uuidv7 } from "uuid";
+import { asyncDerived, type Loadable } from '@square/svelte-store';
+import { hashEqual } from './util';
 
 // @ts-ignore
 export const USING_FEEDBACK :boolean | undefined = window.__USING_FEEDBACK || (import.meta as any).env.VITE_USING_FEEDBACK
@@ -29,20 +34,7 @@ export const USING_FEEDBACK :boolean | undefined = window.__USING_FEEDBACK || (i
 TimeAgo.addDefaultLocale(en)
 
 const ZOME_NAME = 'syn'
-
-export class KanDoService {
-    constructor(public client: AppClient, public roleName, public zomeName = ZOME_NAME) {}
-
-    private callZome(fnName: string, payload: any) {
-        const req: AppCallZomeRequest = {
-            role_name: this.roleName,
-            zome_name: this.zomeName,
-            fn_name: fnName,
-            payload
-          }
-        return this.client.callZome(req);
-    }
-}
+const ROLE_NAME = 'kando'
 
 export enum SeenType {
     Tip="t",
@@ -88,34 +80,26 @@ export interface UIProps {
 export class KanDoStore {
     myAgentPubKeyB64: AgentPubKeyB64
     timeAgo = new TimeAgo('en-US')
-    service: KanDoService;
     boardList: BoardList;
     updating = false
     synStore: SynStore;
-    client: AppClient;
     uiProps: Writable<UIProps>
     unsub: Unsubscriber
-    dnaHash: DnaHash
+    profilesStore: ProfilesStore
+    weaveClient: WeaveClient
+    client: AppClient
 
     constructor(
-        public weaveClient : WeaveClient,
-        public profilesStore: ProfilesStore,
-        protected clientIn: AppClient,
-        protected roleName: RoleName,
-        protected zomeName: string = ZOME_NAME
+        public managerStore: KanDoCloneManagerStore,
+        public dnaHash: DnaHash,
+        public roleName: RoleName,
     ) {
-        this.client = clientIn
-        getMyDna(roleName, clientIn).then(res=>{
-            this.dnaHash = res
-          })
+        this.profilesStore = this.managerStore.profilesStore;
+        this.weaveClient = this.managerStore.weaveClient;
+        this.client = this.managerStore.client;
 
         this.myAgentPubKeyB64 = encodeHashToBase64(this.client.myPubKey);
-        this.service = new KanDoService(
-          this.client,
-          this.roleName,
-          this.zomeName
-        );
-        this.synStore = new SynStore(new SynClient(this.client,this.roleName,this.zomeName))
+        this.synStore = new SynStore(new SynClient(this.client,this.roleName,ZOME_NAME))
         this.uiProps = writable({
             showArchived: {},
             showArchivedBoards: false,
@@ -150,7 +134,7 @@ export class KanDoStore {
                     break;
             }
         }
-        this.boardList = new BoardList(profilesStore, this.synStore, weaveClient, derived(this.uiProps, props=>props.notifications))
+        this.boardList = new BoardList(this.profilesStore, this.synStore, this.weaveClient, derived(this.uiProps, props=>props.notifications))
         this.boardList.activeBoard.subscribe((board)=>{
             if (this.unsub) {
                 this.unsub()
@@ -264,4 +248,118 @@ export class KanDoStore {
         return "Unknown"
     }
 
+}
+
+export interface CellIdWithInfo {
+    cellId: CellId;
+    cellInfo: CellInfo;
+}
+
+export class KanDoCloneManagerStore {
+    activeDnaHash: Writable<DnaHash>;
+    activeRoleName: Loadable<RoleName>;
+    activeStore: Loadable<KanDoStore>;
+
+    constructor(
+        public weaveClient : WeaveClient,
+        public profilesStore: ProfilesStore,
+        public client: AppClient,
+    ) {
+        this.activeDnaHash = writable<DnaHash>();
+        this.activeDnaHash.subscribe(this._saveActiveDnaHash);
+        this.activeRoleName = asyncDerived(this.activeDnaHash, async ($activeDnaHash) => {
+            if(!this.activeDnaHash) return;
+
+            const appInfo = await this.client.appInfo();
+            
+            const cellInfo = appInfo.cell_info[ROLE_NAME].find((cellInfo: CellInfo) => {
+                console.log('cellInfo is', cellInfo);
+                if(CellType.Provisioned in cellInfo) {
+                    return hashEqual(cellInfo[CellType.Provisioned].cell_id[0], $activeDnaHash);
+                } else if(CellType.Cloned in cellInfo) {
+                    return hashEqual(cellInfo[CellType.Cloned].cell_id[0], $activeDnaHash);
+                }
+            });
+
+            if(CellType.Provisioned in cellInfo) {
+                return ROLE_NAME;
+            } else if(CellType.Cloned in cellInfo) {
+                return cellInfo[CellType.Cloned].clone_id;
+            }
+        });
+        this.activeStore = asyncDerived([this.activeDnaHash, this.activeRoleName], async ([$activeDnaHash, $activeRoleName]) => {
+            await this.activeRoleName.load();
+            return new KanDoStore(this, $activeDnaHash, $activeRoleName)
+        });
+        this._loadActiveDnaHash();
+    }
+    
+    async list(): Promise<CellIdWithInfo[]> {
+        const appInfo = await this.client.appInfo();
+        const cells = appInfo.cell_info[ROLE_NAME];
+        const cellsNormalized =  cells.map((cell) => {
+            if(CellType.Provisioned in cell) {
+                return {
+                    cellId: cell[CellType.Provisioned].cell_id, 
+                    cellInfo: cell
+                };
+            } else if(CellType.Cloned in cell) {
+                return {
+                    cellId: cell[CellType.Cloned].cell_id,
+                    cellInfo: cell
+                };
+            }
+        });
+
+        return cellsNormalized;
+    }
+
+    create(name: string) {
+        return this.client.createCloneCell({
+            name,
+            role_name: ROLE_NAME,
+            modifiers: {
+                network_seed: uuidv7(),
+            }
+        });
+    }
+
+    join(name: string, networkSeed: string) {
+        return this.client.createCloneCell({
+            name,
+            role_name: ROLE_NAME,
+            modifiers: {
+                network_seed: networkSeed 
+            }
+        });
+    }
+
+    disable(cellId: CellId) {
+        return this.client.disableCloneCell({ clone_cell_id: cellId });
+    }
+
+    enable(cellId: CellId) {
+        return this.client.enableCloneCell({ clone_cell_id: cellId })
+    }
+    
+    activate(cellId: CellId) {
+        this.activeDnaHash.set(cellId[0]);
+    }
+
+    private async _loadActiveDnaHash() {
+        const dnaHash = localStorage.getItem("activeDnaHash");
+        if(dnaHash !== null && dnaHash !== undefined) {
+            this.activeDnaHash.set(decodeHashFromBase64(dnaHash));
+        } else {
+            const appInfo = await this.client.appInfo();
+            const defaultDnaHash = appInfo.cell_info[ROLE_NAME][0][CellType.Provisioned].cell_id[0];
+            this.activeDnaHash.set(defaultDnaHash);
+        }
+    }
+
+    private _saveActiveDnaHash(val: DnaHash) {
+        if(val !== undefined && val !== null) {
+            localStorage.setItem("activeDnaHash", encodeHashToBase64(val));
+        }
+    }
 }

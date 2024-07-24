@@ -4,7 +4,7 @@
   import type { Board, Card } from "./board";
   import { getContext } from "svelte";
   import type { KanDoStore } from "./store";
-  import { getMyDna, type WALUrl} from "./util";
+  import { type WALUrl} from "./util";
   import '@shoelace-style/shoelace/dist/components/button/button.js';
   import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
   import AttachmentsList from "./AttachmentsList.svelte";
@@ -40,8 +40,7 @@
   const addAttachment = async () => {
     const wal = await store.weaveClient.userSelectWal()
     if (wal) {
-      const dnaHash = await getMyDna(store.service.roleName, store.client)
-      const srcHrl: WAL = card ? {hrl:[dnaHash, activeBoard.hash],context:card.id}: {hrl:[dnaHash, activeBoard.hash]}
+      const srcHrl: WAL = card ? {hrl:[store.dnaHash, activeBoard.hash],context:card.id}: {hrl:[store.dnaHash, activeBoard.hash]}
       await store.weaveClient.requestBind(srcHrl, wal)
       _addAttachment(wal)
     }

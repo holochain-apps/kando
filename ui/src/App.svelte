@@ -24,12 +24,12 @@
   import "@holochain-open-dev/profiles/dist/elements/create-profile.js";
   import KDLogoIcon from "./icons/KDLogoIcon.svelte";
   import { appletServices } from "./we";
-  import { USING_FEEDBACK } from "./store";
+  import { KanDoCloneManagerStore, KanDoStore, USING_FEEDBACK } from "./store";
+  import { setContext } from "svelte";
 
   const appId = import.meta.env.VITE_APP_ID
     ? import.meta.env.VITE_APP_ID
     : "kando";
-  const roleName = "kando";
   const appPort = import.meta.env.VITE_APP_PORT
     ? import.meta.env.VITE_APP_PORT
     : 8888;
@@ -39,6 +39,7 @@
   let client: AppClient;
   let weaveClient: WeaveClient;
   let profilesStore: ProfilesStore | undefined = undefined;
+  let kandoCloneManagerStore: KanDoCloneManagerStore | undefined = undefined;
 
   let connected = false;
 
@@ -185,9 +186,21 @@
       profilesClient = weaveClient.renderInfo.profilesClient;
     }
     profilesStore = new ProfilesStore(profilesClient);
+    kandoCloneManagerStore = new KanDoCloneManagerStore(
+      weaveClient,
+      profilesStore,
+      client
+    );
+    await kandoCloneManagerStore.activeStore.load();
     connected = true;
   }
+
+  setContext("cloneManagerStore", {
+    getStore: () => kandoCloneManagerStore,
+  });
+
   $: prof = profilesStore ? profilesStore.myProfile : undefined;
+  $: kandoStore = kandoCloneManagerStore?.activeStore;
 </script>
 
 <svelte:head></svelte:head>
@@ -215,37 +228,25 @@
     {:else if renderType == RenderType.CreateBoard}
       <ControllerCreate
         view={createView}
-        {client}
-        {weaveClient}
-        {profilesStore}
-        {roleName}
+        store={$kandoStore}
       ></ControllerCreate>
     {:else if renderType == RenderType.App}
-      <Controller {client} {weaveClient} {profilesStore} {roleName}
+      <Controller store={$kandoStore}
       ></Controller>
     {:else if renderType == RenderType.Hrl && !wal.context}
       <ControllerBoard
         board={wal.hrl[1]}
-        {client}
-        {weaveClient}
-        {profilesStore}
-        {roleName}
+        store={$kandoStore}
       ></ControllerBoard>
     {:else if renderType == RenderType.Hrl && wal.context}
       <ControllerCard
         board={wal.hrl[1]}
         cardId={wal.context}
-        {client}
-        {weaveClient}
-        {profilesStore}
-        {roleName}
+        store={$kandoStore}
       ></ControllerCard>
     {:else if renderType == RenderType.BlockActiveBoards}
       <ControllerBlockActiveBoards
-        {client}
-        {weaveClient}
-        {profilesStore}
-        {roleName}
+        store={$kandoStore}
       ></ControllerBlockActiveBoards>
     {/if}
   </profiles-context>
