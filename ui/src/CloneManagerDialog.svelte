@@ -4,14 +4,16 @@
     import SvgIcon from "./SvgIcon.svelte";
     import { type CellInfoNormalized, KanDoCloneManagerStore } from "./store";
     import { CellType, type CellId } from "@holochain/client";
-    import { hashEqual } from "./util";
+    import { type DnaJoiningInfo, hashEqual } from "./util";
     import { get } from "svelte/store";
     import NewCloneDialog from "./NewCloneDialog.svelte";
     import ShareCloneDialog from "./ShareCloneDialog.svelte";
+    import JoinCloneDialog from "./JoinCloneDialog.svelte";
 
     let dialog;
     let newCloneDialog;
     let shareCloneDialog;
+    let joinCloneDialog;
     let shareInstance: CellInfoNormalized | undefined;
     export const open = () => { dialog.show() };
 
@@ -33,17 +35,25 @@
     }
 
     const activate = (cellId: CellId) => cloneManagerStore.activate(cellId);
-    const disable = (cellId: CellId) => {
-        cloneManagerStore.disable(cellId);
+    const disable = async (cellId: CellId) => {
+        await cloneManagerStore.disable(cellId);
         listInstances();
     };
-    const enable = (cellId: CellId) => {
-        cloneManagerStore.enable(cellId);
+    const enable = async (cellId: CellId) => {
+        await cloneManagerStore.enable(cellId);
+        listInstances();
+    };
+    const create = async (name: string) => {
+        await cloneManagerStore.create(name);
         listInstances();
     };
     const share = (instance: CellInfoNormalized) => {
         shareInstance = instance;
         shareCloneDialog.open();
+    };
+    const join = async (joiningCode: DnaJoiningInfo) => {
+        await cloneManagerStore.join(joiningCode.name, joiningCode.networkSeed);
+        listInstances();
     };
 
     listInstances();
@@ -85,6 +95,7 @@
             
             <div style="margin-top: 10px;">
                 <div class="new-clone" on:click={()=>newCloneDialog.open()} on:keydown={()=>newCloneDialog.open()} title="New Network"><SvgIcon color="white" size=25px icon=faSquarePlus style="margin-left: 15px;"/><span>New Network</span></div>
+                <div class="new-clone" on:click={()=>joinCloneDialog.open()} on:keydown={()=>joinCloneDialog.open()} title="Join Network"><SvgIcon color="white" size=25px icon=faSquarePlus style="margin-left: 15px;"/><span>Join Network</span></div>
             </div>
         {:else if error}
             Error: {error}
@@ -93,11 +104,9 @@
 
 </sl-dialog>
 
-<NewCloneDialog bind:this={newCloneDialog} handleSave={async (name) => {
-    const res = await cloneManagerStore.create(name);
-    listInstances();
-}}></NewCloneDialog>
+<NewCloneDialog bind:this={newCloneDialog} handleSave={create}></NewCloneDialog>
 <ShareCloneDialog bind:this={shareCloneDialog} cell={shareInstance} on:close={() => {shareInstance = undefined;}}></ShareCloneDialog>
+<JoinCloneDialog bind:this={joinCloneDialog} on:join={(e) => join(e.detail)}></JoinCloneDialog>
 
 <style>
 .new-clone {

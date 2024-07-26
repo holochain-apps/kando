@@ -64,7 +64,4 @@ export const encodeDnaJoiningCode = (name: string, networkSeed: string): string 
   btoa(String.fromCharCode.apply(null, encode({name, networkSeed})));
 
 export const decodeDnaJoiningCode = (shareCode: string): DnaJoiningInfo => 
-  decode([].reduce.call(atob(shareCode), (acc, v, i) => {
-    acc[i] = v.charCodeAt(0);
-    return acc;
-  }, new Uint8Array(39) )) as DnaJoiningInfo;
+  decode(new Uint8Array(atob(shareCode).split("").map((c) => c.charCodeAt(0)))) as DnaJoiningInfo;

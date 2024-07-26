@@ -14,6 +14,7 @@
 
     const copyJoiningCode = () => {
         navigator.clipboard.writeText(joiningCode);
+        dialog.hide();
     };
 </script>
 
