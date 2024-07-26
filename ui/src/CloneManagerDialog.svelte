@@ -7,9 +7,12 @@
     import { hashEqual } from "./util";
     import { get } from "svelte/store";
     import NewCloneDialog from "./NewCloneDialog.svelte";
+    import ShareCloneDialog from "./ShareCloneDialog.svelte";
 
     let dialog;
     let newCloneDialog;
+    let shareCloneDialog;
+    let shareInstance: CellInfoNormalized | undefined;
     export const open = () => { dialog.show() };
 
     let instances: CellInfoNormalized[];
@@ -38,6 +41,11 @@
         cloneManagerStore.enable(cellId);
         listInstances();
     };
+    const share = (instance: CellInfoNormalized) => {
+        shareInstance = instance;
+        shareCloneDialog.open();
+    };
+
     listInstances();
 </script>
 
@@ -59,6 +67,8 @@
                                 Activate
                             </sl-button>
                         {/if}
+
+                        <sl-button on:click={share(instance)} on:keydown={share(instance)}>Share</sl-button>
 
                         {#if instance.cellInfo[CellType.Cloned]?.enabled}
                             <sl-button on:click={disable(instance.cellId)} on:keydown={disable(instance.cellId)}>
@@ -87,6 +97,7 @@
     const res = await cloneManagerStore.create(name);
     listInstances();
 }}></NewCloneDialog>
+<ShareCloneDialog bind:this={shareCloneDialog} cell={shareInstance} on:close={() => {shareInstance = undefined;}}></ShareCloneDialog>
 
 <style>
 .new-clone {

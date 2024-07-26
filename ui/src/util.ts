@@ -1,4 +1,5 @@
 import { decodeHashFromBase64, encodeHashToBase64, type AppClient, type EntryHash, type DnaHash, CellType } from "@holochain/client";
+import { encode, decode } from '@msgpack/msgpack';
 //import type { HrlB64WithContext, WAL } from "@lightningrodlabs/we-applet";
 
 export function onVisible(element, callback) {
@@ -52,3 +53,18 @@ export const getMyDna = async (role:string, client: AppClient) : Promise<DnaHash
 } 
 
 export const isTauriContext = () => (window as any).__TAURI__ !== undefined;
+
+export interface DnaJoiningInfo {
+  name: string;
+  networkSeed: string;
+}
+
+// TODO: include dna hash in secret? for weave compatability
+export const encodeDnaJoiningCode = (name: string, networkSeed: string): string => 
+  btoa(String.fromCharCode.apply(null, encode({name, networkSeed})));
+
+export const decodeDnaJoiningCode = (shareCode: string): DnaJoiningInfo => 
+  decode([].reduce.call(atob(shareCode), (acc, v, i) => {
+    acc[i] = v.charCodeAt(0);
+    return acc;
+  }, new Uint8Array(39) )) as DnaJoiningInfo;
