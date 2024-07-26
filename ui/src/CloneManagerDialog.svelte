@@ -55,6 +55,7 @@
         await cloneManagerStore.join(joiningCode.name, joiningCode.networkSeed);
         listInstances();
     };
+    const isInstanceActive = (instance: CellInfoNormalized) => hashEqual(get(cloneManagerStore.activeDnaHash), instance.cellId[0]);
 
     listInstances();
 </script>
@@ -65,14 +66,12 @@
             <div class="spinning" style="display:inline-block"> <SvgIcon icon=faSpinner  color="black"></SvgIcon></div>
         {:else if instances && instances.length > 0}
             {#each instances as instance}
-                <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; justify-content: space-between; align-items: center;" class={isInstanceActive(instance) ? "instance-active" : ""}>
                     <div>
                         {instance.displayName}
                     </div>
                     <div>
-                        {#if hashEqual(get(cloneManagerStore.activeDnaHash), instance.cellId[0]) }
-                            Active
-                        {:else if instance.cellInfo[CellType.Cloned]?.enabled ||  instance.cellInfo[CellType.Provisioned]}
+                        {#if !isInstanceActive(instance) && instance.cellInfo[CellType.Cloned]?.enabled ||  instance.cellInfo[CellType.Provisioned]}
                             <sl-button on:click={activate(instance.cellId)} on:keydown={activate(instance.cellId)}>
                                 Activate
                             </sl-button>
@@ -142,5 +141,14 @@
     color: #fff;
     display: block;
     padding: 0 15px;
+}
+
+.instance-active {
+    background: #164B9A;
+    padding: 4px 8px;
+    border-radius: 10px;
+    color: #fff;
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
 </style>
