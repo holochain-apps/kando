@@ -254,7 +254,8 @@ export interface CellInfoNormalized {
     cellInfo: CellInfo;
     roleName: string;
     name: string;
-    networkSeed: string
+    networkSeed: string;
+    displayName: string;
 }
 
 export class KanDoCloneManagerStore {
@@ -288,6 +289,7 @@ export class KanDoCloneManagerStore {
                     roleName: ROLE_NAME,
                     name: cellInfo[CellType.Provisioned].name,
                     networkSeed: cellInfo[CellType.Provisioned].dna_modifiers.network_seed,
+                    displayName: cellInfo[CellType.Provisioned].dna_modifiers.network_seed === "" ? "Public" : cellInfo[CellType.Provisioned].name,
                 };
             } else if(CellType.Cloned in cellInfo) {
                 return {
@@ -295,7 +297,8 @@ export class KanDoCloneManagerStore {
                     cellInfo: cellInfo,
                     roleName: cellInfo[CellType.Cloned].clone_id,
                     name: cellInfo[CellType.Cloned].name,
-                    networkSeed: cellInfo[CellType.Cloned].dna_modifiers.network_seed
+                    networkSeed: cellInfo[CellType.Cloned].dna_modifiers.network_seed,
+                    displayName: cellInfo[CellType.Cloned].dna_modifiers.network_seed === "" ? "Public" : cellInfo[CellType.Cloned].name,
                 };
             }
         });
@@ -318,7 +321,8 @@ export class KanDoCloneManagerStore {
                     cellInfo: cell,
                     roleName: ROLE_NAME,
                     name: cell[CellType.Provisioned].name,
-                    networkSeed: cell[CellType.Provisioned].dna_modifiers.network_seed
+                    networkSeed: cell[CellType.Provisioned].dna_modifiers.network_seed,
+                    displayName: cell[CellType.Provisioned].dna_modifiers.network_seed === "" ? "Public" : cell[CellType.Provisioned].name,
                 };
             } else if(CellType.Cloned in cell) {
                 return {
@@ -326,7 +330,8 @@ export class KanDoCloneManagerStore {
                     cellInfo: cell,
                     roleName: cell[CellType.Cloned].clone_id,
                     name: cell[CellType.Cloned].name,
-                    networkSeed: cell[CellType.Cloned].dna_modifiers.network_seed
+                    networkSeed: cell[CellType.Cloned].dna_modifiers.network_seed,
+                    displayName: cell[CellType.Cloned].dna_modifiers.network_seed === "" ? "Public" : cell[CellType.Cloned].name,
                 };
             }
         });

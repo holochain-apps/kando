@@ -1,6 +1,6 @@
 <script lang="ts">
     import { getContext } from "svelte";
-    import { USING_FEEDBACK, type KanDoStore } from "./store";
+    import { KanDoCloneManagerStore, USING_FEEDBACK, type KanDoStore } from "./store";
     import { type EntryHash } from '@holochain/client';
     import GroupParticipants from './GroupParticipants.svelte';
     import NewBoardDialog from './NewBoardDialog.svelte';
@@ -18,11 +18,14 @@
     let newBoardDialog
 
     const { getStore } :any = getContext('store');
+    const { getStore: getCloneManagerStore } :any = getContext("cloneManagerStore");
 
     const store:KanDoStore = getStore();
+    let cloneManagerStore: KanDoCloneManagerStore = getCloneManagerStore();
 
     $: activeBoards = store.boardList.activeBoardHashes
     $: archivedBoards = store.boardList.archivedBoardHashes
+    $: activeCellInfoNormalized = cloneManagerStore.activeCellInfoNormalized;
 
     $: uiProps = store.uiProps
 
@@ -140,12 +143,17 @@
             <KDLogoIcon />
         </div>
         <div>
-            <div on:click={()=>aboutDialog.open()}><SvgIcon icon=info color="#fff"></SvgIcon></div>
-            <div on:click={()=>cloneManagerDialog.open()} style="margin-left:10px;"><SvgIcon icon="faClone" size="20px" color="#fff"/></div>
+            <div on:click={()=>cloneManagerDialog.open()} style="background-color:  #164B9A; padding: 2px 4px 2px 4px; border-radius: 10px;">
+                <div class="display: flex; justify-content: flex-start; align-items: center">
+                    <div style="margin-right: 10px; font-weight: bold; color: #fff">{$activeCellInfoNormalized.displayName}</div>
+                    <SvgIcon icon="network" size="20px" color="#fff"/>
+                </div>
+            </div>
             <div on:click={()=>settingsDialog.open()} style="margin-left:10px;"><SvgIcon icon=faCog size="20px" color="#fff"/></div>
             {#if USING_FEEDBACK}
                 <sl-button style="margin-left:10px" size="small" pill on:click={()=>store.setUIprops({showFeedback:!$uiProps.showFeedback})}>My Feedback Items</sl-button>
             {/if}
+            <div style="margin-left:10px;" on:click={()=>aboutDialog.open()}><SvgIcon icon=info color="#fff"></SvgIcon></div>
         </div>
     </div>
 </div>

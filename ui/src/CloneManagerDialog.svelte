@@ -67,7 +67,7 @@
             {#each instances as instance}
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div>
-                        {instance.name}
+                        {instance.displayName}
                     </div>
                     <div>
                         {#if hashEqual(get(cloneManagerStore.activeDnaHash), instance.cellId[0]) }
