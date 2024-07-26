@@ -2,8 +2,8 @@
     import { getContext } from "svelte";
     import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
     import SvgIcon from "./SvgIcon.svelte";
-    import { KanDoCloneManagerStore, type KanDoStore, NotificationOptions, NotificationType } from "./store";
-    import { CellType } from "@holochain/client";
+    import { type CellInfoNormalized, KanDoCloneManagerStore } from "./store";
+    import { CellType, type CellId } from "@holochain/client";
     import { hashEqual } from "./util";
     import { get } from "svelte/store";
     import NewCloneDialog from "./NewCloneDialog.svelte";
@@ -12,13 +12,13 @@
     let newCloneDialog;
     export const open = () => { dialog.show() };
 
-    let instances;
+    let instances: CellInfoNormalized[];
     let loading = true;
     let error;
-    let newInstanceName = "";
-
-    const { getStore }: any = getContext('cloneManagerStore');
     
+    const { getStore }: any = getContext('cloneManagerStore');
+    let cloneManagerStore: KanDoCloneManagerStore = getStore();
+
     async function listInstances() {
         loading = true;
         try {
@@ -28,8 +28,16 @@
         }
         loading = false;
     }
-    
-    let cloneManagerStore: KanDoCloneManagerStore = getStore();
+
+    const activate = (cellId: CellId) => cloneManagerStore.activate(cellId);
+    const disable = (cellId: CellId) => {
+        cloneManagerStore.disable(cellId);
+        listInstances();
+    };
+    const enable = (cellId: CellId) => {
+        cloneManagerStore.enable(cellId);
+        listInstances();
+    };
     listInstances();
 </script>
 
@@ -41,35 +49,23 @@
             {#each instances as instance}
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div>
-                        {#if CellType.Provisioned in instance.cellInfo}
-                            {instance.cellInfo[CellType.Provisioned].name}
-                        {:else if CellType.Cloned in instance.cellInfo}
-                            {instance.cellInfo[CellType.Cloned].name}
-                        {/if}
+                        {instance.name}
                     </div>
                     <div>
                         {#if hashEqual(get(cloneManagerStore.activeDnaHash), instance.cellId[0]) }
                             Active
                         {:else if instance.cellInfo[CellType.Cloned]?.enabled ||  instance.cellInfo[CellType.Provisioned]}
-                            <sl-button on:click={()=>{
-                                cloneManagerStore.activate(instance.cellId);
-                            }}>
+                            <sl-button on:click={activate(instance.cellId)} on:keydown={activate(instance.cellId)}>
                                 Activate
                             </sl-button>
                         {/if}
 
                         {#if instance.cellInfo[CellType.Cloned]?.enabled}
-                            <sl-button on:click={async () => {
-                                await cloneManagerStore.disable(instance.cellId);
-                                listInstances();
-                            }}>
+                            <sl-button on:click={disable(instance.cellId)} on:keydown={disable(instance.cellId)}>
                                 Disable
                             </sl-button>
                         {:else if instance.cellInfo[CellType.Cloned]?.enabled === false}
-                            <sl-button on:click={async () => {
-                                await cloneManagerStore.enable(instance.cellId);
-                                listInstances();
-                            }}>
+                            <sl-button on:click={enable(instance.cellId)} on:keydown={enable(instance.cellId)}>
                                 Enable
                             </sl-button>
                         {/if}
@@ -78,7 +74,7 @@
             {/each}          
             
             <div style="margin-top: 10px;">
-                <div class="new-clone" on:click={()=>newCloneDialog.open()} title="New Network"><SvgIcon color="white" size=25px icon=faSquarePlus style="margin-left: 15px;"/><span>New Network</span></div>
+                <div class="new-clone" on:click={()=>newCloneDialog.open()} on:keydown={()=>newCloneDialog.open()} title="New Network"><SvgIcon color="white" size=25px icon=faSquarePlus style="margin-left: 15px;"/><span>New Network</span></div>
             </div>
         {:else if error}
             Error: {error}

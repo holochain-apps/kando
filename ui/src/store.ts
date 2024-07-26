@@ -249,12 +249,9 @@ export class KanDoStore {
 
 }
 
-export interface CellIdWithInfo {
+export interface CellInfoNormalized {
     cellId: CellId;
     cellInfo: CellInfo;
-}
-
-export interface CellInfoNormalized {
     roleName: string;
     name: string;
     networkSeed: string
@@ -286,12 +283,16 @@ export class KanDoCloneManagerStore {
 
             if(cellInfo === undefined || CellType.Provisioned in cellInfo) {
                 return {
+                    cellId: cellInfo[CellType.Provisioned].cell_id,
+                    cellInfo: cellInfo,
                     roleName: ROLE_NAME,
                     name: cellInfo[CellType.Provisioned].name,
                     networkSeed: cellInfo[CellType.Provisioned].dna_modifiers.network_seed,
                 };
             } else if(CellType.Cloned in cellInfo) {
                 return {
+                    cellId: cellInfo[CellType.Cloned].cell_id,
+                    cellInfo: cellInfo,
                     roleName: cellInfo[CellType.Cloned].clone_id,
                     name: cellInfo[CellType.Cloned].name,
                     networkSeed: cellInfo[CellType.Cloned].dna_modifiers.network_seed
@@ -307,22 +308,28 @@ export class KanDoCloneManagerStore {
         this._loadActiveDnaHash();
     }
     
-    async list(): Promise<CellIdWithInfo[]> {
+    async list(): Promise<CellInfoNormalized[]> {
         const appInfo = await this.client.appInfo();
         const cells = appInfo.cell_info[ROLE_NAME];
         const cellsNormalized =  cells.map((cell) => {
             if(CellType.Provisioned in cell) {
                 return {
                     cellId: cell[CellType.Provisioned].cell_id, 
-                    cellInfo: cell
+                    cellInfo: cell,
+                    roleName: ROLE_NAME,
+                    name: cell[CellType.Provisioned].name,
+                    networkSeed: cell[CellType.Provisioned].dna_modifiers.network_seed
                 };
             } else if(CellType.Cloned in cell) {
                 return {
                     cellId: cell[CellType.Cloned].cell_id,
-                    cellInfo: cell
+                    cellInfo: cell,
+                    roleName: cell[CellType.Cloned].clone_id,
+                    name: cell[CellType.Cloned].name,
+                    networkSeed: cell[CellType.Cloned].dna_modifiers.network_seed
                 };
             }
-        }).sort((a, b) => a.cellInfo[CellType.Provisioned]);
+        });
 
         return cellsNormalized;
     }
