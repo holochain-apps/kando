@@ -99,8 +99,8 @@
             {/each}          
             
             <div style="margin-top: 20px; width: 100%; display: flex; justify-content: space-between; align-items: center;">
-                <div class="new-clone" on:click={()=>newCloneDialog.open()} on:keydown={()=>newCloneDialog.open()} title="New Network"><SvgIcon color="white" size=25px icon=faSquarePlus style="margin-left: 15px;"/><span>New Network</span></div>
-                <div class="new-clone" on:click={()=>joinCloneDialog.open()} on:keydown={()=>joinCloneDialog.open()} title="Join Network"><SvgIcon color="white" size=25px icon=faSquarePlus style="margin-left: 15px;"/><span>Join Network</span></div>
+                <div class="new-clone" on:click={()=>newCloneDialog.open()} on:keydown={()=>newCloneDialog.open()} title="New Network"><SvgIcon color="white" size="25px" icon="faSquarePlus" style="margin-left: 15px;"/><span>New Network</span></div>
+                <div class="new-clone" on:click={()=>joinCloneDialog.open()} on:keydown={()=>joinCloneDialog.open()} title="Join Network"><SvgIcon color="white" size="25px" icon="personMail" style="margin-left: 15px;"/><span>Join Network</span></div>
             </div>
         {:else if error}
             Error: {error}
