@@ -314,7 +314,7 @@ export class KanDoCloneManagerStore {
     async list(): Promise<CellInfoNormalized[]> {
         const appInfo = await this.client.appInfo();
         const cells = appInfo.cell_info[ROLE_NAME];
-        const cellsNormalized =  cells.map((cell) => {
+        let cellsNormalized =  cells.map((cell) => {
             if(CellType.Provisioned in cell) {
                 return {
                     cellId: cell[CellType.Provisioned].cell_id, 
@@ -335,6 +335,7 @@ export class KanDoCloneManagerStore {
                 };
             }
         });
+        cellsNormalized.sort((a,b) => a.networkSeed < b.networkSeed ? -1 : 1);
 
         return cellsNormalized;
     }

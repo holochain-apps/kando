@@ -66,33 +66,39 @@
             <div class="spinning" style="display:inline-block"> <SvgIcon icon=faSpinner  color="black"></SvgIcon></div>
         {:else if instances && instances.length > 0}
             {#each instances as instance}
-                <div style="display: flex; justify-content: space-between; align-items: center;" class={isInstanceActive(instance) ? "instance-active" : ""}>
-                    <div>
+                <div style="display: flex; justify-content: space-between; align-items: center;" class={isInstanceActive(instance) ? "instance-active" : "instance-inactive"}>
+                    <div class={isInstanceActive(instance) ? "instance-active-name" : ""}>
                         {instance.displayName}
                     </div>
-                    <div>
-                        {#if !isInstanceActive(instance) && instance.cellInfo[CellType.Cloned]?.enabled ||  instance.cellInfo[CellType.Provisioned]}
-                            <sl-button on:click={activate(instance.cellId)} on:keydown={activate(instance.cellId)}>
-                                Activate
-                            </sl-button>
+                    <div class="button-container">
+                        {#if isInstanceActive(instance)}
+                            <div style="width: 30px; height: 30px; margin-left: 10px"></div>
+                        {:else if instance.cellInfo[CellType.Cloned]?.enabled ||  instance.cellInfo[CellType.Provisioned]}
+                            <div class="details-button" title="Switch to this Network" on:click={activate(instance.cellId)}>
+                                <SvgIcon icon="faToggleOff" size="16px"/>
+                            </div>
                         {/if}
 
-                        <sl-button on:click={share(instance)} on:keydown={share(instance)}>Share</sl-button>
+                        <div class="details-button" title="Share Joining Code" on:click={share(instance)}>
+                            <SvgIcon icon="faShare" size="16px"/>
+                        </div>
 
-                        {#if instance.cellInfo[CellType.Cloned]?.enabled}
-                            <sl-button on:click={disable(instance.cellId)} on:keydown={disable(instance.cellId)}>
-                                Disable
-                            </sl-button>
+                        {#if !isInstanceActive(instance) && instance.cellInfo[CellType.Cloned]?.enabled}
+                            <div class="details-button" title="Disable Network" on:click={disable(instance.cellId)}>
+                                <SvgIcon icon="faStopCircle" size="16px"/>
+                            </div>
                         {:else if instance.cellInfo[CellType.Cloned]?.enabled === false}
-                            <sl-button on:click={enable(instance.cellId)} on:keydown={enable(instance.cellId)}>
-                                Enable
-                            </sl-button>
+                            <div class="details-button" title="Enable Network" on:click={enable(instance.cellId)}>
+                                <SvgIcon icon="faPlayCircle" size="16px"/>
+                            </div>
+                        {:else}
+                            <div style="width: 30px; height: 30px; margin-left: 10px;"></div>
                         {/if}
                     </div>
                 </div>
             {/each}          
             
-            <div style="margin-top: 10px;">
+            <div style="margin-top: 20px; width: 100%; display: flex; justify-content: space-between; align-items: center;">
                 <div class="new-clone" on:click={()=>newCloneDialog.open()} on:keydown={()=>newCloneDialog.open()} title="New Network"><SvgIcon color="white" size=25px icon=faSquarePlus style="margin-left: 15px;"/><span>New Network</span></div>
                 <div class="new-clone" on:click={()=>joinCloneDialog.open()} on:keydown={()=>joinCloneDialog.open()} title="Join Network"><SvgIcon color="white" size=25px icon=faSquarePlus style="margin-left: 15px;"/><span>Join Network</span></div>
             </div>
@@ -105,13 +111,11 @@
 
 <NewCloneDialog bind:this={newCloneDialog} handleSave={create}></NewCloneDialog>
 <ShareCloneDialog bind:this={shareCloneDialog} cell={shareInstance} on:close={() => {shareInstance = undefined;}}></ShareCloneDialog>
-<JoinCloneDialog bind:this={joinCloneDialog} on:join={(e) => join(e.detail)}></JoinCloneDialog>
+<JoinCloneDialog bind:this={joinCloneDialog} handleJoin={join}></JoinCloneDialog>
 
 <style>
 .new-clone {
     box-sizing: border-box;
-    position: relative;
-    width: 290px;
     height: 50px;
     background: rgba(24, 55, 122, 1.0);
     border: 1px solid #4A559D;
@@ -130,7 +134,6 @@
 .new-clone:hover {
     cursor: pointer;
     padding: 15px 5px;
-    width: 300px;
     border: 1px solid #252d5d;
     background: rgb(10, 25, 57);
     margin: 0 -5px 0 -5px;
@@ -144,11 +147,58 @@
 }
 
 .instance-active {
-    background: #164B9A;
+    background-color: #164B9A;
+    border-radius: 5px;
     padding: 4px 8px;
-    border-radius: 10px;
-    color: #fff;
-    margin-top: 10px;
-    margin-bottom: 10px;
+    font-weight: bold;
 }
+
+.instance-inactive {
+    border-radius: 5px;
+    padding: 4px 8px;
+    font-weight: bold;
+}
+
+.instance-active-name {
+    color: #fff;
+}
+
+.button-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.details-button {
+    cursor: pointer;
+    border-radius: 50%;
+    padding:2px;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transform: scale(1);
+    transition: all .25s ease;
+    opacity: 0.7;
+
+    margin-left: 10px;
+    background: #FFFFFF;
+    border: 1px solid rgba(35, 32, 74, 0.1);
+    box-shadow: 0px 4px 4px rgba(66, 66, 66, 0.1);
+    border-radius: 5px;
+  }
+
+  .details-button:hover {
+    transform: scale(1.25);
+    background-color: rgb(240, 249, 2244);
+    border: solid 1px rgb(149, 219, 252);
+    color: rgb(3, 105, 161);
+    
+  }
+
+  .details-button:active {
+    transform: scale(1.1);
+    box-shadow: 0px 8px 10px rgba(53, 39, 211, 0.35);
+  }
 </style>

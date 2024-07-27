@@ -143,7 +143,7 @@
             <KDLogoIcon />
         </div>
         <div>
-            <div on:click={()=>cloneManagerDialog.open()} style="background-color:  #164B9A; padding: 3px 4px; border-radius: 10px;">
+            <div on:click={()=>cloneManagerDialog.open()} style="background-color:  #164B9A; padding: 3px 5px; border-radius: 10px;">
                 <div style="display: flex; justify-content: flex-start; align-items: center">
                     <div style="margin-right: 10px; font-weight: bold; color: #fff">{$activeCellInfoNormalized.displayName}</div>
                     <SvgIcon icon="network" size="20px" color="#fff"/>
