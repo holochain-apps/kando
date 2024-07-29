@@ -6,16 +6,29 @@
 
     let dialog: SlDialog;
     let saving = false;
+    let joiningCode = "";
+    let error;
+
     export let handleJoin;
     export const open = ()=> {
         dialog.show()
     };
     const close = () => {
         joiningCode = "";
+        error = undefined;
         dialog.hide();
     };
-    
-    let joiningCode = "";
+    const join = async () => {
+        saving = true
+        try {
+            await handleJoin(joiningCode);
+            close();
+        } catch (e) {
+            error = e;
+        }
+        saving = false
+    };
+
 
     $: valuesValid = joiningCode.length > 0;
 </script>
@@ -41,12 +54,7 @@
             <sl-button class="board-control"
               variant="primary"
               disabled={!valuesValid || saving} 
-              style="margin-left:10px; width:70px;" on:click={async () => {
-                saving = true
-                await handleJoin(joiningCode);
-                saving = false
-                close();
-            }}>
+              style="margin-left:10px; width:70px;" on:click={join}>
                 
             {#if saving}
                 <div class="spinning"><SvgIcon icon=faSpinner></SvgIcon></div>
@@ -55,6 +63,11 @@
             {/if}
               
             </sl-button>
+        </div>
+        <div style="margin-top: 10px">
+            {#if error}
+                Error: {error}
+            {/if}
         </div>
     </div>
 </sl-dialog>

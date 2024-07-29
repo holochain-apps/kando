@@ -9,6 +9,7 @@
     let saving = false;
     let dialog: SlDialog
     let name: string = "";
+    let error;
 
     const { getStore } :any = getContext('store');
 
@@ -22,6 +23,17 @@
     const close = () => {
         name = "";
         dialog.hide();
+    }
+
+    const create = async () => {
+        saving = true
+        try {
+            await handleSave(name);
+            close();
+        } catch(e) {
+            error = e;
+        }
+        saving = false;
     }
 
     $: valuesValid = name.length > 0;
@@ -48,12 +60,7 @@
             <sl-button class="board-control"
               variant="primary"
               disabled={!valuesValid || saving} 
-              style="margin-left:10px; width:70px;" on:click={async () => {
-                saving = true
-                await handleSave(name);
-                saving = false
-                close();
-            }}>
+              style="margin-left:10px; width:70px;" on:click={create}>
                 
             {#if saving}
                 <div class="spinning"><SvgIcon icon=faSpinner></SvgIcon></div>
@@ -62,6 +69,11 @@
             {/if}
               
             </sl-button>
+        </div>
+        <div style="margin-top: 10px">
+            {#if error}
+                Error: {error}
+            {/if}
         </div>
     </div>
 </sl-dialog>
