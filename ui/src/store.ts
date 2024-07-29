@@ -270,9 +270,12 @@ export class KanDoCloneManagerStore {
         this.activeDnaHash = writable<DnaHash>();
         this.activeDnaHash.subscribe(this._saveActiveDnaHash);
         this.activeCellInfoNormalized = asyncDerived(this.activeDnaHash, async ($activeDnaHash) => {
-            if(!this.activeDnaHash) return;
-
             const appInfo = await this.client.appInfo();
+
+            if(!$activeDnaHash) {
+                await this._loadActiveDnaHash();
+                $activeDnaHash = get(this.activeDnaHash);
+            }
             
             const cellInfo = appInfo.cell_info[ROLE_NAME].find((cellInfo: CellInfo) => {
                 if(CellType.Provisioned in cellInfo) {
@@ -282,7 +285,7 @@ export class KanDoCloneManagerStore {
                 }
             });
 
-            if(cellInfo === undefined || CellType.Provisioned in cellInfo) {
+            if(CellType.Provisioned in cellInfo) {
                 return {
                     cellId: cellInfo[CellType.Provisioned].cell_id,
                     cellInfo: cellInfo,
