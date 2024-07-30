@@ -22,6 +22,7 @@
     
     const close = () => {
         name = "";
+        error = undefined;
         dialog.hide();
     }
 
@@ -46,7 +47,12 @@
     on:sl-request-close={(event)=>{
         if (event.detail.source === 'overlay') {
         event.preventDefault();    
-}}}>
+    }}}
+    on:sl-hide={(e) => {
+        e.preventDefault()
+        close();
+    }}
+>
     <div class='board-editor'>
         <div class="edit-title setting">
             <div class="title-text">Title</div> <sl-input class='textarea' maxlength="60" value={name}  on:input={e=> name = e.target.value}></sl-input>

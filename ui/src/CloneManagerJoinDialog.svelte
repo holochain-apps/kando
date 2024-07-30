@@ -40,7 +40,12 @@
     on:sl-request-close={(event)=>{
         if (event.detail.source === 'overlay') {
         event.preventDefault();    
-}}}>
+    }}}
+    on:sl-hide={(e) => {
+        e.preventDefault()
+        close();
+    }}
+>
     <div class='board-editor'>
         <div class="edit-title setting">
             <div class="title-text">Joining Code</div> <sl-input class='textarea' value={joiningCode}  on:input={e=> joiningCode = e.target.value}></sl-input>
