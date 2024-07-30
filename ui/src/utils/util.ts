@@ -1,5 +1,4 @@
 import { type AppClient, type EntryHash, type DnaHash, CellType } from "@holochain/client";
-import { encode, decode } from '@msgpack/msgpack';
 //import type { HrlB64WithContext, WAL } from "@lightningrodlabs/we-applet";
 
 export function onVisible(element, callback) {

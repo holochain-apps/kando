@@ -47,13 +47,13 @@
   }
   .toolbar {
     background: linear-gradient(90.1deg, #143C77 4.43%, #261492 99.36%);
-    position: relative;
-    z-index: 250;
     align-items: center;
     justify-content: space-between;
-    display: flex;
-    height: 50px;
     color: #fff;
+    height: 50px;
+    position: relative;
+    z-index: 250;
+    display: flex;
   }
 
   .close, .open {
