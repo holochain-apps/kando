@@ -2,7 +2,7 @@
     import { getContext } from "svelte";
     import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
     import SvgIcon from "./SvgIcon.svelte";
-    import { type CellInfoNormalized, KanDoCloneManagerStore } from "./stores/kando";
+    import { type CellInfoNormalized, KanDoCloneManagerStore } from "./stores/cloneManager";
     import { CellType, type CellId } from "@holochain/client";
     import { type DnaJoiningInfo, hashEqual } from "./util";
     import { get } from "svelte/store";

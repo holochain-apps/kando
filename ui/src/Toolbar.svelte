@@ -3,7 +3,7 @@
   import type { ProfilesStore } from "@holochain-open-dev/profiles";
   import Search from './Search.svelte';
   import { getContext } from "svelte";
-  import type { KanDoCloneManagerStore, KanDoStore } from "./stores/kando";
+  import { KanDoStore } from "./stores/kando";
   import SvgIcon from "./SvgIcon.svelte";
   import ExternalLink from './ExternalLink.svelte';
   

@@ -19,6 +19,7 @@ import { ProfilesStore } from '@holochain-open-dev/profiles';
 import { UngroupedName, type BoardState } from '../board';
 import type { WeaveClient } from '@lightningrodlabs/we-applet';
 import { HoloHashMap } from '@holochain-open-dev/utils';
+import { KanDoCloneManagerStore } from './cloneManager';
 
 // @ts-ignore
 export const USING_FEEDBACK :boolean | undefined = window.__USING_FEEDBACK || (import.meta as any).env.VITE_USING_FEEDBACK

@@ -1,6 +1,7 @@
 <script lang="ts">
     import { getContext } from "svelte";
-    import { KanDoCloneManagerStore, USING_FEEDBACK, type KanDoStore } from "./stores/kando";
+    import { USING_FEEDBACK, type KanDoStore } from "./stores/kando";
+    import { KanDoCloneManagerStore } from "./stores/cloneManager";
     import { type EntryHash } from '@holochain/client';
     import GroupParticipants from './GroupParticipants.svelte';
     import NewBoardDialog from './NewBoardDialog.svelte';
