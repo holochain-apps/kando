@@ -14,7 +14,7 @@
   import '@shoelace-style/shoelace/dist/components/dropdown/dropdown.js';
   import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
   import ClickEdit from "./ClickEdit.svelte";
-  import { onVisible } from "./util";
+  import { onVisible } from "./utils/util";
   import SvgIcon from "./SvgIcon.svelte";
   import { exportBoard } from "./export";
   import { Marked, Renderer } from "@ts-stack/markdown";

@@ -6,7 +6,7 @@ import { SynStore, WorkspaceStore, stateFromCommit } from "@holochain-syn/core";
 import type { ProfilesStore } from "@holochain-open-dev/profiles";
 import { cloneDeep } from "lodash";
 import { Board, feedItems, type BoardState, deltaToFeedString, feedItemShouldNotify, MAX_FEED_ITEMS } from "./board";
-import { hashEqual } from "./util";
+import { hashEqual } from "./utils/util";
 import type { WeaveClient } from "@lightningrodlabs/we-applet";
 import { NotificationType, SeenType } from "./stores/kando";
 

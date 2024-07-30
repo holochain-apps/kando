@@ -3,7 +3,7 @@
     import '@shoelace-style/shoelace/dist/components/input/input.js';
     import { onMount } from "svelte";
     import SvgIcon from "./SvgIcon.svelte"
-    import { onVisible } from './util';
+    import { onVisible } from './utils/util';
 
     export let handleSave
     export let handleDelete = undefined

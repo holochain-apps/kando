@@ -13,7 +13,7 @@ import { ProfilesClient, ProfilesStore } from '@holochain-open-dev/profiles';
 import type { WeaveClient } from '@lightningrodlabs/we-applet';
 import { v7 as uuidv7 } from "uuid";
 import { asyncDerived, type Loadable } from '@square/svelte-store';
-import { hashEqual } from '../util';
+import { hashEqual } from '../utils/util';
 import { KanDoStore, ROLE_NAME } from './kando';
 
 export interface CellInfoNormalized {

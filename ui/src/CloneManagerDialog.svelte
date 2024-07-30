@@ -4,7 +4,7 @@
     import SvgIcon from "./SvgIcon.svelte";
     import { type CellInfoNormalized, KanDoCloneManagerStore } from "./stores/cloneManager";
     import { CellType, type CellId } from "@holochain/client";
-    import { type DnaJoiningInfo, hashEqual } from "./util";
+    import { type DnaJoiningInfo, hashEqual } from "./utils/util";
     import { get } from "svelte/store";
     import CloneManagerCreateDialog from "./CloneManagerCreateDialog.svelte";
     import CloneManagerShareDialog from "./CloneManagerShareDialog.svelte";

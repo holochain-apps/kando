@@ -5,7 +5,7 @@
   import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
   import Participants from "./Participants.svelte";
   import { BoardType } from "./boardList";
-  import { hashEqual } from "./util";
+  import { hashEqual } from "./utils/util";
 
   const dispatch = createEventDispatcher()
   const { getStore } :any = getContext("store");

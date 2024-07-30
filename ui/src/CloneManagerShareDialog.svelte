@@ -1,7 +1,7 @@
 <script lang="ts">
     import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
     import { type CellInfoNormalized } from "./stores/cloneManager";
-    import { encodeDnaJoiningCode } from "./util";
+    import { encodeDnaJoiningInfo } from "./utils/dnaJoiningInfo";
     import SlDialog from "@shoelace-style/shoelace/dist/components/dialog/dialog.js";
     import SvgIcon from "./SvgIcon.svelte";
 
@@ -11,7 +11,7 @@
         dialog.show()
     }
 
-    $: joiningCode = cell ? encodeDnaJoiningCode(cell.originalDnaHash, cell.name, cell.networkSeed) : "";
+    $: joiningCode = cell ? encodeDnaJoiningInfo(cell.originalDnaHash, cell.name, cell.networkSeed) : "";
 
     const copyJoiningCode = () => {
         navigator.clipboard.writeText(joiningCode);

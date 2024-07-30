@@ -4,7 +4,7 @@ import { asyncDerived, pipe, sliceAndJoin, toPromise } from '@holochain-open-dev
 import { BoardType } from './boardList';
 import { LazyHoloHashMap } from '@holochain-open-dev/utils';
 import type { AppletHash, AppletServices, AssetInfo, RecordInfo, WAL, WeaveServices } from '@lightningrodlabs/we-applet';
-import { getMyDna } from './util';
+import { getMyDna } from './utils/util';
 import type { AppClient, RoleName } from '@holochain/client';
 
 const ROLE_NAME = "kando"

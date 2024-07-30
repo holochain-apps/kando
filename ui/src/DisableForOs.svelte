@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { type OsType, type } from "@tauri-apps/plugin-os";
-  import { isTauriContext } from "./util";
+  import { isTauriContext } from "./utils/util";
 
   export let os: OsType | OsType[] = [];
   

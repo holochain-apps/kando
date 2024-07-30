@@ -1,6 +1,6 @@
 <script lang="ts">
   import { open } from '@tauri-apps/plugin-shell';
-  import { isTauriContext } from './util';
+  import { isTauriContext } from './utils/util';
 
   export let href: string;
   export let title: string;

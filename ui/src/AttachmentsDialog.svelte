@@ -4,7 +4,7 @@
   import type { Board, Card } from "./board";
   import { getContext } from "svelte";
   import type { KanDoStore } from "./stores/kando";
-  import { type WALUrl} from "./util";
+  import { type WALUrl} from "./utils/util";
   import '@shoelace-style/shoelace/dist/components/button/button.js';
   import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
   import AttachmentsList from "./AttachmentsList.svelte";

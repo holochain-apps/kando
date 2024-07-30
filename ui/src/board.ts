@@ -4,7 +4,7 @@ import { v1 as uuidv1 } from "uuid";
 import { type AgentPubKey, type EntryHash, type EntryHashB64, encodeHashToBase64, type AgentPubKeyB64, type Timestamp } from "@holochain/client";
 import { BoardType } from "./boardList";
 import { cloneDeep } from "lodash";
-import type { WALUrl } from "./util";
+import type { WALUrl } from "./utils/util";
 import { NotificationType } from "./stores/kando";
 
 export class LabelDef {

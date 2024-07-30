@@ -1,6 +1,6 @@
 <script lang="ts">
     import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
-    import { decodeDnaJoiningCode } from "./util";
+    import { decodeDnaJoiningInfo } from "./utils/dnaJoiningInfo";
     import SlDialog from "@shoelace-style/shoelace/dist/components/dialog/dialog.js";
     import SvgIcon from './SvgIcon.svelte';
 
@@ -21,7 +21,7 @@
     const join = async () => {
         saving = true
         try {
-            await handleJoin(decodeDnaJoiningCode(joiningCode));
+            await handleJoin(decodeDnaJoiningInfo(joiningCode));
             close();
         } catch (e) {
             error = e;
