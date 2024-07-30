@@ -21,7 +21,7 @@
     const join = async () => {
         saving = true
         try {
-            await handleJoin(joiningCode);
+            await handleJoin(decodeDnaJoiningCode(joiningCode));
             close();
         } catch (e) {
             error = e;
