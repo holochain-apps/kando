@@ -1,6 +1,6 @@
 <script lang="ts">
     import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
-    import { type CellInfoNormalized } from "./store";
+    import { type CellInfoNormalized } from "./stores/kando";
     import { encodeDnaJoiningCode } from "./util";
     import SlDialog from "@shoelace-style/shoelace/dist/components/dialog/dialog.js";
     import SvgIcon from "./SvgIcon.svelte";

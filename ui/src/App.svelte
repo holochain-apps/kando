@@ -24,7 +24,7 @@
   import "@holochain-open-dev/profiles/dist/elements/create-profile.js";
   import KDLogoIcon from "./icons/KDLogoIcon.svelte";
   import { appletServices } from "./we";
-  import { KanDoCloneManagerStore, KanDoStore, ROLE_NAME, USING_FEEDBACK } from "./store";
+  import { KanDoCloneManagerStore, KanDoStore, ROLE_NAME, USING_FEEDBACK } from "./stores/kando";
   import { setContext } from "svelte";
 
   const appId = import.meta.env.VITE_APP_ID

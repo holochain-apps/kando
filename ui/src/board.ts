@@ -5,7 +5,7 @@ import { type AgentPubKey, type EntryHash, type EntryHashB64, encodeHashToBase64
 import { BoardType } from "./boardList";
 import { cloneDeep } from "lodash";
 import type { WALUrl } from "./util";
-import { NotificationType } from "./store";
+import { NotificationType } from "./stores/kando";
 
 export class LabelDef {
     type: uuidv1

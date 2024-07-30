@@ -1,7 +1,7 @@
 <script lang="ts">
   import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
   import { createEventDispatcher, getContext } from "svelte";
-  import type { KanDoStore } from "./store";
+  import type { KanDoStore } from "./stores/kando";
   import type {  WALUrl } from "./util";
   import { weaveUrlToWAL } from "@lightningrodlabs/we-applet";
   import SvgIcon from "./SvgIcon.svelte";

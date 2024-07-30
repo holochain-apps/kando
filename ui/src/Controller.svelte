@@ -1,7 +1,7 @@
 <script lang="ts">
     import Toolbar from './Toolbar.svelte'
     import KanDoPane from './KanDoPane.svelte'
-    import { KanDoStore } from './store'
+    import { KanDoStore } from './stores/kando'
     import { setContext } from 'svelte';
     import type { SynStore } from '@holochain-syn/store';
     import BoardMenu from "./BoardMenu.svelte";

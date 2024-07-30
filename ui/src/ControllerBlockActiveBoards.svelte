@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { KanDoStore } from './store'
+  import { KanDoStore } from './stores/kando'
   import { setContext } from 'svelte';
   import type { SynStore } from '@holochain-syn/store';
   import BoardMenu from "./BoardMenu.svelte";

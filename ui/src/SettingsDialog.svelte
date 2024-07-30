@@ -2,7 +2,7 @@
     import { getContext } from "svelte";
     import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
     import SvgIcon from "./SvgIcon.svelte";
-    import { type KanDoStore, NotificationOptions, NotificationType } from "./store";
+    import { type KanDoStore, NotificationOptions, NotificationType } from "./stores/kando";
     import {asyncDerived, toPromise} from '@holochain-open-dev/stores'
     import { BoardType } from "./boardList";
     import type { Board, BoardEphemeralState, BoardState } from "./board";

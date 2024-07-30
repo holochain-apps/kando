@@ -10,7 +10,7 @@
     import '@shoelace-style/shoelace/dist/components/checkbox/checkbox.js';
     import SvgIcon from "./SvgIcon.svelte"
     import { cloneDeep } from "lodash";
-    import type { KanDoStore } from './store';
+    import type { KanDoStore } from './stores/kando';
     import { encodeHashToBase64, type EntryHash } from '@holochain/client';
 
     const { getStore } :any = getContext('store');

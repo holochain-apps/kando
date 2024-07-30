@@ -1,6 +1,6 @@
 <script lang="ts">
     import BoardEditor from './BoardEditor.svelte';
-    import type { KanDoStore } from './store';
+    import type { KanDoStore } from './stores/kando';
     import { getContext } from 'svelte';
     import { newFeedKey, type BoardProps, type BoardState, type CategoryDef, type Group, type LabelDef, type BoardDelta } from './board';
     import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';

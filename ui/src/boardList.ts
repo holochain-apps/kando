@@ -8,7 +8,7 @@ import { cloneDeep } from "lodash";
 import { Board, feedItems, type BoardState, deltaToFeedString, feedItemShouldNotify, MAX_FEED_ITEMS } from "./board";
 import { hashEqual } from "./util";
 import type { WeaveClient } from "@lightningrodlabs/we-applet";
-import { NotificationType, SeenType } from "./store";
+import { NotificationType, SeenType } from "./stores/kando";
 
 export enum BoardType {
     active = "active",

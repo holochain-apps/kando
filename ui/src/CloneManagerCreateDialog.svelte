@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { KanDoStore } from './store';
+    import type { KanDoStore } from './stores/kando';
     import { getContext } from 'svelte';
     import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
     import '@shoelace-style/shoelace/dist/components/button/button.js';

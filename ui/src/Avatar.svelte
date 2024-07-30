@@ -2,7 +2,7 @@
   import { encodeHashToBase64, type AgentPubKey } from "@holochain/client";
   import "@holochain-open-dev/profiles/dist/elements/agent-avatar.js";
   import { getContext } from "svelte";
-  import type { KanDoStore } from "./store";
+  import type { KanDoStore } from "./stores/kando";
   import SvgIcon from "./SvgIcon.svelte";
   import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
 

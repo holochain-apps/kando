@@ -1,6 +1,6 @@
 <script lang="ts">
     import KanDoPane from './KanDoPane.svelte'
-    import { KanDoStore } from './store'
+    import { KanDoStore } from './stores/kando'
     import { setContext } from 'svelte';
     import type { EntryHash } from '@holochain/client';
     import type { SynStore } from '@holochain-syn/store';

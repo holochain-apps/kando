@@ -12,7 +12,7 @@
     import type { v1 as uuidv1 } from "uuid";
     import { toPromise } from "@holochain-open-dev/stores";
     import type { BoardState, BoardStateData } from "./board";
-    import type { KanDoStore } from "./store";
+    import type { KanDoStore } from "./stores/kando";
 
 
     type FoundCard = {
