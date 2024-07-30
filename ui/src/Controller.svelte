@@ -37,7 +37,7 @@
     <div class="app">
       <div class="wrapper">
         <div class="header">
-          <Toolbar profilesStore={store.profilesStore} />
+          <Toolbar />
         </div>
         <div class="workspace" style="display:flex">
           {#if $uiProps.showFeedback}
