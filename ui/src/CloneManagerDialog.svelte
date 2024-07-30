@@ -6,9 +6,9 @@
     import { CellType, type CellId } from "@holochain/client";
     import { type DnaJoiningInfo, hashEqual } from "./util";
     import { get } from "svelte/store";
-    import NewCloneDialog from "./NewCloneDialog.svelte";
-    import ShareCloneDialog from "./ShareCloneDialog.svelte";
-    import JoinCloneDialog from "./JoinCloneDialog.svelte";
+    import CloneManagerCreateDialog from "./CloneManagerCreateDialog.svelte";
+    import CloneManagerShareDialog from "./CloneManagerShareDialog.svelte";
+    import CloneManagerJoinDialog from "./CloneManagerJoinDialog.svelte";
 
     let dialog;
     let newCloneDialog;
@@ -109,9 +109,9 @@
 
 </sl-dialog>
 
-<NewCloneDialog bind:this={newCloneDialog} handleSave={create}></NewCloneDialog>
-<ShareCloneDialog bind:this={shareCloneDialog} cell={shareInstance} on:close={() => {shareInstance = undefined;}}></ShareCloneDialog>
-<JoinCloneDialog bind:this={joinCloneDialog} handleJoin={join}></JoinCloneDialog>
+<CloneManagerCreateDialog bind:this={newCloneDialog} handleSave={create} />
+<CloneManagerShareDialog bind:this={shareCloneDialog} cell={shareInstance} on:close={() => {shareInstance = undefined;}} />
+<CloneManagerJoinDialog bind:this={joinCloneDialog} handleJoin={join} />
 
 <style>
 .new-clone {
