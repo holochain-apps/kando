@@ -1,6 +1,5 @@
 <script lang="ts">
   import Folk from "./Folk.svelte";
-  import type { ProfilesStore } from "@holochain-open-dev/profiles";
   import Search from './Search.svelte';
   import { getContext } from "svelte";
   import { KanDoStore } from "./stores/kando";
@@ -12,9 +11,6 @@
 
   $: uiProps = store.uiProps
   $: activeHash = store.boardList.activeBoardHash;
-
-  export let profilesStore: ProfilesStore|undefined
-
 </script>
 
 <div class='toolbar'>
