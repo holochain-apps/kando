@@ -11,7 +11,7 @@
         dialog.show()
     }
 
-    $: joiningCode = cell ? encodeDnaJoiningCode(cell.name, cell.networkSeed) : "";
+    $: joiningCode = cell ? encodeDnaJoiningCode(cell.originalDnaHash, cell.name, cell.networkSeed) : "";
 
     const copyJoiningCode = () => {
         navigator.clipboard.writeText(joiningCode);
