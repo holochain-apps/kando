@@ -65,7 +65,7 @@ export default defineConfig({
       source: {
         type: 'localhost',
         happPath: './workdir/kando.happ',
-        uiPort: 8888,
+        uiPort: 1420,
       },
     },
     // {
