@@ -7,11 +7,13 @@
   
   let dialog: SlDialog;
   export let cell: CellInfoNormalized | undefined;
+  export let name: string | undefined = undefined;
   export const open = ()=> {
     dialog.show()
   }
   
-  $: joiningCode = cell ? encodeDnaJoiningInfo(cell.originalDnaHash, cell.name, cell.networkSeed) : "";
+  $: cellName = name ? name : cell?.name;
+  $: joiningCode = cell ? encodeDnaJoiningInfo(cell.originalDnaHash, cellName, cell.networkSeed) : "";
   
   const copyJoiningCode = () => {
     navigator.clipboard.writeText(joiningCode);
@@ -21,7 +23,7 @@
 
 <sl-dialog label="Share Network" bind:this={dialog} width={1000}>
   <div>
-    <p>Share this code with a friend to grant them access to the Kando Network <b>{cell?.name}</b></p>
+    <p>Share this code with a friend to grant them access to the Kando Network <b>{cellName}</b></p>
     <sl-textarea rows="2" style="margin-top: 10px;" value={joiningCode}></sl-textarea>
     <div style="display: flex; justify-content: flex-end; align-items: center">
       <sl-button style="margin-top: 10px;" on:keydown={copyJoiningCode} on:click={copyJoiningCode}>
