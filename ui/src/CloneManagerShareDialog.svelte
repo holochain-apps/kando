@@ -12,7 +12,7 @@
     dialog.show()
   }
   
-  $: cellName = name ? name : cell?.name;
+  $: cellName = name ? name : cell?.displayName;
   $: joiningCode = cell ? encodeDnaJoiningInfo(cell.originalDnaHash, cellName, cell.networkSeed) : "";
   
   const copyJoiningCode = () => {
