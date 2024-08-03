@@ -2,8 +2,7 @@
   description = "Template for Holochain app development";
 
   inputs = {
-    p2p-shipyard.url = "github:darksoil-studio/p2p-shipyard";
-
+    p2p-shipyard.url = "github:mattyg/p2p-shipyard?rev=f3fc0d25bea41411d0347a5f381f91d5d3e9e572";
     versions.url  = "github:holochain/holochain?dir=versions/0_3";
 
     holochain-flake.url = "github:holochain/holochain";
