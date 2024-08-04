@@ -1,26 +1,13 @@
 <script lang="ts">
-    import { KanDoStore } from './store'
+    import { KanDoStore } from './stores/kando'
     import { setContext } from 'svelte';
-    import type { AppClient } from '@holochain/client';
     import { SynStore } from '@holochain-syn/store';
-    import type { ProfilesStore } from "@holochain-open-dev/profiles";
-    import type { WeaveClient } from '@lightningrodlabs/we-applet';
     import { SynClient } from '@holochain-syn/core';
-    import { getMyDna } from './util';
     import { Board } from './board';
 
-    export let roleName = ""
-    export let client : AppClient
-    export let weaveClient : WeaveClient
-    export let profilesStore : ProfilesStore
+    export let store: KanDoStore;
     export let view
 
-    let store: KanDoStore = new KanDoStore (
-      weaveClient,
-      profilesStore,
-      client,
-      roleName,
-    );
     let synStore: SynStore = store.synStore
 
     setContext('synStore', {
@@ -53,11 +40,10 @@
               disabled={disabled}
               on:click={async ()=>{
               try {
-                const synStore = new SynStore(new SynClient(client, roleName));
+                const synStore = new SynStore(new SynClient(store.client, store.roleName));
                 //const hrlB64 = hrlWithContextToB64(attachToWAL)
                 const board = await Board.Create(synStore, {/*boundTo:[hrlB64]*/name: inputElement.value})
-                const dnaHash = await getMyDna(roleName, client)
-                view.resolve({hrl:[dnaHash, board.hash]})
+                view.resolve({hrl:[store.dnaHash, board.hash]})
               } catch(e) {
                 console.log("ERR",e)
                 view.reject(e)

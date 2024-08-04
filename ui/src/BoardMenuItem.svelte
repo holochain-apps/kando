@@ -1,11 +1,11 @@
 <script lang="ts">
   import { createEventDispatcher, getContext } from "svelte";
-  import type { KanDoStore } from "./store";
+  import type { KanDoStore } from "./stores/kando";
   import type { EntryHash } from "@holochain/client";
   import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
   import Participants from "./Participants.svelte";
   import { BoardType } from "./boardList";
-  import { hashEqual } from "./util";
+  import { hashEqual } from "./utils/util";
 
   const dispatch = createEventDispatcher()
   const { getStore } :any = getContext("store");

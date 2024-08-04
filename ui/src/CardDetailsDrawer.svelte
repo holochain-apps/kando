@@ -3,7 +3,7 @@
   import '@shoelace-style/shoelace/dist/components/drawer/drawer.js';
   import type { v1 as uuidv1 } from "uuid";
   import { getContext } from 'svelte';
-  import type { KanDoStore } from './store';
+  import type { KanDoStore } from './stores/kando';
 
   import CardDetails from "./CardDetails.svelte";
 

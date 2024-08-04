@@ -1,7 +1,8 @@
 <script lang="ts">
     import { getContext } from "svelte";
-    import { USING_FEEDBACK, type KanDoStore } from "./store";
-    import type {  EntryHash } from '@holochain/client';
+    import { USING_FEEDBACK, type KanDoStore } from "./stores/kando";
+    import { KanDoCloneManagerStore } from "./stores/cloneManager";
+    import { type EntryHash } from '@holochain/client';
     import GroupParticipants from './GroupParticipants.svelte';
     import NewBoardDialog from './NewBoardDialog.svelte';
     import SvgIcon from "./SvgIcon.svelte";
@@ -12,16 +13,26 @@
     import { BoardType } from "./boardList";
     import { isWeContext } from "@lightningrodlabs/we-applet";
     import { UngroupedName } from "./board";
+    import CloneManagerDialog from "./CloneManagerDialog.svelte";
+    import CloneManagerShareDialog from "./CloneManagerShareDialog.svelte";
     export let wide = false
 
     let newBoardDialog
 
     const { getStore } :any = getContext('store');
+    const { getStore: getCloneManagerStore } :any = getContext("cloneManagerStore");
 
     const store:KanDoStore = getStore();
+    let cloneManagerStore: KanDoCloneManagerStore = getCloneManagerStore();
+    let weaveGroupName: string
+    let aboutDialog
+    let settingsDialog
+    let cloneManagerDialog
+    let cloneManagerShareDialog
 
     $: activeBoards = store.boardList.activeBoardHashes
     $: archivedBoards = store.boardList.archivedBoardHashes
+    $: activeCellInfoNormalized = cloneManagerStore.activeCellInfoNormalized;
 
     $: uiProps = store.uiProps
 
@@ -42,13 +53,15 @@
         selectBoard(hash)
     }
 
-    let aboutDialog
-    let settingsDialog
+    const loadWeaveGroupName = async () => {
+        const appletInfo = await store.weaveClient.appletInfo(store.weaveClient.renderInfo.appletHash);
+        const groupProfile = await store.weaveClient.groupProfile(appletInfo.groupsHashes[0]);
+        weaveGroupName = groupProfile.name;
+    };
 
+    loadWeaveGroupName();
 </script>
 
-<AboutDialog bind:this={aboutDialog} />
-<SettingsDialog bind:this={settingsDialog} />
 <div class="board-menu"
     class:wide={wide} >
 
@@ -138,15 +151,37 @@
             <KDLogoIcon />
         </div>
         <div>
-            <div on:click={()=>aboutDialog.open()}><SvgIcon icon=info color="#fff"></SvgIcon></div>
-
+            {#if isWeContext()}
+                <div on:click={()=>cloneManagerShareDialog.open()} style="background-color:  #164B9A; padding: 3px 5px; border-radius: 10px;">
+                    <div style="display: flex; justify-content: flex-start; align-items: center">
+                        <div style="margin-right: 10px; font-weight: bold; color: #fff">{weaveGroupName}</div>
+                        <SvgIcon icon="faShare" size="20px" color="#fff"/>
+                    </div>
+                </div>
+            {:else}
+                <div on:click={()=>cloneManagerDialog.open()} style="background-color:  #164B9A; padding: 3px 5px; border-radius: 10px;">
+                    <div style="display: flex; justify-content: flex-start; align-items: center">
+                        <div style="margin-right: 10px; font-weight: bold; color: #fff">{$activeCellInfoNormalized.displayName}</div>
+                        <SvgIcon icon="network" size="20px" color="#fff"/>
+                    </div>
+                </div>
+            {/if}
             <div on:click={()=>settingsDialog.open()} style="margin-left:10px;"><SvgIcon icon=faCog size="20px" color="#fff"/></div>
             {#if USING_FEEDBACK}
                 <sl-button style="margin-left:10px" size="small" pill on:click={()=>store.setUIprops({showFeedback:!$uiProps.showFeedback})}>My Feedback Items</sl-button>
             {/if}
+            <div style="margin-left:10px;" on:click={()=>aboutDialog.open()}><SvgIcon icon=info color="#fff"></SvgIcon></div>
         </div>
     </div>
 </div>
+
+<AboutDialog bind:this={aboutDialog} />
+<SettingsDialog bind:this={settingsDialog} />
+{#if isWeContext()}
+    <CloneManagerShareDialog bind:this={cloneManagerShareDialog} cell={$activeCellInfoNormalized} name={weaveGroupName}/>
+{:else}
+    <CloneManagerDialog bind:this={cloneManagerDialog} />
+{/if}
 
 <style>
     .wide {

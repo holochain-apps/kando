@@ -9,7 +9,7 @@
     type FeedItem,
   } from "./board";
   import { createEventDispatcher, getContext } from "svelte";
-  import type { KanDoStore } from "./store";
+  import type { KanDoStore } from "./stores/kando";
   import type { Readable } from "svelte/store";
 
   const dispatch = createEventDispatcher()

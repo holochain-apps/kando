@@ -1,23 +1,10 @@
 <script lang="ts">
-  import { KanDoStore } from './store'
+  import { KanDoStore } from './stores/kando'
   import { setContext } from 'svelte';
-  import type { AppClient } from '@holochain/client';
   import type { SynStore } from '@holochain-syn/store';
-  import type { ProfilesStore } from "@holochain-open-dev/profiles";
   import BoardMenu from "./BoardMenu.svelte";
-  import type { WeaveClient } from '@lightningrodlabs/we-applet';
 
-  export let roleName = ""
-  export let client : AppClient
-  export let weaveClient : WeaveClient
-  export let profilesStore : ProfilesStore
-
-  let store: KanDoStore = new KanDoStore (
-    weaveClient,
-    profilesStore,
-    client,
-    roleName,
-  );
+  export let store: KanDoStore;
   let synStore: SynStore = store.synStore
 
   setContext('synStore', {

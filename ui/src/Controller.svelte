@@ -1,26 +1,13 @@
 <script lang="ts">
     import Toolbar from './Toolbar.svelte'
     import KanDoPane from './KanDoPane.svelte'
-    import { KanDoStore } from './store'
+    import { KanDoStore } from './stores/kando'
     import { setContext } from 'svelte';
-    import type { AppClient } from '@holochain/client';
     import type { SynStore } from '@holochain-syn/store';
-    import type { ProfilesStore } from "@holochain-open-dev/profiles";
     import BoardMenu from "./BoardMenu.svelte";
-    import type { WeaveClient } from '@lightningrodlabs/we-applet';
     import FeedbackPane from "./FeedbackPane.svelte";
 
-    export let roleName = ""
-    export let client : AppClient
-    export let weaveClient : WeaveClient
-    export let profilesStore : ProfilesStore
-
-    let store: KanDoStore = new KanDoStore (
-      weaveClient,
-      profilesStore,
-      client,
-      roleName,
-    );
+    export let store: KanDoStore;
     let synStore: SynStore = store.synStore
 
 
@@ -50,7 +37,7 @@
     <div class="app">
       <div class="wrapper">
         <div class="header">
-          <Toolbar {profilesStore} />
+          <Toolbar />
         </div>
         <div class="workspace" style="display:flex">
           {#if $uiProps.showFeedback}

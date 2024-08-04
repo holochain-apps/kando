@@ -7,7 +7,7 @@
   import { cloneDeep, isEqual } from "lodash";
   import { v1 as uuidv1 } from "uuid";
   import { getContext } from 'svelte';
-  import type { KanDoStore } from './store';
+  import type { KanDoStore } from './stores/kando';
   import Avatar from './Avatar.svelte';
   import { decodeHashFromBase64, encodeHashToBase64 } from '@holochain/client';
   import type { BoardDelta, Card, Checklist, ChecklistItem, Comment } from "./board";

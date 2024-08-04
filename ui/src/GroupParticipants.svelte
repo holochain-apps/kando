@@ -2,7 +2,7 @@
     import "@shoelace-style/shoelace/dist/components/skeleton/skeleton.js";
     import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
     import { getContext } from "svelte";
-    import type { KanDoStore } from "./store";
+    import type { KanDoStore } from "./stores/kando";
     import Avatar from './Avatar.svelte';
     import "@holochain-open-dev/stores/dist/debug-store.js"
     import { encodeHashToBase64, type AgentPubKey } from "@holochain/client";

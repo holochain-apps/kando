@@ -2,7 +2,7 @@
     import '@shoelace-style/shoelace/dist/components/button/button.js';
     import AvatarDialog from './AvatarDialog.svelte';
     import { getContext, onMount } from "svelte";
-    import type { KanDoStore } from "./store";
+    import type { KanDoStore } from "./stores/kando";
     import Avatar from './Avatar.svelte';
     import { get } from 'svelte/store';    
     import { isWeContext } from '@lightningrodlabs/we-applet';

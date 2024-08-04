@@ -2,26 +2,24 @@ import {
     type AppClient,
     type EntryHash,
     type AgentPubKeyB64,
-    type AppCallZomeRequest,
     type RoleName,
     encodeHashToBase64,
-    type EntryHashB64,
     type AgentPubKey,
     decodeHashFromBase64,
     type Timestamp,
     type DnaHash,
-  } from '@holochain/client';
+} from '@holochain/client';
 import { SynStore,  SynClient} from '@holochain-syn/core';
-import { BoardList } from './boardList';
+import { BoardList } from '../boardList';
 import TimeAgo from "javascript-time-ago"
 import en from 'javascript-time-ago/locale/en'
 import type { v1 as uuidv1 } from "uuid";
 import { derived, get, writable, type Unsubscriber, type Writable } from "svelte/store";
-import type { ProfilesStore } from '@holochain-open-dev/profiles';
-import { UngroupedName, type BoardState } from './board';
+import { ProfilesStore } from '@holochain-open-dev/profiles';
+import { UngroupedName, type BoardState } from '../board';
 import type { WeaveClient } from '@lightningrodlabs/we-applet';
 import { HoloHashMap } from '@holochain-open-dev/utils';
-import { getMyDna } from './util';
+import { KanDoCloneManagerStore } from './cloneManager';
 
 // @ts-ignore
 export const USING_FEEDBACK :boolean | undefined = window.__USING_FEEDBACK || (import.meta as any).env.VITE_USING_FEEDBACK
@@ -29,20 +27,7 @@ export const USING_FEEDBACK :boolean | undefined = window.__USING_FEEDBACK || (i
 TimeAgo.addDefaultLocale(en)
 
 const ZOME_NAME = 'syn'
-
-export class KanDoService {
-    constructor(public client: AppClient, public roleName, public zomeName = ZOME_NAME) {}
-
-    private callZome(fnName: string, payload: any) {
-        const req: AppCallZomeRequest = {
-            role_name: this.roleName,
-            zome_name: this.zomeName,
-            fn_name: fnName,
-            payload
-          }
-        return this.client.callZome(req);
-    }
-}
+export const ROLE_NAME = 'kando'
 
 export enum SeenType {
     Tip="t",
@@ -88,34 +73,25 @@ export interface UIProps {
 export class KanDoStore {
     myAgentPubKeyB64: AgentPubKeyB64
     timeAgo = new TimeAgo('en-US')
-    service: KanDoService;
     boardList: BoardList;
     updating = false
     synStore: SynStore;
-    client: AppClient;
     uiProps: Writable<UIProps>
     unsub: Unsubscriber
-    dnaHash: DnaHash
+    weaveClient: WeaveClient
+    client: AppClient
 
     constructor(
-        public weaveClient : WeaveClient,
+        public managerStore: KanDoCloneManagerStore,
         public profilesStore: ProfilesStore,
-        protected clientIn: AppClient,
-        protected roleName: RoleName,
-        protected zomeName: string = ZOME_NAME
+        public dnaHash: DnaHash,
+        public roleName: RoleName,
     ) {
-        this.client = clientIn
-        getMyDna(roleName, clientIn).then(res=>{
-            this.dnaHash = res
-          })
+        this.weaveClient = this.managerStore.weaveClient;
+        this.client = this.managerStore.client;
 
         this.myAgentPubKeyB64 = encodeHashToBase64(this.client.myPubKey);
-        this.service = new KanDoService(
-          this.client,
-          this.roleName,
-          this.zomeName
-        );
-        this.synStore = new SynStore(new SynClient(this.client,this.roleName,this.zomeName))
+        this.synStore = new SynStore(new SynClient(this.client,this.roleName,ZOME_NAME))
         this.uiProps = writable({
             showArchived: {},
             showArchivedBoards: false,
@@ -150,7 +126,7 @@ export class KanDoStore {
                     break;
             }
         }
-        this.boardList = new BoardList(profilesStore, this.synStore, weaveClient, derived(this.uiProps, props=>props.notifications))
+        this.boardList = new BoardList(this.profilesStore, this.synStore, this.weaveClient, derived(this.uiProps, props=>props.notifications))
         this.boardList.activeBoard.subscribe((board)=>{
             if (this.unsub) {
                 this.unsub()

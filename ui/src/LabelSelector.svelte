@@ -1,7 +1,7 @@
 <script lang="ts">
   import EmojiIcon from './EmojiIcon.svelte'
   import { getContext } from "svelte";
-  import type { KanDoStore } from "./store";
+  import type { KanDoStore } from "./stores/kando";
 
   export let setOption
   export let option

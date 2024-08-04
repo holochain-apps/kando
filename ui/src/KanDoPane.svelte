@@ -3,7 +3,7 @@
   import CardEditor from "./CardEditor.svelte";
   import CardDetailsDrawer from "./CardDetailsDrawer.svelte";
   import EmojiIcon from "./EmojiIcon.svelte";
-  import type { KanDoStore } from "./store";
+  import type { KanDoStore } from "./stores/kando";
   import LabelSelector from "./LabelSelector.svelte";
   import { v1 as uuidv1 } from "uuid";
   import { type Card, Group, UngroupedId, type CardProps, type Comment, type Checklists, Board, type BoardProps, feedItemsGroupedByCard, MAX_FEED_ITEMS, UngroupedName } from "./board";
@@ -14,7 +14,7 @@
   import '@shoelace-style/shoelace/dist/components/dropdown/dropdown.js';
   import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
   import ClickEdit from "./ClickEdit.svelte";
-  import { onVisible } from "./util";
+  import { onVisible } from "./utils/util";
   import SvgIcon from "./SvgIcon.svelte";
   import { exportBoard } from "./export";
   import { Marked, Renderer } from "@ts-stack/markdown";
