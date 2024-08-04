@@ -134,12 +134,17 @@
                 if (USING_FEEDBACK) {
                     store.setUIprops({showFeedback:!$uiProps.showFeedback})}
                 }}
-        ><KDLogoIcon /></div>
-        <div on:click={()=>aboutDialog.open()}><SvgIcon icon=info color="#fff"></SvgIcon></div>
-        <div on:click={()=>settingsDialog.open()} style="margin-left:10px;"><SvgIcon icon=faCog size="20px" color="#fff"/></div>
-        {#if USING_FEEDBACK}
-            <sl-button style="margin-left:10px" size="small" pill on:click={()=>store.setUIprops({showFeedback:!$uiProps.showFeedback})}>My Feedback Items</sl-button>
-        {/if}
+        >
+            <KDLogoIcon />
+        </div>
+        <div>
+            <div on:click={()=>aboutDialog.open()}><SvgIcon icon=info color="#fff"></SvgIcon></div>
+
+            <div on:click={()=>settingsDialog.open()} style="margin-left:10px;"><SvgIcon icon=faCog size="20px" color="#fff"/></div>
+            {#if USING_FEEDBACK}
+                <sl-button style="margin-left:10px" size="small" pill on:click={()=>store.setUIprops({showFeedback:!$uiProps.showFeedback})}>My Feedback Items</sl-button>
+            {/if}
+        </div>
     </div>
 </div>
 
@@ -275,6 +280,7 @@
         height: 40px;
         display: flex;
         align-items: center;
+        justify-content: space-between;
         width: 330px;
         left: 0;
         background-color: rgba(23, 55, 123, .9);

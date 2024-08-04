@@ -619,13 +619,15 @@
         </sl-input>
         {#if commentingFocused}
           <sl-button
+            class="comment-input-button"
             disabled={!commentText}
             on:mousedown={()=>{
               addComment(cardId, commentElement.value)
             }}>
               <SvgIcon icon=faPaperPlane size="20px"/>
           </sl-button>
-          <sl-button 
+          <sl-button
+            class="comment-input-button"
             on:mousedown={()=>{
             commentingFocused = false
             commentElement.value = ""
@@ -926,6 +928,10 @@
     text-align: right;
     position: relative;
     top: 4px;
+  }
+
+  .comment-input-button {
+    margin-top: 10px;
   }
 
   .checklists {

@@ -448,7 +448,6 @@
   }
 
   .logo {
-    height: 16px;
     margin-right: 5px;
   }
 

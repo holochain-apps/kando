@@ -1,3 +1,4 @@
+import { internalIpV4Sync } from "internal-ip";
 import { defineConfig } from 'vite';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { version, dnaVersion } from './package.json';  // Import version from package.json
@@ -9,11 +10,16 @@ export default defineConfig({
     minify: false
   },
   server: {
+    host: "0.0.0.0",
+    port: 1420,
+    strictPort: true,
     hmr: {
-        host: 'localhost',
+      protocol: "ws",
+      host: internalIpV4Sync(),
+      port: 1421,
     },
     watch: {
-        usePolling: true
+      usePolling: true
     }
   },
   define: {

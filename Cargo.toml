@@ -5,13 +5,19 @@ opt-level = "z"
 opt-level = "z"
 
 [workspace]
-members = ["dnas/*/zomes/coordinator/*", "dnas/*/zomes/integrity/*"]
+members = ["dnas/*/zomes/coordinator/*", "dnas/*/zomes/integrity/*", "src-tauri"]
 resolver = "2"
 
 [workspace.dependencies]
 hdi = "0.4.1"
 hdk = "0.3.1"
 serde = "1"
+
+[workspace.dependencies.file_storage]
+path = "dnas/kando/zomes/coordinator/file_storage"
+
+[workspace.dependencies.file_storage_integrity]
+path = "dnas/kando/zomes/integrity/file_storage"
 
 [workspace.dependencies.kando]
 path = "dnas/kando/zomes/coordinator/kando"
@@ -24,9 +30,3 @@ path = "dnas/kando/zomes/coordinator/profiles"
 
 [workspace.dependencies.profiles_integrity]
 path = "dnas/kando/zomes/integrity/profiles"
-
-[workspace.dependencies.file_storage]
-path = "dnas/kando/zomes/coordinator/file_storage"
-
-[workspace.dependencies.file_storage_integrity]
-path = "dnas/kando/zomes/integrity/file_storage"

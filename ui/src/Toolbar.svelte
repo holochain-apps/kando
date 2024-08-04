@@ -5,7 +5,8 @@
   import { getContext } from "svelte";
   import type { KanDoStore } from "./store";
   import SvgIcon from "./SvgIcon.svelte";
-
+  import ExternalLink from './ExternalLink.svelte';
+  
   const { getStore } :any = getContext("store");
   let store: KanDoStore = getStore();
 
@@ -13,7 +14,6 @@
   $: activeHash = store.boardList.activeBoardHash;
 
   export let profilesStore: ProfilesStore|undefined
-
 </script>
 
 <div class='toolbar'>
@@ -29,9 +29,9 @@
   <div class="items"><Search></Search></div>
   <div class="items">
     <Folk></Folk>
-    <a href="https://github.com/holochain-apps/kando/issues" title="Report a problem in our GitHub repo" target="_blank">
+    <ExternalLink href="https://github.com/holochain-apps/kando/issues" title="Report a problem in our GitHub repo">
       <div class="nav-button"><SvgIcon color="#fff" icon="faBug" size=20px /></div>
-    </a>
+    </ExternalLink>
   </div>
 </div>
 

@@ -3,7 +3,7 @@
   "version": "0.10.6",
   "dnaVersion": "0.10.0",
   "scripts": {
-    "start": "vite --clearScreen false --port $UI_PORT",
+    "start": "vite --clearScreen false",
     "build": "vite build",
     "build-check": "npm run check && vite build",
     "check": "svelte-check --tsconfig ./tsconfig.json",
@@ -31,7 +31,9 @@
     "emoji-picker-element": "1.18.3",
     "javascript-time-ago": "2.3.7",
     "@types/javascript-time-ago": "^2.0.3",
-    "highlight.js": "^11.9.0"
+    "highlight.js": "^11.9.0",
+    "@tauri-apps/plugin-shell": "^2.0.0-beta.8",
+    "@tauri-apps/plugin-os": "^2.0.0-beta.7"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^2.0.2",
@@ -41,7 +43,8 @@
     "svelte-check": "^2.10.3",
     "tslib": "^2.4.1",
     "typescript": "^4.9.3",
-    "vite": "^4.0.4"
+    "vite": "^4.0.4",
+    "internal-ip": "^7.0.0"
   },
   "type": "module"
 }

@@ -204,8 +204,8 @@
             <p style="display:flex;justify-content:center;font-size:110%;width:500px;">Our feedback system is public so the community can learn what others are saying about Moss and the various tools.  Thus that profile info you enter below will be visible to all Moss users.</p>
           </div>
         {:else}
-          <div class="welcome-text logo-frame">
-            <KDLogoIcon />
+          <div class="welcome-text">
+            <div><KDLogoIcon /></div>
           </div>
         {/if}
         <create-profile on:profile-created={() => {}}></create-profile>
@@ -255,9 +255,17 @@
 
 <style>
   .welcome-text {
-    margin: 40px;
+    margin: 40px 10px 40px 10px;
     border-radius: 20px;
     background-color: #3498db;
+    padding: 8%;
+    width: 100%;
+  }
+
+  @media screen and (min-width: 475px) {
+    .welcome-text {
+      width: 150%;
+    }
   }
   .welcome-text-feedback {
     margin-bottom:50px;
