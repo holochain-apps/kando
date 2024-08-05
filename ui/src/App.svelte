@@ -57,7 +57,6 @@
   initialize();
 
   async function initialize(): Promise<void> {
-    let profilesClient;
     if ((import.meta as any).env.DEV) {
       try {
         await initializeHotReload();
@@ -86,7 +85,7 @@
         await adminWebsocket.authorizeSigningCredentials(cellIds[0]);
       }
       console.log("appPort and Id is", appPort, appId);
-      const params: AppWebsocketConnectionOptions = { url: new URL(url) };
+      const params: AppWebsocketConnectionOptions = { url: new URL(url), defaultTimeout: 120000 };
       if (tokenResp) params.token = tokenResp.token;
       client = await AppWebsocket.connect(params);
     } else {
