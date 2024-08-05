@@ -974,17 +974,16 @@
         "versions": "versions_2"
       },
       "locked": {
-        "lastModified": 1722713399,
-        "narHash": "sha256-6GTEF9vBQehS3tSg6RHQYCj6wPWaixKLniDk2RUDss4=",
-        "owner": "mattyg",
+        "lastModified": 1722867574,
+        "narHash": "sha256-qbPRMkJUI/p4HSsbS8oSsXpbsDc8I6Bi3Q1yyv54CNw=",
+        "owner": "darksoil-studio",
         "repo": "p2p-shipyard",
-        "rev": "f3fc0d25bea41411d0347a5f381f91d5d3e9e572",
+        "rev": "4950bd68dd63b9d95a8697d2c4a8cf92cf28eb98",
         "type": "github"
       },
       "original": {
-        "owner": "mattyg",
+        "owner": "darksoil-studio",
         "repo": "p2p-shipyard",
-        "rev": "f3fc0d25bea41411d0347a5f381f91d5d3e9e572",
         "type": "github"
       }
     },
