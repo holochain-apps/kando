@@ -275,20 +275,19 @@
 
       <sl-button class="board-control"
         variant="primary"
-        disabled={!valuesValid || saving} 
+        disabled={!valuesValid || saving}
+        color="white"
         style="margin-left:10px; width:70px;" on:click={async () => {
           saving = true
           await handleSave(text, groups, labelDefs, categoryDefs, props, showArchived? showArchived.checked:false)
           saving = false
           }} >
           
-        <span >
           {#if saving}
             <div class="spinning"><SvgIcon icon=faSpinner></SvgIcon></div>
           {:else}
             Save
           {/if}
-        </span>
         
       </sl-button>
     </div>
