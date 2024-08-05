@@ -2239,6 +2239,7 @@
           ]
         },
         {
+          "description": "holochain:default -> Default permissions for the plugin",
           "type": "string",
           "enum": [
             "holochain:default"
