@@ -54,140 +54,147 @@
   let renderType = RenderType.App;
   let wal: WAL;
 
+  let initializationError
+
   initialize();
 
   async function initialize(): Promise<void> {
-    let profilesClient;
-    if ((import.meta as any).env.DEV) {
-      try {
-        await initializeHotReload();
-      } catch (e) {
-        console.warn(
-          "Could not initialize applet hot-reloading. This is only expected to work in a We context in dev mode."
-        );
+    try {
+      let profilesClient;
+      if ((import.meta as any).env.DEV) {
+        try {
+          await initializeHotReload();
+        } catch (e) {
+          console.warn(
+            "Could not initialize applet hot-reloading. This is only expected to work in a We context in dev mode."
+          );
+        }
       }
-    }
-    let tokenResp;
-    if (!isWeContext()) {
-      console.log("adminPort is", adminPort);
-      if (adminPort) {
-        const url = `ws://localhost:${adminPort}`;
-        console.log("connecting to admin port at:", url);
-        const adminWebsocket = await AdminWebsocket.connect({
-          url: new URL(url),
-        });
-        tokenResp = await adminWebsocket.issueAppAuthenticationToken({
-          installed_app_id: appId,
-        });
-        const x = await adminWebsocket.listApps({});
-        console.log("apps", x);
-        const cellIds = await adminWebsocket.listCellIds();
-        console.log("CELL IDS", cellIds);
-        await adminWebsocket.authorizeSigningCredentials(cellIds[0]);
-      }
-      console.log("appPort and Id is", appPort, appId);
-      const params: AppWebsocketConnectionOptions = { url: new URL(url) };
-      if (tokenResp) params.token = tokenResp.token;
-      client = await AppWebsocket.connect(params);
-    } else {
-      weaveClient = await WeaveClient.connect(appletServices);
+      let tokenResp;
+      if (!isWeContext()) {
+        console.log("adminPort is", adminPort);
+        if (adminPort) {
+          const url = `ws://localhost:${adminPort}`;
+          console.log("connecting to admin port at:", url);
+          const adminWebsocket = await AdminWebsocket.connect({
+            url: new URL(url),
+          });
+          tokenResp = await adminWebsocket.issueAppAuthenticationToken({
+            installed_app_id: appId,
+          });
+          const x = await adminWebsocket.listApps({});
+          console.log("apps", x);
+          const cellIds = await adminWebsocket.listCellIds();
+          console.log("CELL IDS", cellIds);
+          await adminWebsocket.authorizeSigningCredentials(cellIds[0]);
+        }
+        console.log("appPort and Id is", appPort, appId);
+        const params: AppWebsocketConnectionOptions = { url: new URL(url) };
+        if (tokenResp) params.token = tokenResp.token;
+        client = await AppWebsocket.connect(params);
+      } else {
+        weaveClient = await WeaveClient.connect(appletServices);
 
-      switch (weaveClient.renderInfo.type) {
-        case "applet-view":
-          switch (weaveClient.renderInfo.view.type) {
-            case "main":
-              // here comes your rendering logic for the main view
-              break;
-            case "block":
-              switch (weaveClient.renderInfo.view.block) {
-                case "active_boards":
-                  renderType = RenderType.BlockActiveBoards;
-                  break;
-                default:
-                  throw new Error(
-                    "Unknown applet-view block type:" +
-                      weaveClient.renderInfo.view.block
-                  );
-              }
-              break;
-            case "asset":
-              if (!weaveClient.renderInfo.view.recordInfo) {
-                throw new Error(
-                  "KanDo does not implement asset views pointing to DNAs instead of Records."
-                );
-              } else {
-                switch (weaveClient.renderInfo.view.recordInfo.roleName) {
-                  case "kando":
-                    switch (
-                      weaveClient.renderInfo.view.recordInfo.integrityZomeName
-                    ) {
-                      case "syn_integrity":
-                        switch (
-                          weaveClient.renderInfo.view.recordInfo.entryType
-                        ) {
-                          case "document":
-                            renderType = RenderType.Hrl;
-                            wal = weaveClient.renderInfo.view.wal;
-                            break;
-                          default:
-                            throw new Error(
-                              "Unknown entry type:" +
-                                weaveClient.renderInfo.view.recordInfo.entryType
-                            );
-                        }
-                        break;
-                      default:
-                        throw new Error(
-                          "Unknown integrity zome:" +
-                            weaveClient.renderInfo.view.recordInfo
-                              .integrityZomeName
-                        );
-                    }
+        switch (weaveClient.renderInfo.type) {
+          case "applet-view":
+            switch (weaveClient.renderInfo.view.type) {
+              case "main":
+                // here comes your rendering logic for the main view
+                break;
+              case "block":
+                switch (weaveClient.renderInfo.view.block) {
+                  case "active_boards":
+                    renderType = RenderType.BlockActiveBoards;
                     break;
                   default:
                     throw new Error(
-                      "Unknown role name:" +
-                        weaveClient.renderInfo.view.recordInfo.roleName
+                      "Unknown applet-view block type:" +
+                        weaveClient.renderInfo.view.block
                     );
                 }
-              }
-              break;
-            case "creatable":
-              switch (weaveClient.renderInfo.view.name) {
-                case "board":
-                  renderType = RenderType.CreateBoard;
-                  createView = weaveClient.renderInfo.view;
-              }
-              break;
-            default:
-              throw new Error("Unsupported applet-view type");
-          }
-          break;
-        case "cross-applet-view":
-          switch (this.weaveClient.renderInfo.view.type) {
-            case "main":
-            // here comes your rendering logic for the cross-applet main view
-            //break;
-            case "block":
-            //
-            //break;
-            default:
-              throw new Error("Unknown cross-applet-view render type.");
-          }
-          break;
-        default:
-          throw new Error("Unknown render view type");
-      }
+                break;
+              case "asset":
+                if (!weaveClient.renderInfo.view.recordInfo) {
+                  throw new Error(
+                    "KanDo does not implement asset views pointing to DNAs instead of Records."
+                  );
+                } else {
+                  switch (weaveClient.renderInfo.view.recordInfo.roleName) {
+                    case "kando":
+                      switch (
+                        weaveClient.renderInfo.view.recordInfo.integrityZomeName
+                      ) {
+                        case "syn_integrity":
+                          switch (
+                            weaveClient.renderInfo.view.recordInfo.entryType
+                          ) {
+                            case "document":
+                              renderType = RenderType.Hrl;
+                              wal = weaveClient.renderInfo.view.wal;
+                              break;
+                            default:
+                              throw new Error(
+                                "Unknown entry type:" +
+                                  weaveClient.renderInfo.view.recordInfo.entryType
+                              );
+                          }
+                          break;
+                        default:
+                          throw new Error(
+                            "Unknown integrity zome:" +
+                              weaveClient.renderInfo.view.recordInfo
+                                .integrityZomeName
+                          );
+                      }
+                      break;
+                    default:
+                      throw new Error(
+                        "Unknown role name:" +
+                          weaveClient.renderInfo.view.recordInfo.roleName
+                      );
+                  }
+                }
+                break;
+              case "creatable":
+                switch (weaveClient.renderInfo.view.name) {
+                  case "board":
+                    renderType = RenderType.CreateBoard;
+                    createView = weaveClient.renderInfo.view;
+                }
+                break;
+              default:
+                throw new Error("Unsupported applet-view type");
+            }
+            break;
+          case "cross-applet-view":
+            switch (this.weaveClient.renderInfo.view.type) {
+              case "main":
+              // here comes your rendering logic for the cross-applet main view
+              //break;
+              case "block":
+              //
+              //break;
+              default:
+                throw new Error("Unknown cross-applet-view render type.");
+            }
+            break;
+          default:
+            throw new Error("Unknown render view type");
+        }
 
-      client = weaveClient.renderInfo.appletClient;
+        client = weaveClient.renderInfo.appletClient;
+      }
+    
+      kandoCloneManagerStore = new KanDoCloneManagerStore(
+        client,
+        weaveClient
+      );
+      await kandoCloneManagerStore.activeStore.load();
+      connected = true;
     }
-  
-    kandoCloneManagerStore = new KanDoCloneManagerStore(
-      client,
-      weaveClient
-    );
-    await kandoCloneManagerStore.activeStore.load();
-    connected = true;
+    catch (e) {
+      initializationError = e
+    }
   }
 
   setContext("cloneManagerStore", {
@@ -247,10 +254,24 @@
     {/if}
   </profiles-context>
 {:else}
-  <div class="loading"><div class="loader"></div></div>
+  {#if initializationError}
+    <div class="init-error">
+      <h3>Initialization Error: </h3>
+        {initializationError}
+    </div>
+  {:else}
+    <div class="loading"><div class="loader"></div></div>
+  {/if}
 {/if}
 
 <style>
+  .init-error {
+    display:flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-top: 100px;
+  }
   .welcome-text {
     margin: 40px 10px 40px 10px;
     border-radius: 20px;
