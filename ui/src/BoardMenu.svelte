@@ -54,6 +54,8 @@
     }
 
     const loadWeaveGroupName = async () => {
+        if(!store.weaveClient) return;
+        
         const appletInfo = await store.weaveClient.appletInfo(store.weaveClient.renderInfo.appletHash);
         const groupProfile = await store.weaveClient.groupProfile(appletInfo.groupsHashes[0]);
         weaveGroupName = groupProfile.name;
