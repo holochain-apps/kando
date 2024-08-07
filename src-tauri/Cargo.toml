@@ -32,3 +32,10 @@ url2 = "0.0.6"
 app_dirs2 = "2.5.5"
 anyhow = "1"
 serde_json = "1.0.120"
+
+[profile.release]
+strip = true
+opt-level = "z"
+lto = true
+codegen-units = 1
+panic = "abort"
