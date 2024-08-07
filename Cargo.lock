@@ -813,7 +813,7 @@ dependencies = [
 [[package]]
 name = "hc_zome_syn_coordinator"
 version = "0.1.0"
-source = "git+https://github.com/holochain/syn?branch=fix/reactivity-on-new-document#84b9228160f09070371c6e79c7809759306f4f71"
+source = "git+https://github.com/holochain/syn?branch=for-hdk-v0.3.1#28e1cbfe19049f6d782d9a62a687d11c9c8f2183"
 dependencies = [
  "hc_zome_syn_integrity",
  "hdk",
@@ -824,7 +824,7 @@ dependencies = [
 [[package]]
 name = "hc_zome_syn_integrity"
 version = "0.1.0"
-source = "git+https://github.com/holochain/syn?branch=fix/reactivity-on-new-document#84b9228160f09070371c6e79c7809759306f4f71"
+source = "git+https://github.com/holochain/syn?branch=for-hdk-v0.3.1#28e1cbfe19049f6d782d9a62a687d11c9c8f2183"
 dependencies = [
  "hdi",
  "serde",
