@@ -2,7 +2,7 @@
   description = "Flake for Holochain app development";
 
   inputs = {
-    holonix.url = "github:holochain/holonix?ref=main";
+    holonix.url = "github:holochain/holonix?ref=main-0.3";
     p2p-shipyard.url = "github:mattyg/p2p-shipyard?ref=refactor/switch-to-new-holonix";
 
     nixpkgs.follows = "holonix/nixpkgs";
