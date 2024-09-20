@@ -17,7 +17,7 @@
   import ClickEdit from './ClickEdit.svelte';
   import AttachmentsList from './AttachmentsList.svelte';
   import AttachmentsDialog from "./AttachmentsDialog.svelte"
-  import type { WAL } from '@lightningrodlabs/we-applet';
+  import type { WAL } from '@theweave/api';
 
   
   const { getStore } :any = getContext("store");

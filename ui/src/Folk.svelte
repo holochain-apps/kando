@@ -5,7 +5,7 @@
     import type { KanDoStore } from "./stores/kando";
     import Avatar from './Avatar.svelte';
     import { get } from 'svelte/store';    
-    import { isWeContext } from '@lightningrodlabs/we-applet';
+    import { isWeContext } from '@theweave/api';
 
     const { getStore } :any = getContext('store');
     const store:KanDoStore = getStore();

@@ -21,7 +21,7 @@
   import hljs from 'highlight.js';
   import AttachmentsList from './AttachmentsList.svelte';
   import AttachmentsDialog from "./AttachmentsDialog.svelte"
-  import type { WAL } from "@lightningrodlabs/we-applet";
+  import type { WAL } from "@theweave/api";
   import DisableForOs from "./DisableForOs.svelte";
   import FeedElement from "./FeedElement.svelte";
 

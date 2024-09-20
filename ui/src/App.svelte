@@ -17,7 +17,7 @@
     isWeContext,
     initializeHotReload,
     type WAL,
-  } from "@lightningrodlabs/we-applet";
+  } from "@theweave/api";
   import "@holochain-open-dev/profiles/dist/elements/profiles-context.js";
   import "@holochain-open-dev/profiles/dist/elements/profile-prompt.js";
   import "@holochain-open-dev/profiles/dist/elements/create-profile.js";

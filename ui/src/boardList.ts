@@ -1,13 +1,13 @@
 import { LazyHoloHashMap } from "@holochain-open-dev/utils";
 import { derived, get, writable, type Readable, type Writable } from "svelte/store";
-import { type EntryHash, type EntryHashB64, encodeHashToBase64 } from "@holochain/client";
+import { type EntryHash, type EntryHashB64, encodeHashToBase64, decodeHashFromBase64, type DnaHash } from "@holochain/client";
 import {toPromise, type AsyncReadable, pipe, joinAsync, asyncDerived, sliceAndJoin, alwaysSubscribed} from '@holochain-open-dev/stores'
 import { SynStore, WorkspaceStore, stateFromCommit } from "@holochain-syn/core";
 import type { ProfilesStore } from "@holochain-open-dev/profiles";
 import { cloneDeep } from "lodash";
-import { Board, feedItems, type BoardState, deltaToFeedString, feedItemShouldNotify, MAX_FEED_ITEMS } from "./board";
+import { Board, feedItems, type BoardState, deltaToFeedString, feedItemShouldNotify, MAX_FEED_ITEMS, getDeltaCardData } from "./board";
 import { hashEqual } from "./utils/util";
-import type { WeaveClient } from "@lightningrodlabs/we-applet";
+import type { WAL, WeaveClient } from "@theweave/api";
 import { NotificationType, SeenType } from "./stores/kando";
 
 export enum BoardType {
@@ -91,18 +91,27 @@ export class BoardList {
                                                     body=`${body} to:`
                                                     feedItem.content.delta.agents.forEach(agent=>body=`${body} ${agent}`)
                                                 }
+                                                const [cardId, cardTitle] = getDeltaCardData(boardState,feedItem.content.delta)
+                                                const aboutWal = { hrl: [this.dnaHash, this.activeBoardHash], context: "" }
+                                                if (cardId) {
+                                                    aboutWal.context = cardId
+                                                }
+                                                
                                                 notifications.push({
                                                     title: `${boardState.name} updated`,
                                                     body,
-                                                    notification_type: "change",
+                                                    notification_type: feedItem.content.delta.type,
                                                     icon_src: undefined,
                                                     urgency: notifyType,
+                                                    fromAgent: decodeHashFromBase64(feedItem.author),
+                                                    aboutWal,
                                                     timestamp
                                                 })
                                             }
                                             this.notifiedItems[key] = timestamp
                                         }
                                     })
+                                    console.log("FISH:", notifications)
                                     if (notifications.length > 0) {
                                         this.weaveClient.notifyFrame(notifications)
                                     }
@@ -127,7 +136,7 @@ export class BoardList {
             return {board,latestState, tip: tip ? tip.entryHash: undefined}}))
     })
         
-    constructor(public profilesStore: ProfilesStore, public synStore: SynStore, public weaveClient : WeaveClient, public notifications: Readable<{[key: string]: NotificationType}>) {
+    constructor(public profilesStore: ProfilesStore, public dnaHash:DnaHash, public synStore: SynStore, public weaveClient : WeaveClient, public notifications: Readable<{[key: string]: NotificationType}>) {
     
         const boardHashes = asyncDerived(this.synStore.documentsByTag.get(BoardType.active),x=>Array.from(x.keys()))
         this.activeBoardHashes = boardHashes

@@ -3,7 +3,7 @@ import type { BoardEphemeralState, BoardState } from './board';
 import { asyncDerived, pipe, sliceAndJoin, toPromise } from '@holochain-open-dev/stores';
 import { BoardType } from './boardList';
 import { LazyHoloHashMap } from '@holochain-open-dev/utils';
-import type { AppletHash, AppletServices, AssetInfo, RecordInfo, WAL, WeaveServices } from '@lightningrodlabs/we-applet';
+import type { AppletHash, AppletServices, AssetInfo, RecordInfo, WAL, WeaveServices } from '@theweave/api';
 import { getMyDna } from './utils/util';
 import type { AppClient, RoleName } from '@holochain/client';
 

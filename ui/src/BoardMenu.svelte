@@ -11,7 +11,7 @@
     import KDLogoIcon from "./icons/KDLogoIcon.svelte";
     import BoardMenuItem from "./BoardMenuItem.svelte";
     import { BoardType } from "./boardList";
-    import { isWeContext } from "@lightningrodlabs/we-applet";
+    import { isWeContext } from "@theweave/api";
     import { UngroupedName } from "./board";
     import CloneManagerDialog from "./CloneManagerDialog.svelte";
     import CloneManagerShareDialog from "./CloneManagerShareDialog.svelte";

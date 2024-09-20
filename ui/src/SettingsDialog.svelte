@@ -9,7 +9,7 @@
     import { deserializeExport, exportBoards } from "./export";
     import { DocumentStore, WorkspaceStore } from "@holochain-syn/core";
     import { encodeHashToBase64 } from "@holochain/client";
-    import { isWeContext } from "@lightningrodlabs/we-applet";
+    import { isWeContext } from "@theweave/api";
     import DisableForOs from "./DisableForOs.svelte";
 
     const { getStore } :any = getContext('store');

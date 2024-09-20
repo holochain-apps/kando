@@ -3,10 +3,10 @@
   import { createEventDispatcher, getContext } from "svelte";
   import type { KanDoStore } from "./stores/kando";
   import type {  WALUrl } from "./utils/util";
-  import { weaveUrlToWAL } from "@lightningrodlabs/we-applet";
+  import { weaveUrlToWAL } from "@theweave/api";
   import SvgIcon from "./SvgIcon.svelte";
   import { hrlToString } from "@holochain-open-dev/utils";
-  import '@lightningrodlabs/we-elements/dist/elements/wal-embed.js';
+  import '@theweave/elements/dist/elements/wal-embed.js';
 
   const dispatch = createEventDispatcher()
 

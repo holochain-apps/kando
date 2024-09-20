@@ -1,5 +1,5 @@
 import { type AppClient, type EntryHash, type DnaHash, CellType } from "@holochain/client";
-//import type { HrlB64WithContext, WAL } from "@lightningrodlabs/we-applet";
+//import type { HrlB64WithContext, WAL } from "@theweave/api";
 
 export function onVisible(element, callback) {
     new IntersectionObserver((entries, observer) => {

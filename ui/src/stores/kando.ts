@@ -17,7 +17,7 @@ import type { v1 as uuidv1 } from "uuid";
 import { derived, get, writable, type Unsubscriber, type Writable } from "svelte/store";
 import { ProfilesStore } from '@holochain-open-dev/profiles';
 import { UngroupedName, type BoardState } from '../board';
-import type { WeaveClient } from '@lightningrodlabs/we-applet';
+import type { WeaveClient } from '@theweave/api';
 import { HoloHashMap } from '@holochain-open-dev/utils';
 import { KanDoCloneManagerStore } from './cloneManager';
 
@@ -126,7 +126,7 @@ export class KanDoStore {
                     break;
             }
         }
-        this.boardList = new BoardList(this.profilesStore, this.synStore, this.weaveClient, derived(this.uiProps, props=>props.notifications))
+        this.boardList = new BoardList(this.profilesStore, this.dnaHash, this.synStore, this.weaveClient, derived(this.uiProps, props=>props.notifications))
         this.boardList.activeBoard.subscribe((board)=>{
             if (this.unsub) {
                 this.unsub()
