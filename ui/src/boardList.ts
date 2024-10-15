@@ -92,7 +92,7 @@ export class BoardList {
                                                     feedItem.content.delta.agents.forEach(agent=>body=`${body} ${agent}`)
                                                 }
                                                 const [cardId, cardTitle] = getDeltaCardData(boardState,feedItem.content.delta)
-                                                const aboutWal = { hrl: [this.dnaHash, this.activeBoardHash], context: "" }
+                                                const aboutWal = { hrl: [this.dnaHash, get(this.activeBoardHash)], context: "" }
                                                 if (cardId) {
                                                     aboutWal.context = cardId
                                                 }
@@ -111,7 +111,6 @@ export class BoardList {
                                             this.notifiedItems[key] = timestamp
                                         }
                                     })
-                                    console.log("FISH:", notifications)
                                     if (notifications.length > 0) {
                                         this.weaveClient.notifyFrame(notifications)
                                     }

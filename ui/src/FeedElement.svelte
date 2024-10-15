@@ -100,7 +100,7 @@
     {#if delta.type == "add-card"}
       added
       {#if context}
-        to <strong>${context.group.name}</strong>
+        to <strong>{context.group.name}</strong>
       {/if}
     {/if}
     {#if delta.type == "update-card-group"}
