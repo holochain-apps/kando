@@ -32,7 +32,7 @@
     "tauri": "tauri"
   },
   "devDependencies": {
-    "@theweave/cli": "0.13.0-gamma.2",
+    "@theweave/cli": "0.13.0-gamma.3",
     "@holochain/hc-spin": "^0.400.0-dev.3",
     "@holochain-playground/cli": "^0.1.1",
     "@rollup/plugin-typescript": "^8.0.0",
