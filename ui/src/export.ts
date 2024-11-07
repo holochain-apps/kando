@@ -56,7 +56,6 @@ export const deserializeExport = (jsonExport:string) : Array<BoardState> => {
                 board.props.attachments = []
             }
             for (const card of board.cards) {
-                console.log("CARD", card.props.attachments, (card.props.attachments[0] && typeof(card.props.attachments[0]) != "string"))
                 if (!card.props.attachments || (card.props.attachments[0] && typeof(card.props.attachments[0]) != "string")) {
                     card.props.attachments = []
                 }

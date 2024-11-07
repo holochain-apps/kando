@@ -127,6 +127,11 @@
   $: x = hashChanged($activeHashB64)
 
   const sorted = (itemIds, sortFn)=> {
+    if (!itemIds) {
+      // TODO: don't know how this could happen, maybe a bad AutoMerge?
+      console.log("Error: grouping was null, export and re-fix")
+      return []
+    }
     // The filter removes any undefineds for cards that end up not existing in the map.
     // TODO: find out how that happens!
     var items = itemIds.map((id)=>cardsMap[id]).filter(x=>x)  
