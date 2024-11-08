@@ -508,8 +508,7 @@ export interface BoardState {
         else
           return notifications['assignedAny']
         break;
-        case "update-card-comment":
-        case "update-card-comment":{
+      case "update-card-comment":{
         const card = _getCardFromDelta(state, delta.id)
         if (card) {
             if (card.creator == me || card.props.agents.includes(me))
