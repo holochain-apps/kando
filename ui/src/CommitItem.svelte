@@ -2,7 +2,7 @@
   import { type AsyncReadable } from "@holochain-open-dev/stores";
   import { EntryRecord } from "@holochain-open-dev/utils";
   import { type Commit } from "@holochain-syn/core";
-  import { getContext, createEventDispatcher } from "svelte";
+  import { getContext } from "svelte";
   import type { KanDoStore } from "./stores/kando";
   import Avatar from "./Avatar.svelte";
   import { stateFromCommit } from "@holochain-syn/core";
@@ -12,12 +12,13 @@
     type ActionHash,
   } from "@holochain/client";
   import { hashEqual } from "./utils/util";
-  import { group_outros } from "svelte/internal";
   import { _getCard } from "./board";
+  import { exportBoard } from "./export";
+  import SvgIcon from "./SvgIcon.svelte";
+  import '@shoelace-style/shoelace/dist/components/button/button.js';
 
   const { getStore }: any = getContext("store");
   let store: KanDoStore = getStore();
-  const dispatch = createEventDispatcher();
 
   export let commit: AsyncReadable<EntryRecord<Commit>>;
   $: commitEntry = commit;
@@ -39,9 +40,21 @@
       else showCommit[h] = undefined;
     }}
   >
+    
     <Avatar size={20} agentPubKey={entry.action.author} />
     {store.timeAgo.format(new Date(entry.action.timestamp))}
     {#if showCommit[encodeHashToBase64(entry.actionHash)]}
+    <sl-button size="small" title="Export"
+    on:click={(e) => {
+      e.stopPropagation()
+      exportBoard(state);
+    }}
+    ><SvgIcon
+                  icon="faFileExport"
+                  style="background: transparent; opacity: .5; position: relative; top: -2px;"
+                  size="14px"
+                />
+    </sl-button>
       <div>
         Steward: <Avatar
           size={20}
@@ -52,7 +65,7 @@
         {#each state.groups as group}
           {@const grouping = state.grouping[group.id]}
           <div class="column">
-            <div>
+            <div class="column-title">
               {#if group.id == "_"}
                 Archive
               {:else}
@@ -62,8 +75,8 @@
             {#if grouping}
               {#each grouping as cardId}
                 {@const [card, idx] = _getCard(state, cardId)}
-                <div class="card-item" title={card.props.description}>
-                  {card.props.title}
+                <div class="card-item" title={`${card.props.title}:${card.props.description}`}>
+                  {card.props.title.length>10 ? `${card.props.title.slice(0,10)}...` : card.props.title}
                   {#if card.props.description}...{/if}
                 </div>
               {/each}
@@ -79,9 +92,24 @@
   .columns {
     display: flex;
     flex-direction: row;
+    margin-top: 4px;
   }
   .column {
-    padding: 5px;
+    padding: 0px 5px;
+    margin-right: 4px;
+    border-radius: 2px;
+    font-size: 80%;
+    max-width: 80px;
+    background-color: lightgray;
+
+  }
+  .column-title {
+    font-weight: bold;
+  }
+  .card-item {
+    border-radius: 2px;
+    margin-bottom: 2px;
+    background-color: white;
   }
   .commit {
     cursor: pointer;
