@@ -21,7 +21,7 @@
   } from "./board";
   import EditBoardDialog from "./EditBoardDialog.svelte";
   import Avatar from "./Avatar.svelte";
-  import { decodeHashFromBase64, type Timestamp } from "@holochain/client";
+  import { type ActionHash, decodeHashFromBase64, encodeHashToBase64, type Timestamp } from "@holochain/client";
   import { cloneDeep, isEqual } from "lodash";
   import "@shoelace-style/shoelace/dist/components/dropdown/dropdown.js";
   import "@shoelace-style/shoelace/dist/components/textarea/textarea.js";
@@ -37,6 +37,7 @@
   import DisableForOs from "./DisableForOs.svelte";
   import FeedElement from "./FeedElement.svelte";
   import CommitItem from "./CommitItem.svelte";
+  import { HoloHashMap } from "@holochain-open-dev/utils";
 
   onMount(async () => {
     onVisible(columnNameElem, () => {
@@ -478,6 +479,8 @@
   }
 
   let rightPane = RightPane.None;
+
+  let showCommits = {}
 </script>
 
 <div class="background">
@@ -698,8 +701,17 @@
           {#if $commits.status=="complete"}
             <div class="commit-items">
               {#each Array.from($commits.value.entries()).reverse() as [commitHash,commit]}
-                <CommitItem 
-                  commit={commit}></CommitItem>
+                {@const commitHashB64=encodeHashToBase64(commitHash)}
+                <CommitItem showCommit={showCommits[commitHashB64]}
+                on:toggle-commit = {()=>{
+                  if (showCommits[commitHashB64]) {
+                    showCommits[commitHashB64] = false
+                  } else {
+                    showCommits[commitHashB64] = true
+                  }
+                }}
+                  commit={commit}>
+                </CommitItem>
               {/each}
             </div>
           {/if}
