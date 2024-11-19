@@ -278,7 +278,7 @@
 {/if}
 
 <div class='card-editor'>
-  <div class="card-wrapper">
+  <div class={`card-wrapper ${showControls ? "card-wrapper-drawer" : "card-wrapper-standalone"}`}>
     <div class="card-elements">
       
       {#if categories.length > 0}
@@ -586,7 +586,7 @@
       </div>
     </sl-dialog>
 
-    <div class="comments card-section">
+    <div class={`comments card-section ${showControls ? "" : "card-section-standalone"}`}>
       <div class="card-label">Comments <span class="comment-count">{card ? Object.keys(card.comments).length:""}</span></div>
 
       <div class="add-comment">
@@ -696,8 +696,15 @@
   }
 
   .card-wrapper {
-    max-height: calc(100vh - 160px);
     overflow-x: auto;
+  }
+
+  .card-wrapper-drawer {
+    height: calc(100vh - 170px );
+  }
+
+  .card-wrapper-standalone {
+    height:  100vh;
   }
 
   .card-wrapper::-webkit-scrollbar {
@@ -781,7 +788,11 @@
   }
 
   .comments.card-section {
-    padding-bottom: 40px;
+    padding-bottom: 0px;
+  }  
+  
+  .comments.card-section-standalone {
+    padding-bottom: 70px;
   }
 
   .comments .card-label {
