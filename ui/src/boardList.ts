@@ -93,12 +93,12 @@ export class BoardList {
                                                 }
                                                 const [cardId, cardTitle] = getDeltaCardData(boardState,feedItem.content.delta)
                                                 const aboutWal = { hrl: [this.dnaHash, get(this.activeBoardHash)], context: "" }
-                                                if (cardId) {
-                                                    aboutWal.context = cardId
-                                                }
+                                                // if (cardId) {
+                                                //     aboutWal.context = cardId
+                                                // }
                                                 
                                                 notifications.push({
-                                                    title: `${boardState.name} updated`,
+                                                    title: `${cardId ? cardTitle : boardState.name} updated`,
                                                     body,
                                                     notification_type: feedItem.content.delta.type,
                                                     icon_src: undefined,
