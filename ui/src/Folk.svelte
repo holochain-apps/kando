@@ -5,7 +5,7 @@
     import type { KanDoStore } from "./stores/kando";
     import Avatar from './Avatar.svelte';
     import { get } from 'svelte/store';    
-    import { isWeContext } from '@theweave/api';
+    import { isWeaveContext } from '@theweave/api';
 
     const { getStore } :any = getContext('store');
     const store:KanDoStore = getStore();
@@ -26,7 +26,7 @@
     }
 
 </script>
-{#if !isWeContext()}
+{#if !isWeaveContext()}
     <div class="nav-button " on:click={editAvatar} title={myName ? myName:"Edit Avatar"}>
         <Avatar size={28} agentPubKey={store.myAgentPubKey} placeholder={true} showNickname={false}/>
     </div>

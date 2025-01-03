@@ -25,7 +25,7 @@
             This project's real-time syncronization is powered by <a href="https://github.com/holochain/syn">Syn</a>, 
             a library that makes it really easy to build this kind of real-time collaboaration into Holochain apps.
         </p>
-    <p class="small">Copyright © 2023-2024 Holochain Foundation.  This software is distributed under the MIT License</p>
+    <p class="small">Copyright © 2023-2025 Holochain Foundation.  This software is distributed under the MIT License</p>
     
     </div>
 </sl-dialog>

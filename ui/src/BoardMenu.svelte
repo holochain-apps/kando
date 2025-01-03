@@ -11,7 +11,7 @@
     import KDLogoIcon from "./icons/KDLogoIcon.svelte";
     import BoardMenuItem from "./BoardMenuItem.svelte";
     import { BoardType } from "./boardList";
-    import { isWeContext } from "@theweave/api";
+    import { isWeaveContext } from "@theweave/api";
     import { UngroupedName } from "./board";
     import CloneManagerDialog from "./CloneManagerDialog.svelte";
     import CloneManagerShareDialog from "./CloneManagerShareDialog.svelte";
@@ -67,7 +67,7 @@
 <div class="board-menu"
     class:wide={wide} >
 
-    {#if !isWeContext() && !USING_FEEDBACK}
+    {#if !isWeaveContext() && !USING_FEEDBACK}
         <GroupParticipants/>
     {/if}
         <h3 class="type-header">Boards</h3>
@@ -153,7 +153,7 @@
             <KDLogoIcon />
         </div>
         <div>
-            {#if isWeContext()}
+            {#if isWeaveContext()}
                 <div on:click={()=>cloneManagerShareDialog.open()} style="background-color:  #164B9A; padding: 3px 5px; border-radius: 10px;">
                     <div style="display: flex; justify-content: flex-start; align-items: center">
                         <div style="margin-right: 10px; font-weight: bold; color: #fff">{weaveGroupName}</div>
@@ -179,7 +179,7 @@
 
 <AboutDialog bind:this={aboutDialog} />
 <SettingsDialog bind:this={settingsDialog} />
-{#if isWeContext()}
+{#if isWeaveContext()}
     <CloneManagerShareDialog bind:this={cloneManagerShareDialog} cell={$activeCellInfoNormalized} name={weaveGroupName}/>
 {:else}
     <CloneManagerDialog bind:this={cloneManagerDialog} />

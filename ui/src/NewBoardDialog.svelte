@@ -21,6 +21,7 @@
         state.feed[newFeedKey(store.myAgentPubKeyB64)] = {delta:{type:"create", name}, context:null}
         const board = await store.boardList.makeBoard(state)
         await board.join()        
+        await board.leave()        
         store.setUIprops({showMenu:false})
         dialog.hide()
         await store.boardList.setActiveBoard(board.hash)

@@ -9,7 +9,7 @@
     import { deserializeExport, exportBoards } from "./export";
     import { DocumentStore, WorkspaceStore } from "@holochain-syn/core";
     import { encodeHashToBase64 } from "@holochain/client";
-    import { isWeContext } from "@theweave/api";
+    import { isWeaveContext } from "@theweave/api";
     import DisableForOs from "./DisableForOs.svelte";
 
     const { getStore } :any = getContext('store');
@@ -79,7 +79,7 @@
 
 <sl-dialog label="Extras" bind:this={dialog} width={1000} >
     <div style="display:flex;flex-direction:column">
-        {#if isWeContext()}
+        {#if isWeaveContext()}
             <div class="notifications">
                 <h3>Notification Settings</h3>
                 <div class="options">

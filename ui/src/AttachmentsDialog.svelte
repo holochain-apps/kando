@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { isWeContext, type WAL, weaveUrlFromWal } from "@theweave/api";
+  import { isWeaveContext, type WAL, weaveUrlFromWal } from "@theweave/api";
   import { cloneDeep } from "lodash";
   import type { Board, Card } from "./board";
   import { getContext } from "svelte";
@@ -70,7 +70,7 @@
 </script>
 
 <sl-dialog label={card? "Card Links":"Board Links"} bind:this={dialog}>
-  {#if isWeContext()}
+  {#if isWeaveContext()}
   <AttachmentsList attachments={attachments}
       on:remove-attachment={(e)=>removeAttachment(e.detail)}/>
 

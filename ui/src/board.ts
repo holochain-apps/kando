@@ -1012,9 +1012,10 @@ export class Board {
   }
 
   async join() {
-    if (! this.session) 
+    if (! this.session) {
       this.session = await this.workspace.joinSession()
-    console.log("JOINED", this.session)
+      console.log("JOINED", this.session)
+    }
   }
   
   async leave() {

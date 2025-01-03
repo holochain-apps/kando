@@ -14,7 +14,7 @@
   import "highlight.js/styles/github.css";
   import {
     WeaveClient,
-    isWeContext,
+    isWeaveContext,
     initializeHotReload,
     type WAL,
   } from "@theweave/api";
@@ -70,7 +70,7 @@
         }
       }
       let tokenResp;
-      if (!isWeContext()) {
+      if (!isWeaveContext()) {
         console.log("adminPort is", adminPort);
         if (adminPort) {
           const url = `ws://localhost:${adminPort}`;
