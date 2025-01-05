@@ -269,7 +269,7 @@
 
   const walToPocket = () => {
     const attachment: WAL = { hrl: [store.dnaHash, $activeBoard.hash], context: cardId }
-    store.weaveClient?.walToPocket(attachment)
+    store.weaveClient?.assets.assetToPocket(attachment)
   }
 </script>
 

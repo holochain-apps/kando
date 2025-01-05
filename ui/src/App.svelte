@@ -165,7 +165,7 @@
                 throw new Error("Unsupported applet-view type");
             }
             break;
-          case "cross-applet-view":
+          case "cross-group-view":
             switch (this.weaveClient.renderInfo.view.type) {
               case "main":
               // here comes your rendering logic for the cross-applet main view
@@ -174,7 +174,7 @@
               //
               //break;
               default:
-                throw new Error("Unknown cross-applet-view render type.");
+                throw new Error("Unknown cross-group-view render type.");
             }
             break;
           default:

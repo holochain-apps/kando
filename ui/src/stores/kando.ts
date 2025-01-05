@@ -15,11 +15,11 @@ import TimeAgo from "javascript-time-ago"
 import en from 'javascript-time-ago/locale/en'
 import type { v1 as uuidv1 } from "uuid";
 import { derived, get, writable, type Unsubscriber, type Writable } from "svelte/store";
-import { ProfilesStore } from '@holochain-open-dev/profiles';
+import type { ProfilesStore } from '@holochain-open-dev/profiles';
 import { UngroupedName, type BoardState } from '../board';
 import type { WeaveClient } from '@theweave/api';
 import { HoloHashMap } from '@holochain-open-dev/utils';
-import { KanDoCloneManagerStore } from './cloneManager';
+import type { KanDoCloneManagerStore } from './cloneManager';
 
 // @ts-ignore
 export const USING_FEEDBACK :boolean | undefined = window.__USING_FEEDBACK || (import.meta as any).env.VITE_USING_FEEDBACK

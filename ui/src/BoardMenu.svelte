@@ -56,6 +56,7 @@
     const loadWeaveGroupName = async () => {
         if(!store.weaveClient) return;
         
+        //@ts-ignore  this should only be called in applet-view so there will always be an appletHash
         const appletInfo = await store.weaveClient.appletInfo(store.weaveClient.renderInfo.appletHash);
         const groupProfile = await store.weaveClient.groupProfile(appletInfo.groupsHashes[0]);
         weaveGroupName = groupProfile.name;

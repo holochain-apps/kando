@@ -469,7 +469,7 @@
       hrl: [store.dnaHash, activeBoard.hash],
       context: "",
     };
-    store.weaveClient?.walToPocket(attachment);
+    store.weaveClient?.assets.assetToPocket(attachment);
   };
 
   enum RightPane {

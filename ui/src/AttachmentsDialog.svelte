@@ -38,10 +38,10 @@
   }
 
   const addAttachment = async () => {
-    const wal = await store.weaveClient.userSelectWal()
+    const wal = await store.weaveClient.assets.userSelectAsset()
     if (wal) {
-      const srcHrl: WAL = card ? {hrl:[store.dnaHash, activeBoard.hash],context:card.id}: {hrl:[store.dnaHash, activeBoard.hash]}
-      await store.weaveClient.requestBind(srcHrl, wal)
+  //    const srcHrl: WAL = card ? {hrl:[store.dnaHash, activeBoard.hash],context:card.id}: {hrl:[store.dnaHash, activeBoard.hash]}
+  //    await store.weaveClient.assets.(srcHrl, wal)
       _addAttachment(wal)
     }
   }
