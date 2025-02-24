@@ -4,6 +4,7 @@
     import { SynStore } from '@holochain-syn/store';
     import { SynClient } from '@holochain-syn/core';
     import { Board } from './board';
+    import { type WAL } from '@theweave/api';
 
     export let store: KanDoStore;
     export let view
@@ -19,6 +20,19 @@
     });
   let inputElement
   let disabled = true
+  const handleCreate = async ()=>{
+    try {
+      const synStore = new SynStore(new SynClient(store.client, store.roleName));
+      //const hrlB64 = hrlWithContextToB64(attachToWAL)
+      const board = await Board.Create(synStore, {/*boundTo:[hrlB64]*/name: inputElement.value})
+      const boardWal:WAL = { hrl: [store.dnaHash, board.hash], context: "" }
+      await store.weaveClient.assets.addAssetRelation(boardWal, boardWal);
+      await view.resolve(boardWal)
+    } catch(e) {
+      console.log("ERR",e)
+      view.reject(e)
+    }
+  }
 </script>
   <div class="flex-scrollable-parent">
     <div class="flex-scrollable-container">
@@ -38,17 +52,7 @@
               style="margin-left:10px;"
               variant="primary"
               disabled={disabled}
-              on:click={async ()=>{
-              try {
-                const synStore = new SynStore(new SynClient(store.client, store.roleName));
-                //const hrlB64 = hrlWithContextToB64(attachToWAL)
-                const board = await Board.Create(synStore, {/*boundTo:[hrlB64]*/name: inputElement.value})
-                view.resolve({hrl:[store.dnaHash, board.hash]})
-              } catch(e) {
-                console.log("ERR",e)
-                view.reject(e)
-              }
-            }}>Create</sl-button>
+              on:click={handleCreate}>Create</sl-button>
           </div>
         </div>
         </div>

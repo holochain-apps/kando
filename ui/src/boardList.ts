@@ -258,6 +258,13 @@ export class BoardList {
             options.name = "untitled"
         }
         const board = await Board.Create(this.synStore, options)
+
+        if (this.weaveClient) {
+            const boardWal: WAL = { hrl: [this.dnaHash, board.hash], context: "" }
+            //const toolWal: WAL = {hrl: [this.dnaHash, NULL_HASH] }
+            await this.weaveClient.assets.addAssetRelation(boardWal, boardWal);
+        }
+
         return board
     }
 }
