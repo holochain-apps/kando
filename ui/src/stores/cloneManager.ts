@@ -45,7 +45,7 @@ export class KanDoCloneManagerStore {
         $activeDnaHash = get(this.activeDnaHash);
       }
       const cellInfo = this._findCellInfoWithDnaHash(appInfo, $activeDnaHash);
-      return this._makeCellInfoNormalized(appInfo.cell_info[ROLE_NAME][0][CellType.Provisioned], cellInfo)
+      return this._makeCellInfoNormalized(appInfo.cell_info[ROLE_NAME][0].value as ProvisionedCell, cellInfo)
     });
     this.activeStore = asyncDerived([this.activeDnaHash, this.activeCellInfoNormalized], async ([$activeDnaHash, $activeCellInfoNormalized]) => {
       await this.activeCellInfoNormalized.load();
@@ -59,7 +59,7 @@ export class KanDoCloneManagerStore {
     const appInfo = await this.client.appInfo();
     const cells = appInfo.cell_info[ROLE_NAME];
     
-    let cellsNormalized =  cells.map((cell) => this._makeCellInfoNormalized(appInfo.cell_info[ROLE_NAME][0][CellType.Provisioned], cell));
+    let cellsNormalized =  cells.map((cell) => this._makeCellInfoNormalized(appInfo.cell_info[ROLE_NAME][0].value as ProvisionedCell, cell));
     cellsNormalized.sort((a,b) => a.networkSeed < b.networkSeed ? -1 : 1);
     
     return cellsNormalized;
@@ -117,7 +117,10 @@ export class KanDoCloneManagerStore {
   }
 
   private _setDefaultActiveDnaHash(appInfo: AppInfo) {
-    const defaultDnaHash = appInfo.cell_info[ROLE_NAME][0][CellType.Provisioned].cell_id[0];
+    if (appInfo.cell_info[ROLE_NAME][0].type !== CellType.Provisioned) {
+      throw("incorrect cell type, must be provisioned")
+    }
+    const defaultDnaHash = appInfo.cell_info[ROLE_NAME][0].value.cell_id[0];
     this.activeDnaHash.set(defaultDnaHash);
   }
   
@@ -129,10 +132,10 @@ export class KanDoCloneManagerStore {
 
   private _findCellInfoWithDnaHash(appInfo: AppInfo, dnaHash: Uint8Array): CellInfo | undefined {
     const cellInfo = appInfo.cell_info[ROLE_NAME].find((cellInfo: CellInfo) => {
-      if(CellType.Provisioned in cellInfo) {
-        return hashEqual(cellInfo[CellType.Provisioned].cell_id[0], dnaHash);
-      } else if(CellType.Cloned in cellInfo) {
-        return hashEqual(cellInfo[CellType.Cloned].cell_id[0], dnaHash);
+      if(cellInfo.type === CellType.Provisioned) {
+        return hashEqual(cellInfo.value.cell_id[0], dnaHash);
+      } else if(cellInfo.type === CellType.Cloned) {
+        return hashEqual(cellInfo.value.cell_id[0], dnaHash);
       }
     });
 
@@ -142,25 +145,25 @@ export class KanDoCloneManagerStore {
   private _makeCellInfoNormalized(provisionedCellInfo: ProvisionedCell, cell: CellInfo ) {
     const originalDnaHash = provisionedCellInfo.cell_id[0];
 
-    if(CellType.Provisioned in cell) {
+    if(cell.type === CellType.Provisioned) {
       return {
         originalDnaHash,
-        cellId: cell[CellType.Provisioned].cell_id, 
+        cellId: cell.value.cell_id, 
         cellInfo: cell,
         roleName: ROLE_NAME,
-        name: cell[CellType.Provisioned].name,
-        networkSeed: cell[CellType.Provisioned].dna_modifiers.network_seed,
-        displayName: cell[CellType.Provisioned].dna_modifiers.network_seed === "" ? "Public" : cell[CellType.Provisioned].name,
+        name: cell.value.name,
+        networkSeed: cell.value.dna_modifiers.network_seed,
+        displayName: cell.value.dna_modifiers.network_seed === "" ? "Public" : cell.value.name,
       };
-    } else if(CellType.Cloned in cell) {
+    } else if(cell.type == CellType.Cloned) {
       return {
         originalDnaHash,
-        cellId: cell[CellType.Cloned].cell_id,
+        cellId: cell.value.cell_id,
         cellInfo: cell,
-        roleName: cell[CellType.Cloned].clone_id,
-        name: cell[CellType.Cloned].name,
-        networkSeed: cell[CellType.Cloned].dna_modifiers.network_seed,
-        displayName: cell[CellType.Cloned].dna_modifiers.network_seed === "" ? "Public" : cell[CellType.Cloned].name,
+        roleName: cell.value.clone_id,
+        name: cell.value.name,
+        networkSeed: cell.value.dna_modifiers.network_seed,
+        displayName: cell.value.dna_modifiers.network_seed === "" ? "Public" : cell.value.name,
       };
     }
   }

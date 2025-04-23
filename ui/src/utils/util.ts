@@ -1,4 +1,4 @@
-import { type AppClient, type EntryHash, type DnaHash, CellType } from "@holochain/client";
+import type { AppClient, EntryHash, DnaHash, ProvisionedCell } from "@holochain/client";
 //import type { HrlB64WithContext, WAL } from "@theweave/api";
 
 export function onVisible(element, callback) {
@@ -45,9 +45,8 @@ export const hashEqual = (a:EntryHash, b:EntryHash) : boolean => {
 
 export const getMyDna = async (role:string, client: AppClient) : Promise<DnaHash>  => {
   const appInfo = await client.appInfo();
-  const dnaHash = (appInfo.cell_info[role][0] as any)[
-    CellType.Provisioned
-  ].cell_id[0];
+  const cellInfo = appInfo.cell_info[role][0].value as ProvisionedCell
+  const dnaHash = cellInfo.cell_id[0]
   return dnaHash
 } 
 

@@ -183,7 +183,6 @@
 
         client = weaveClient.renderInfo.appletClient;
       }
-    
       kandoCloneManagerStore = new KanDoCloneManagerStore(
         client,
         weaveClient
