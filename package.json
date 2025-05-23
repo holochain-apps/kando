@@ -7,8 +7,8 @@
   ],
   "scripts": {
     "start": "npm run start:electron",
-    "start:tauri": "AGENTS=2 BOOTSTRAP_PORT=$(port) SIGNAL_PORT=$(port) npm run network:tauri",
-    "start:electron": "AGENTS=2 BOOTSTRAP_PORT=$(port) SIGNAL_PORT=$(port) npm run network:electron",
+    "start:tauri": "AGENTS=2 BOOTSTRAP_PORT=$(port) SIGNAL_PORT=$BOOTSTRAP_PORT npm run network:tauri",
+    "start:electron": "AGENTS=2 BOOTSTRAP_PORT=$(port) SIGNAL_PORT=$BOOTSTRAP_PORT npm run network:electron",
     "start:android": "npm run package && BOOTSTRAP_PORT=$(port) SIGNAL_PORT=$(port) INTERNAL_IP=$(internal-ip --ipv4) concurrently -k \"npm run local-services\" \"UI_PORT=1420 npm run -w ui start\" \"npm run launch:android\"",
     "network:tauri": "hc s clean && npm run build:happ && INTERNAL_IP=$(internal-ip --ipv4) concurrently -k \"npm run local-services\" \"UI_PORT=1420 npm run -w ui start\" \"npm run launch:tauri\"",
     "network:electron": "hc s clean && npm run build:happ && INTERNAL_IP=$(internal-ip --ipv4) concurrently -k \"npm run local-services\" \"UI_PORT=1420 npm run -w ui start\" \"npm run launch:electron\"",
@@ -28,13 +28,13 @@
     "build:happ": "npm run build:zomes && hc app pack workdir --recursive",
     "build:zomes": "RUSTFLAGS='' CARGO_TARGET_DIR=target cargo build --release --target wasm32-unknown-unknown --workspace --exclude kandoapp",
     "build:android": "npm run package && npm run tauri android build --apk",
-    "local-services": "hc run-local-services --bootstrap-interface $INTERNAL_IP --bootstrap-port $BOOTSTRAP_PORT --signal-interfaces $INTERNAL_IP --signal-port $SIGNAL_PORT",
+    "local-services": "kitsune-bootstrap -i 127.0.0.1:$BOOTSTRAP_PORT",
     "tauri": "tauri",
     "weave-hash":  "weave hash-webhapp ./workdir/kando.webhapp"
   },
   "devDependencies": {
-    "@theweave/cli": "0.14.0-rc.0",
-    "@holochain/hc-spin": "^0.500.0-rc.1",
+    "@theweave/cli": "0.14.0-rc.5",
+    "@holochain/hc-spin": "^0.500.1",
     "@holochain-playground/cli": "^0.300.1",
     "@rollup/plugin-typescript": "^8.0.0",
     "@tsconfig/svelte": "^2.0.0",

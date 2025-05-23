@@ -22,6 +22,7 @@
 
         packages = (with inputs'.holonix.packages; [
           holochain
+          bootstrap-srv
           lair-keystore
           hc
           hc-launch
