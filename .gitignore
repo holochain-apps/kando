@@ -12,3 +12,4 @@
 .running
 *.code-workspace
 .kitsune2_bootstrap_srv
+src-tauri/target
