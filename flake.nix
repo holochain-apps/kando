@@ -48,6 +48,7 @@
         packages = (with inputs'.holonix.packages; [
           holochain
           hc
+          bootstrap-srv
           lair-keystore
           hc-launch
           hc-scaffold
