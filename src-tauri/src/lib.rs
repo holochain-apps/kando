@@ -1,14 +1,10 @@
 use holochain_types::prelude::AppBundle;
-use lair_keystore::dependencies::sodoken::{BufRead, BufWrite};
-use std::collections::HashMap;
 use std::path::PathBuf;
-use tauri_plugin_holochain::{HolochainPluginConfig, HolochainExt};
+use tauri_plugin_holochain::{HolochainPluginConfig, HolochainExt, NetworkConfig, vec_to_locked};
 use url2::Url2;
 use tauri::AppHandle;
 
 const APP_ID: &'static str = "kando";
-const PRODUCTION_SIGNAL_URL: &'static str = "wss://signal.holo.host";
-const PRODUCTION_BOOTSTRAP_URL: &'static str = "https://bootstrap.holo.host";
 
 pub fn happ_bundle() -> AppBundle {
     let bytes = include_bytes!("../../workdir/kando.happ");
@@ -26,12 +22,8 @@ pub fn run() {
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_holochain::init(
-            vec_to_locked(vec![]).expect("Can't build passphrase"),
-            HolochainPluginConfig {
-                signal_url: signal_url(),
-                bootstrap_url: bootstrap_url(),
-                holochain_dir: holochain_dir(),
-            },
+            vec_to_locked(vec![]),
+            HolochainPluginConfig::new(holochain_dir(), network_config())
         ))
         .setup(|app| {
             let handle = app.handle().clone();
@@ -76,7 +68,7 @@ async fn setup(handle: AppHandle) -> anyhow::Result<()> {
             .install_app(
                 String::from(APP_ID),
                 happ_bundle(),
-                HashMap::new(),
+                None,
                 None,
                 None,
             )
@@ -93,34 +85,20 @@ async fn setup(handle: AppHandle) -> anyhow::Result<()> {
     }
 }
 
-fn internal_ip() -> String {
-    std::option_env!("INTERNAL_IP")
-        .expect("Environment variable INTERNAL_IP was not set")
-        .to_string()
-}
+fn network_config() -> NetworkConfig {
+    let mut network_config = NetworkConfig::default();
 
-fn bootstrap_url() -> Url2 {
-    // Resolved at compile time to be able to point to local services
+    // Don't use the bootstrap service on tauri dev mode
     if tauri::is_dev() {
-        let internal_ip = internal_ip();
-        let port = std::option_env!("BOOTSTRAP_PORT")
-            .expect("Environment variable BOOTSTRAP_PORT was not set");
-        url2::url2!("http://{internal_ip}:{port}")
-    } else {
-        url2::url2!("{}", PRODUCTION_BOOTSTRAP_URL)
+        network_config.bootstrap_url = Url2::parse("http://0.0.0.0:8888");
     }
-}
 
-fn signal_url() -> Url2 {
-    // Resolved at compile time to be able to point to local services
-    if tauri::is_dev() {
-        let internal_ip = internal_ip();
-        let signal_port =
-            std::option_env!("SIGNAL_PORT").expect("Environment variable INTERNAL_IP was not set");
-        url2::url2!("ws://{internal_ip}:{signal_port}")
-    } else {
-        url2::url2!("{}", PRODUCTION_SIGNAL_URL)
+    // Don't hold any slice of the DHT in mobile
+    if cfg!(mobile) {
+        network_config.target_arc_factor = 0;
     }
+
+    network_config
 }
 
 fn holochain_dir() -> PathBuf {
@@ -133,27 +111,10 @@ fn holochain_dir() -> PathBuf {
     app_dirs2::app_root(
         app_data_type,
         &app_dirs2::AppInfo {
-            name: "kando",
+            name: APP_ID,
             author: std::env!("CARGO_PKG_AUTHORS"),
         },
     )
     .expect("Could not get app root")
     .join("holochain")
-}
-
-fn vec_to_locked(mut pass_tmp: Vec<u8>) -> std::io::Result<BufRead> {
-    match BufWrite::new_mem_locked(pass_tmp.len()) {
-        Err(e) => {
-            pass_tmp.fill(0);
-            Err(e.into())
-        }
-        Ok(p) => {
-            {
-                let mut lock = p.write_lock();
-                lock.copy_from_slice(&pass_tmp);
-                pass_tmp.fill(0);
-            }
-            Ok(p.to_read())
-        }
-    }
 }

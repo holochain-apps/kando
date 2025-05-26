@@ -86,11 +86,11 @@ export class KanDoCloneManagerStore {
   }
   
   disable(cellId: CellId) {
-    return this.client.disableCloneCell({ clone_cell_id: cellId });
+    return this.client.disableCloneCell({ clone_cell_id: { type: "dna_hash", value: cellId[0] }});
   }
   
   enable(cellId: CellId) {
-    return this.client.enableCloneCell({ clone_cell_id: cellId })
+    return this.client.enableCloneCell({ clone_cell_id: {type: "dna_hash", value: cellId[0] }})
   }
   
   activate(cellId: CellId) {
@@ -98,6 +98,8 @@ export class KanDoCloneManagerStore {
   }
   
   private async _loadActiveDnaHash(appInfo: AppInfo) {
+    console.log("_loadActiveDnaHash", appInfo);
+
     // Load active dna hash from local storage
     const activeDnaHashB64 = localStorage.getItem("activeDnaHash");    
 
@@ -117,6 +119,8 @@ export class KanDoCloneManagerStore {
   }
 
   private _setDefaultActiveDnaHash(appInfo: AppInfo) {
+    console.log("_setDefaultActiveDnaHash", appInfo);
+
     if (appInfo.cell_info[ROLE_NAME][0].type !== CellType.Provisioned) {
       throw("incorrect cell type, must be provisioned")
     }
@@ -125,12 +129,15 @@ export class KanDoCloneManagerStore {
   }
   
   private _saveActiveDnaHash(val: DnaHash) {
+    console.log("_saveActiveDnaHash", val);
+
     if(val !== undefined && val !== null) {
       localStorage.setItem("activeDnaHash", encodeHashToBase64(val));
     }
   }
 
   private _findCellInfoWithDnaHash(appInfo: AppInfo, dnaHash: Uint8Array): CellInfo | undefined {
+    console.log("_findCellInfoWithDnaHash", appInfo, dnaHash);
     const cellInfo = appInfo.cell_info[ROLE_NAME].find((cellInfo: CellInfo) => {
       if(cellInfo.type === CellType.Provisioned) {
         return hashEqual(cellInfo.value.cell_id[0], dnaHash);
@@ -143,9 +150,12 @@ export class KanDoCloneManagerStore {
   }
 
   private _makeCellInfoNormalized(provisionedCellInfo: ProvisionedCell, cell: CellInfo ) {
+    console.log("_makeCellInfoNormalized", provisionedCellInfo);
+
     const originalDnaHash = provisionedCellInfo.cell_id[0];
 
     if(cell.type === CellType.Provisioned) {
+      console.log("makecellInfo provisioned", cell);
       return {
         originalDnaHash,
         cellId: cell.value.cell_id, 
@@ -156,6 +166,7 @@ export class KanDoCloneManagerStore {
         displayName: cell.value.dna_modifiers.network_seed === "" ? "Public" : cell.value.name,
       };
     } else if(cell.type == CellType.Cloned) {
+      console.log("makecellInfo cloned", cell);
       return {
         originalDnaHash,
         cellId: cell.value.cell_id,

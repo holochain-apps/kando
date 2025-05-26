@@ -74,7 +74,8 @@
       <div class="button-container">
         {#if isInstanceActive(instance)}
         <div style="width: 30px; height: 30px; margin-left: 10px"></div>
-        {:else if instance.cellInfo[CellType.Cloned]?.enabled ||  instance.cellInfo[CellType.Provisioned]}
+        {:else if (instance.cellInfo.type === CellType.Cloned && instance.cellInfo.value.enabled) || 
+          instance.cellInfo.type === CellType.Provisioned}
         <div class="details-button" title="Switch to this Network" on:click={activate(instance.cellId)}>
           <SvgIcon icon="faToggleOff" size="16px"/>
         </div>
@@ -84,11 +85,11 @@
           <SvgIcon icon="faShare" size="16px"/>
         </div>
         
-        {#if !isInstanceActive(instance) && instance.cellInfo[CellType.Cloned]?.enabled}
+        {#if !isInstanceActive(instance) && instance.cellInfo.type === CellType.Cloned && instance.cellInfo.value.enabled}
         <div class="details-button" title="Disable Network" on:click={disable(instance.cellId)}>
           <SvgIcon icon="faStopCircle" size="16px"/>
         </div>
-        {:else if instance.cellInfo[CellType.Cloned]?.enabled === false}
+        {:else if instance.cellInfo.type === CellType.Cloned && instance.cellInfo.value.enabled === false}
         <div class="details-button" title="Enable Network" on:click={enable(instance.cellId)}>
           <SvgIcon icon="faPlayCircle" size="16px"/>
         </div>
