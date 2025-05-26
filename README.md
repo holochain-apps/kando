@@ -4,6 +4,33 @@ Holochain hApp for collaborative KanBan boards.
 
 Real-time colloaboration delivered by [syn](https://github.com/holochain/syn).
 
+## Android
+
+### Environment Setup
+
+This app supports android using p2p-shipyard.
+
+To setup the android development environment:
+
+
+1. Enter the android development nix shell:
+
+```bash
+nix develop .#androidDev
+npm install
+```
+
+2. Create an android signing key, following these [instructions](https://developer.android.com/studio/publish/app-signing#generate-key)
+
+3. Copy `src-tauri/gen/android/key.properties.example` to `src-tauri/gen/android/key.properties` and fill in values with the previously generated signing key info.
+
+### Run
+
+```bash
+nix develop .#androidDev
+npm run start:android
+```
+
 ## Environment Setup
 
 > PREREQUISITE: set up the [holochain development environment](https://developer.holochain.org/docs/install/).
