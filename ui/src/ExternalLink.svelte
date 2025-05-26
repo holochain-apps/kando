@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { open } from '@tauri-apps/plugin-shell';
+  import { openUrl } from '@tauri-apps/plugin-opener';
   import { isTauriContext } from './utils/util';
 
   export let href: string;
@@ -9,7 +9,7 @@
 {#if isTauriContext()}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <!-- svelte-ignore a11y-missing-attribute -->
-  <a {title} on:click={() => open(href)}><slot></slot></a>
+  <a {title} on:click={() => openUrl(href)}><slot></slot></a>
 {:else}
   <a {href} {title} target="_blank" ><slot></slot></a>
 {/if}

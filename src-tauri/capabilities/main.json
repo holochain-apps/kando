@@ -6,7 +6,17 @@
   "permissions": [
     "core:app:default",
     "core:window:allow-set-title",
-    "shell:allow-open",
-    "os:allow-os-type"
+    "os:allow-os-type",
+    {
+      "identifier": "opener:allow-open-url",
+      "allow": [
+        {
+          "url": "https://github.com/holochain/*"
+        },
+        {
+          "url": "https://github.com/holochain-apps/*"
+        }
+      ]
+    }
   ]
 }
