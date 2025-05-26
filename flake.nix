@@ -3,7 +3,7 @@
 
   inputs = {
     holonix.url = "github:holochain/holonix?ref=main-0.5";
-    p2p-shipyard.url = "github:darksoil-studio/p2p-shipyard";
+    p2p-shipyard.url = "github:darksoil-studio/p2p-shipyard/main-0.5";
 
     nixpkgs.follows = "holonix/nixpkgs";
     flake-parts.follows = "holonix/flake-parts";
