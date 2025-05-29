@@ -20,7 +20,7 @@ tauri-build = { version = "2.2.0", default-features = false , features = [] }
 
 [dependencies]
 tauri = { version = "2.5.1", features = [] }
-tauri-plugin-holochain = { git = "https://github.com/darksoil-studio/p2p-shipyard", branch = "main-0.5"}
+tauri-plugin-holochain = { git = "https://github.com/darksoil-studio/tauri-plugin-holochain", branch = "main-0.5"}
 holochain_types = { version = "0.5.2" }
 lair_keystore = { version = "0.6.1" }
 
