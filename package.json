@@ -34,8 +34,8 @@
     "weave-hash":  "weave hash-webhapp ./workdir/kando.webhapp"
   },
   "devDependencies": {
-    "@theweave/cli": "0.14.0-rc.5",
-    "@holochain/hc-spin": "^0.500.1",
+    "@theweave/cli": "0.14.4",
+    "@holochain/hc-spin": "^0.500.3",
     "@holochain-playground/cli": "^0.300.1",
     "@rollup/plugin-typescript": "^8.0.0",
     "@tsconfig/svelte": "^2.0.0",
