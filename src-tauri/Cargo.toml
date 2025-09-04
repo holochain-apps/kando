@@ -1,6 +1,6 @@
 [package]
 name = "kandoapp"
-version = "0.10.9"
+version = "0.14.0"
 description = "Kando"
 authors = ["you"]
 license = ""
