@@ -11,7 +11,9 @@
     let cloneManagerStore: KanDoCloneManagerStore = getStore();
   
     $: activeDnaHash = cloneManagerStore.activeDnaHash;
+    $: info = cloneManagerStore.activeCellInfoNormalized
     $: activeDnaHashB64 = encodeHashToBase64($activeDnaHash);
+    $: activeSeed = $info.networkSeed;
 </script>
 
 
@@ -20,6 +22,14 @@
         <p>KanDo! is a demonstration Holochain app built by the Holochain Foundation.</p>
         <p><b>Version:</b> UI {__APP_VERSION__}; DNA {__DNA_VERSION__}</p>
         <p><b>Active Network DNA Hash:</b> <br /><span style="font-size: 0.8rem">{activeDnaHashB64}</span></p>
+        <p><b>Active Network Seed:</b> <br />
+            {#if activeSeed}
+                <span style="font-size: 0.8rem">{activeSeed}</span>
+            {:else}
+               <span style="font-size: 0.8rem; color: green;">Public Network, no seed!</span>
+            {/if}
+        </p>
+        
         <p> <b>Developers:</b>
             Check out this hApp's source-code in our <a href="https://github.com/holochain-apps/kando">github repo</a>.
             This project's real-time syncronization is powered by <a href="https://github.com/holochain/syn">Syn</a>, 
