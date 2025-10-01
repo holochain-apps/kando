@@ -166,7 +166,7 @@ let labelSelect
         }}
         multiple 
         >
-        {#each Array.from($allProfiles.value) as [hash, profile]}
+        {#each Array.from($allProfiles.value).filter(([hash,profile])=>!profile.entry.nickname.endsWith("-aon")) as [hash, profile]}
           <sl-option value={encodeHashToBase64(hash)}>{profile.entry.nickname}</sl-option>
         {/each}
       </sl-select>

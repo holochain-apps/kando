@@ -4615,7 +4615,7 @@ dependencies = [
 
 [[package]]
 name = "kandoapp"
-version = "0.10.9"
+version = "0.14.0"
 dependencies = [
  "anyhow",
  "app_dirs2",

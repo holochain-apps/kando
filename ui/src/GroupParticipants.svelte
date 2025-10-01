@@ -75,7 +75,6 @@
             {:else if $agents.status == "complete"}
               <h4>Participants</h4>
 
-
               {#if $agentBoards.status == "pending"}
                 agentBoard: <sl-skeleton effect="pulse" style="height: 40px; width: 100%" ></sl-skeleton>
               {:else if $agentBoards.status == "error"}
