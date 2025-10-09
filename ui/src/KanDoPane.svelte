@@ -86,6 +86,7 @@
   $: state = activeBoard.readableState();
   $: items = $state ? $state.cards : undefined;
   $: sortCards = (items) => items; // no sort algorithm for now
+  $: sessionStatus = activeBoard.session?.sessionStatus
 
   $: commits = activeBoard.document.allCommits
 
@@ -105,7 +106,6 @@
   let editCardDialog;
   let cardDetailsDialog;
   let editingCardId: uuidv1;
-
   let columns: { [key: string]: Group } = {};
   let cardsMap: { [key: string]: Card } = {};
   $: unused = groupCards(items);
@@ -341,6 +341,19 @@
     clearDrag();
     //console.log("handleDragDropColumn",e, column )
   }
+
+  function getTimeAgo(stringDate: string) {
+    try {
+      const timeAgo = store.timeAgo;
+      const today = new Date().toDateString();
+      const date = new Date(`${today} ${stringDate}`);
+      console.log("date", date, stringDate);
+      return timeAgo.format(date);
+    } catch (e) {
+      return "";
+    }
+  }
+
   const clearDrag = () => {
     draggingHandled = true;
     draggedItemId = "";
@@ -601,6 +614,22 @@
       <LabelSelector setOption={setFilterOption} option={filterOption} />
     </div>
     <div class="right-items">
+      <!-- status indicator -->
+      <div class="status-indicator">
+        <SvgIcon
+          icon="faCircleNodes" 
+          size="18px" 
+          color={$sessionStatus.code == "ok" ? "#1dd91d" : "#df3c1f"}
+        />
+        <span
+          title={$sessionStatus.code == "error" ? $sessionStatus.error : ""}
+          style="color: {$sessionStatus.code == "ok" ? "#1dd91d" : "#df3c1f"}">
+          { 
+            $sessionStatus.code == "error" ? `error syncing` : 
+            $sessionStatus.lastSave ? `synced ${getTimeAgo($sessionStatus.lastSave)}` : "connected"
+          }
+        </span>
+      </div>
       <svg
         on:click={() =>
           (rightPane =
@@ -1108,6 +1137,15 @@
   .right-items {
     display: flex;
     align-items: center;
+  }
+  .status-indicator {
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 5px;
+    color: rgba(86, 92, 108, 1);
+    border: 1px solid rgba(35, 32, 74, 0.1);
+    padding: 5px 10px;
+    margin-right: 10px;
   }
 
   sl-button.board-button::part(base) {
