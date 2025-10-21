@@ -14,7 +14,7 @@
     "@holochain-open-dev/profiles": "^0.501.2",
     "@holochain-open-dev/stores": "^0.500.3",
     "@holochain-open-dev/utils": "^0.500.2",
-    "@holochain-syn/core": "^0.502.0-dev.0",
+    "@holochain-syn/core": "^0.502.0-dev.2",
     "@holochain/client": "^0.19.2",
     "@mdi/js": "^7.1.96",
     "@msgpack/msgpack": "^3.0.0-beta2",

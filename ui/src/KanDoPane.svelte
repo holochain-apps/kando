@@ -44,6 +44,13 @@
       columnNameElem.focus();
       columnNameElem.select();
     });
+    
+    // Update time display every 30 seconds
+    const interval = setInterval(() => {
+      currentTime = Date.now();
+    }, 30000);
+    
+    return () => clearInterval(interval);
   });
 
   class MyRenderer extends Renderer {
@@ -89,6 +96,12 @@
   $: sessionStatus = activeBoard.session?.sessionStatus
 
   $: commits = activeBoard.document.allCommits
+
+  // Reactive variable to force time updates
+  let currentTime = Date.now();
+
+  // Reactive time display calculation
+  $: timeAgoDisplay = $sessionStatus.lastSave ? getTimeAgo($sessionStatus.lastSave, currentTime) : "";
 
   $: openCard = (cardId) => {
     if (cardId) {
@@ -342,12 +355,10 @@
     //console.log("handleDragDropColumn",e, column )
   }
 
-  function getTimeAgo(stringDate: string) {
+  function getTimeAgo(stringDate: string, _currentTime?: number) {
     try {
       const timeAgo = store.timeAgo;
-      const today = new Date().toDateString();
-      const date = new Date(`${today} ${stringDate}`);
-      console.log("date", date, stringDate);
+      const date = new Date(`${stringDate}`);
       return timeAgo.format(date);
     } catch (e) {
       return "";
@@ -614,33 +625,17 @@
       <LabelSelector setOption={setFilterOption} option={filterOption} />
     </div>
     <div class="right-items">
-      <!-- status indicator -->
-      <div class="status-indicator">
-        <SvgIcon
-          icon="faCircleNodes" 
-          size="18px" 
-          color={$sessionStatus.code == "ok" ? "#1dd91d" : "#df3c1f"}
-        />
-        <span
-          title={$sessionStatus.code == "error" ? $sessionStatus.error : ""}
-          style="color: {$sessionStatus.code == "ok" ? "#1dd91d" : "#df3c1f"}">
-          { 
-            $sessionStatus.code == "error" ? `error syncing` : 
-            $sessionStatus.lastSave ? `synced ${getTimeAgo($sessionStatus.lastSave)}` : "connected"
-          }
-        </span>
-      </div>
       <svg
-        on:click={() =>
+        on:mousedown={() =>
           (rightPane =
             rightPane === RightPane.Feed ? RightPane.None : RightPane.Feed)}
-        style="margin-right:10px"
+        style="margin-right:10px; cursor: pointer"
         xmlns="http://www.w3.org/2000/svg"
         width="24"
         height="24"
         viewBox="0 0 24 24"
         stroke-width="2"
-        stroke="currentColor"
+        stroke="#09244B"
         fill="none"
         stroke-linecap="round"
         stroke-linejoin="round"
@@ -676,43 +671,50 @@
           </div>
         {/if}
       </div>
-      <svg
-        style="margin-right:10px"
-        on:click={() =>
-          (rightPane =
-            rightPane === RightPane.Commits
-              ? RightPane.None
-              : RightPane.Commits)}
-        xmlns="http://www.w3.org/2000/svg"
-        xmlns:xlink="http://www.w3.org/1999/xlink"
-        width="24px"
-        height="24px"
-        viewBox="0 0 24 24"
-        version="1.1"
-      >
-        <g
-          stroke="none"
-          stroke-width="1"
-          fill="none"
-          fill-rule="evenodd"
+
+      <span 
+        style="display: flex; margin-right:10px; cursor: pointer" 
+        title={$sessionStatus.code == "error" ? $sessionStatus.error : ($sessionStatus.code == "syncing" ? "syncing..." : "Last save " + getTimeAgo($sessionStatus.lastSave))}
+        on:mousedown={() =>
+              (rightPane =
+                rightPane === RightPane.Commits
+                  ? RightPane.None
+                  : RightPane.Commits)}>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          xmlns:xlink="http://www.w3.org/1999/xlink"
+          width="24px"
+          height="24px"
+          viewBox="0 0 24 24"
+          version="1.1"
         >
-          <g id="Development" transform="translate(-528.000000, 0.000000)">
-            <g id="git_commit_line" transform="translate(528.000000, 0.000000)">
-              <path
-                d="M24,0 L24,24 L0,24 L0,0 L24,0 Z M12.5934901,23.257841 L12.5819402,23.2595131 L12.5108777,23.2950439 L12.4918791,23.2987469 L12.4918791,23.2987469 L12.4767152,23.2950439 L12.4056548,23.2595131 C12.3958229,23.2563662 12.3870493,23.2590235 12.3821421,23.2649074 L12.3780323,23.275831 L12.360941,23.7031097 L12.3658947,23.7234994 L12.3769048,23.7357139 L12.4804777,23.8096931 L12.4953491,23.8136134 L12.4953491,23.8136134 L12.5071152,23.8096931 L12.6106902,23.7357139 L12.6232938,23.7196733 L12.6232938,23.7196733 L12.6266527,23.7031097 L12.609561,23.275831 C12.6075724,23.2657013 12.6010112,23.2592993 12.5934901,23.257841 L12.5934901,23.257841 Z M12.8583906,23.1452862 L12.8445485,23.1473072 L12.6598443,23.2396597 L12.6498822,23.2499052 L12.6498822,23.2499052 L12.6471943,23.2611114 L12.6650943,23.6906389 L12.6699349,23.7034178 L12.6699349,23.7034178 L12.678386,23.7104931 L12.8793402,23.8032389 C12.8914285,23.8068999 12.9022333,23.8029875 12.9078286,23.7952264 L12.9118235,23.7811639 L12.8776777,23.1665331 C12.8752882,23.1545897 12.8674102,23.1470016 12.8583906,23.1452862 L12.8583906,23.1452862 Z M12.1430473,23.1473072 C12.1332178,23.1423925 12.1221763,23.1452606 12.1156365,23.1525954 L12.1099173,23.1665331 L12.0757714,23.7811639 C12.0751323,23.7926639 12.0828099,23.8018602 12.0926481,23.8045676 L12.108256,23.8032389 L12.3092106,23.7104931 L12.3186497,23.7024347 L12.3186497,23.7024347 L12.3225043,23.6906389 L12.340401,23.2611114 L12.337245,23.2485176 L12.337245,23.2485176 L12.3277531,23.2396597 L12.1430473,23.1473072 Z"
-                id="MingCute"
-                fill-rule="nonzero"
-              >
-              </path>
-              <path
-                d="M12,2 C12.5523,2 13,2.44772 13,3 L13,8.12602 C14.7252,8.57006 16,10.1362 16,12 C16,13.8638 14.7252,15.4299 13,15.874 L13,21 C13,21.5523 12.5523,22 12,22 C11.4477,22 11,21.5523 11,21 L11,15.874 C9.27477,15.4299 8,13.8638 8,12 C8,10.1362 9.27477,8.57006 11,8.12602 L11,3 C11,2.44772 11.4477,2 12,2 Z M12,14 C13.1046,14 14,13.1046 14,12 C14,10.8954 13.1046,10 12,10 C10.8954,10 10,10.8954 10,12 C10,13.1046 10.8954,14 12,14 Z"
-                fill="#09244B"
-              >
-              </path>
+          <g
+            stroke="none"
+            stroke-width="1"
+            fill="none"
+            fill-rule="evenodd"
+          >
+            <g id="Development" transform="translate(-528.000000, 0.000000)">
+              <g id="git_commit_line" transform="translate(528.000000, 0.000000)">
+                <path
+                  d="M24,0 L24,24 L0,24 L0,0 L24,0 Z M12.5934901,23.257841 L12.5819402,23.2595131 L12.5108777,23.2950439 L12.4918791,23.2987469 L12.4918791,23.2987469 L12.4767152,23.2950439 L12.4056548,23.2595131 C12.3958229,23.2563662 12.3870493,23.2590235 12.3821421,23.2649074 L12.3780323,23.275831 L12.360941,23.7031097 L12.3658947,23.7234994 L12.3769048,23.7357139 L12.4804777,23.8096931 L12.4953491,23.8136134 L12.4953491,23.8136134 L12.5071152,23.8096931 L12.6106902,23.7357139 L12.6232938,23.7196733 L12.6232938,23.7196733 L12.6266527,23.7031097 L12.609561,23.275831 C12.6075724,23.2657013 12.6010112,23.2592993 12.5934901,23.257841 L12.5934901,23.257841 Z M12.8583906,23.1452862 L12.8445485,23.1473072 L12.6598443,23.2396597 L12.6498822,23.2499052 L12.6498822,23.2499052 L12.6471943,23.2611114 L12.6650943,23.6906389 L12.6699349,23.7034178 L12.6699349,23.7034178 L12.678386,23.7104931 L12.8793402,23.8032389 C12.8914285,23.8068999 12.9022333,23.8029875 12.9078286,23.7952264 L12.9118235,23.7811639 L12.8776777,23.1665331 C12.8752882,23.1545897 12.8674102,23.1470016 12.8583906,23.1452862 L12.8583906,23.1452862 Z M12.1430473,23.1473072 C12.1332178,23.1423925 12.1221763,23.1452606 12.1156365,23.1525954 L12.1099173,23.1665331 L12.0757714,23.7811639 C12.0751323,23.7926639 12.0828099,23.8018602 12.0926481,23.8045676 L12.108256,23.8032389 L12.3092106,23.7104931 L12.3186497,23.7024347 L12.3186497,23.7024347 L12.3225043,23.6906389 L12.340401,23.2611114 L12.337245,23.2485176 L12.337245,23.2485176 L12.3277531,23.2396597 L12.1430473,23.1473072 Z"
+                  id="MingCute"
+                  fill-rule="nonzero"
+                >
+                </path>
+                <path
+                  d="M12,2 C12.5523,2 13,2.44772 13,3 L13,8.12602 C14.7252,8.57006 16,10.1362 16,12 C16,13.8638 14.7252,15.4299 13,15.874 L13,21 C13,21.5523 12.5523,22 12,22 C11.4477,22 11,21.5523 11,21 L11,15.874 C9.27477,15.4299 8,13.8638 8,12 C8,10.1362 9.27477,8.57006 11,8.12602 L11,3 C11,2.44772 11.4477,2 12,2 Z M12,14 C13.1046,14 14,13.1046 14,12 C14,10.8954 13.1046,10 12,10 C10.8954,10 10,10.8954 10,12 C10,13.1046 10.8954,14 12,14 Z"
+                  fill={$sessionStatus.code == "ok" ? "#09244B" : $sessionStatus.code == "error" ? "#df3c1f" : "#cccccc"}
+                >
+                </path>
+              </g>
             </g>
           </g>
-        </g>
-      </svg>
+        </svg>
+        <span style="color: #df3c1f;">
+          {$sessionStatus.code == "error" ? `error syncing` : ""}
+        </span>
+      </span>
       {#if rightPane === RightPane.Commits}
         <div class="right-pane" class:hidden={rightPane !== RightPane.Commits}>
           <div class="right-pane-header">
