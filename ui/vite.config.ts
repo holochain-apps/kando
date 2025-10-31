@@ -2,12 +2,20 @@ import { internalIpV4Sync } from "internal-ip";
 import { defineConfig } from 'vite';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { version, dnaVersion } from './package.json';  // Import version from package.json
+import wasm from 'vite-plugin-wasm';
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [svelte()],
+  plugins: [svelte(), wasm()],
   build: {
-    minify: false
+    minify: false,
+    target: [
+      'chrome89',
+      'firefox89',
+      'safari15',
+      'edge89',
+      'es2022'
+    ]
   },
   server: {
     host: "0.0.0.0",
