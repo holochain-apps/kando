@@ -31,11 +31,10 @@
     "build:android:aarch64": "npm run package && npm run tauri android build -- --apk --target aarch64",
     "local-services": "kitsune2-bootstrap-srv --listen 127.0.0.1:$BOOTSTRAP_PORT",
     "tauri": "tauri",
-    "weave-hash":  "weave hash-webhapp 0.16.0 ./workdir/kando.webhapp",
-    "weave-hash2":  "weave hash-webhapp 0.16.0 kando.webhapp"
+    "weave-hash":  "weave hash-webhapp 0.16.0 ./workdir/kando.webhapp"
   },
   "devDependencies": {
-    "@theweave/cli": "0.15.4",
+    "@theweave/cli": "0.15.5",
     "@holochain/hc-spin": "^0.600.0",
     "@holochain-playground/cli": "^0.300.1",
     "@rollup/plugin-typescript": "^8.0.0",
