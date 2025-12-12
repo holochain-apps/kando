@@ -2,8 +2,7 @@
   description = "Flake for Holochain app development";
 
   inputs = {
-    holonix.url = "github:holochain/holonix?ref=main";
-    p2p-shipyard.url = "github:darksoil-studio/tauri-plugin-holochain/main";
+    holonix.url = "github:holochain/holonix?ref=main-0.6";
 
     nixpkgs.follows = "holonix/nixpkgs";
     flake-parts.follows = "holonix/flake-parts";
@@ -15,49 +14,21 @@
       formatter = pkgs.nixpkgs-fmt;
 
       devShells.default = pkgs.mkShell {
-        inputsFrom = [ 
-          inputs'.holonix.devShells 
-          inputs'.p2p-shipyard.devShells.holochainTauriDev
-        ];
-
-        packages = (with inputs'.holonix.packages; [
-          holochain
-          bootstrap-srv
-          lair-keystore
-          hc
-          hc-launch
-          hc-scaffold
-          hn-introspect
-          rust # For Rust development, with the WASM target included for zome builds
-        ]) ++ (with pkgs; [
-          nodejs_22 # For UI development
-          binaryen # For WASM optimisation
-          # Add any other packages you need here
-        ]);
-
-        shellHook = ''
-          export PS1='\[\033[1;34m\][holonix:\w]\$\[\033[0m\] '
-        '';
-      };
-
-      devShells.androidDev = pkgs.mkShell {
-        inputsFrom = [ 
-          inputs'.holonix.devShells 
-          inputs'.p2p-shipyard.devShells.holochainTauriAndroidDev
-        ];
+        inputsFrom = [ inputs'.holonix.devShells ];
 
         packages = (with inputs'.holonix.packages; [
           holochain
           hc
           bootstrap-srv
           lair-keystore
-          hc-launch
           hc-scaffold
           hn-introspect
           rust # For Rust development, with the WASM target included for zome builds
         ]) ++ (with pkgs; [
           nodejs_22 # For UI development
+          yarn # Package manager for Node.js
           binaryen # For WASM optimisation
+          typescript # TypeScript compiler for GraphQL adapter
           # Add any other packages you need here
         ]);
 
