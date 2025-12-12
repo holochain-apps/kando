@@ -5,10 +5,10 @@ use url2::Url2;
 use tauri::AppHandle;
 
 const APP_ID: &'static str = "kando";
+pub const HAPP_BUNDLE_BYTES: &'static [u8] = include_bytes!("../../workdir/kando.happ");
 
 pub fn happ_bundle() -> AppBundle {
-    let bytes = include_bytes!("../../workdir/kando.happ");
-    AppBundle::decode(bytes).expect("Failed to decode kando happ")
+    AppBundle::unpack(HAPP_BUNDLE_BYTES).expect("Failed to decode kando happ")
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]

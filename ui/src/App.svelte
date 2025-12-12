@@ -61,6 +61,7 @@
   async function initialize(): Promise<void> {
     try {
       if ((import.meta as any).env.DEV) {
+        console.log("in DEV mode")
         try {
           await initializeHotReload();
         } catch (e) {
@@ -92,6 +93,7 @@
         if (tokenResp) params.token = tokenResp.token;
         client = await AppWebsocket.connect(params);
       } else {
+        console.log("is Weave context")
         weaveClient = await WeaveClient.connect(appletServices);
 
         switch (weaveClient.renderInfo.type) {
