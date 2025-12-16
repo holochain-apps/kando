@@ -22,7 +22,7 @@
   let disabled = true
   const handleCreate = async ()=>{
     try {
-      const synStore = new SynStore(new SynClient(store.client, store.roleName));
+      const synStore = new SynStore(new SynClient(store.client, store.roleName), true);
       //const hrlB64 = hrlWithContextToB64(attachToWAL)
       const board = await Board.Create(synStore, {/*boundTo:[hrlB64]*/name: inputElement.value})
       const boardWal:WAL = { hrl: [store.dnaHash, board.hash], context: "" }

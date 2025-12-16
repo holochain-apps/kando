@@ -91,7 +91,7 @@ export class KanDoStore {
         this.client = this.managerStore.client;
 
         this.myAgentPubKeyB64 = encodeHashToBase64(this.client.myPubKey);
-        this.synStore = new SynStore(new SynClient(this.client,this.roleName,ZOME_NAME))
+        this.synStore = new SynStore(new SynClient(this.client,this.roleName,ZOME_NAME), true)
         this.uiProps = writable({
             showArchived: {},
             showArchivedBoards: false,
