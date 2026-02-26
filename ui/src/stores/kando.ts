@@ -8,6 +8,7 @@ import {
     decodeHashFromBase64,
     type Timestamp,
     type DnaHash,
+    HoloHashMap,
 } from '@holochain/client';
 import { SynStore,  SynClient} from '@holochain-syn/core';
 import { BoardList } from '../boardList';
@@ -18,7 +19,6 @@ import { derived, get, writable, type Unsubscriber, type Writable } from "svelte
 import type { ProfilesStore } from '@holochain-open-dev/profiles';
 import { UngroupedName, type BoardState } from '../board';
 import type { WeaveClient } from '@theweave/api';
-import { HoloHashMap } from '@holochain-open-dev/utils';
 import type { KanDoCloneManagerStore } from './cloneManager';
 
 // @ts-ignore

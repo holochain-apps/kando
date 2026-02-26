@@ -8,7 +8,7 @@
     import { encodeHashToBase64, type AgentPubKey } from "@holochain/client";
     import {type AsyncReadable, pipe, joinAsync, asyncDerived, sliceAndJoin} from '@holochain-open-dev/stores'
     import type { BoardAndLatestState } from "./boardList";
-    import  { HoloHashMap, LazyHoloHashMap } from "@holochain-open-dev/utils";
+    import  { HoloHashMap, LazyHoloHashMap } from "@holochain/client";
 
     const { getStore } :any = getContext('store');
     const store:KanDoStore = getStore();

@@ -21,7 +21,7 @@
   } from "./board";
   import EditBoardDialog from "./EditBoardDialog.svelte";
   import Avatar from "./Avatar.svelte";
-  import { type ActionHash, decodeHashFromBase64, encodeHashToBase64, type Timestamp } from "@holochain/client";
+  import { type ActionHash, decodeHashFromBase64, encodeHashToBase64, type Timestamp, HoloHashMap } from "@holochain/client";
   import { cloneDeep, isEqual } from "lodash";
   import "@shoelace-style/shoelace/dist/components/dropdown/dropdown.js";
   import "@shoelace-style/shoelace/dist/components/textarea/textarea.js";
@@ -37,7 +37,6 @@
   import DisableForOs from "./DisableForOs.svelte";
   import FeedElement from "./FeedElement.svelte";
   import CommitItem from "./CommitItem.svelte";
-  import { HoloHashMap } from "@holochain-open-dev/utils";
 
   onMount(async () => {
     onVisible(columnNameElem, () => {
