@@ -32,6 +32,7 @@ tauri-plugin-os = "2.2.1"
 url2 = "0.0.6"
 app_dirs2 = "2.5.5"
 anyhow = "1"
+fs2 = "0.4"
 serde_json = "1.0.120"
 
 [profile.release]

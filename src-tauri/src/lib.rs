@@ -36,31 +36,44 @@ pub fn run() {
                 .listen("holochain://setup-completed", move |_event| {
                     let handle = handle.clone();
                     tauri::async_runtime::spawn(async move {
-                        setup(handle.clone()).await.expect("Failed to setup");
-
-                        let mut window = handle
-                            .holochain()
-                            .expect("Failed to get holochain")
-                            .main_window_builder(
-                                String::from("main"),
-                                false,
-                                Some(String::from("kando")),
-                                None,
-                            )
-                            .await
-                            .expect("Failed to build window");
-
-                        #[cfg(desktop)]
-                        {
-                            window = window.title(String::from("Kando"));
+                        if let Err(e) = setup(handle.clone()).await {
+                            eprintln!("Failed to setup: {:?}", e);
+                            return;
                         }
 
-                        window.build().expect("Failed to open main window");
+                        let main_window = async {
+                            let mut window = handle
+                                .holochain()
+                                .map_err(|e| anyhow::anyhow!("{e:?}"))?
+                                .main_window_builder(
+                                    String::from("main"),
+                                    false,
+                                    Some(String::from("kando")),
+                                    None,
+                                )
+                                .await
+                                .map_err(|e| anyhow::anyhow!("{e:?}"))?;
 
-                        #[cfg(desktop)]
-                        {
-                            if let Some(splashscreen) = handle.get_webview_window("splashscreen") {
-                                let _ = splashscreen.close();
+                            #[cfg(desktop)]
+                            {
+                                window = window.title(String::from("Kando"));
+                            }
+
+                            window.build().map_err(|e| anyhow::anyhow!("{e:?}"))?;
+                            Ok::<(), anyhow::Error>(())
+                        }.await;
+
+                        match main_window {
+                            Ok(()) => {
+                                #[cfg(desktop)]
+                                {
+                                    if let Some(splashscreen) = handle.get_webview_window("splashscreen") {
+                                        let _ = splashscreen.close();
+                                    }
+                                }
+                            }
+                            Err(e) => {
+                                eprintln!("Failed to open main window: {:?}", e);
                             }
                         }
                     });
@@ -114,9 +127,10 @@ async fn setup(handle: AppHandle) -> anyhow::Result<()> {
 fn network_config() -> NetworkConfig {
     let mut network_config = NetworkConfig::default();
 
-    // Don't use the bootstrap service on tauri dev mode
+    // In dev mode, use the local bootstrap server started by npm scripts
     if tauri::is_dev() {
-        network_config.bootstrap_url = Url2::parse("http://0.0.0.0:8888");
+        let port = std::env::var("BOOTSTRAP_PORT").unwrap_or_else(|_| "8888".to_string());
+        network_config.bootstrap_url = Url2::parse(format!("http://127.0.0.1:{}", port));
     }
 
     // Don't hold any slice of the DHT in mobile
@@ -134,13 +148,37 @@ fn holochain_dir() -> PathBuf {
         app_dirs2::AppDataType::UserData
     };
 
-    app_dirs2::app_root(
+    let base = app_dirs2::app_root(
         app_data_type,
         &app_dirs2::AppInfo {
             name: APP_ID,
             author: std::env!("CARGO_PKG_AUTHORS"),
         },
     )
-    .expect("Could not get app root")
-    .join("holochain")
+    .expect("Could not get app root");
+
+    if tauri::is_dev() {
+        // Each dev instance gets its own numbered directory (0, 1, 2, ...)
+        // determined by which lock files are already held by running instances
+        use fs2::FileExt;
+        for i in 0..10 {
+            let dir = base.join(format!("holochain-{}", i));
+            let lock_path = dir.join(".lock");
+            std::fs::create_dir_all(&dir).expect("Could not create holochain dir");
+            let lock_file = std::fs::OpenOptions::new()
+                .write(true)
+                .create(true)
+                .open(&lock_path)
+                .expect("Could not open lock file");
+            if lock_file.try_lock_exclusive().is_ok() {
+                // Keep the lock file handle alive for the lifetime of the process
+                std::mem::forget(lock_file);
+                return dir;
+            }
+        }
+        // Fallback if all slots taken
+        base.join("holochain")
+    } else {
+        base.join("holochain")
+    }
 }
