@@ -33,7 +33,7 @@
   import hljs from "highlight.js";
   import AttachmentsList from "./AttachmentsList.svelte";
   import AttachmentsDialog from "./AttachmentsDialog.svelte";
-  import type { WAL } from "@theweave/api";
+  import { isWeaveContext, type WAL } from "@theweave/api";
   import DisableForOs from "./DisableForOs.svelte";
   import FeedElement from "./FeedElement.svelte";
   import CommitItem from "./CommitItem.svelte";
@@ -87,6 +87,8 @@
 
   $: uiProps = store.uiProps;
   $: participants = activeBoard.participants();
+  $: sessionMembers = activeBoard.sessionParticipants();
+  $: peerStatusStore = isWeaveContext() ? store.weaveClient?.renderInfo?.peerStatusStore : undefined;
   $: activeCard = store.boardList.activeCard;
   $: activeHashB64 = store.boardList.activeBoardHashB64;
   $: state = activeBoard.readableState();
@@ -747,11 +749,27 @@
           {/if}
         </div>
       {/if}
-      {#if $participants}
+      {#if peerStatusStore && $sessionMembers?.status === "complete"}
         <div class="participants">
           <div style="display:flex; flex-direction: row">
-            {#each Array.from($participants.entries()) as [agentPubKey, sessionData]}
-              <div class:idle={Date.now() - sessionData.lastSeen > 30000}>
+            {#each $sessionMembers.value as agentPubKey}
+              {@const peerStatus = $peerStatusStore?.[encodeHashToBase64(agentPubKey)]}
+              <div class:idle={peerStatus?.status === "idle"}>
+                <Avatar {agentPubKey} showNickname={false} size={30} />
+              </div>
+            {/each}
+          </div>
+        </div>
+      {:else if $participants}
+        <div class="participants">
+          <div style="display:flex; flex-direction: row">
+            {#each $participants.active as agentPubKey}
+              <div>
+                <Avatar {agentPubKey} showNickname={false} size={30} />
+              </div>
+            {/each}
+            {#each $participants.idle as agentPubKey}
+              <div class="idle">
                 <Avatar {agentPubKey} showNickname={false} size={30} />
               </div>
             {/each}
