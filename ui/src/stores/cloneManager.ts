@@ -16,6 +16,7 @@ import { v7 as uuidv7 } from "uuid";
 import { asyncDerived, type Loadable } from '@square/svelte-store';
 import { hashEqual } from '../utils/util';
 import { KanDoStore, ROLE_NAME } from './kando';
+import { createMergedProfilesStore } from './mergedProfilesStore';
 
 export interface CellInfoNormalized {
   originalDnaHash: Uint8Array;
@@ -50,8 +51,19 @@ export class KanDoCloneManagerStore {
     this.activeStore = asyncDerived([this.activeDnaHash, this.activeCellInfoNormalized], async ([$activeDnaHash, $activeCellInfoNormalized]) => {
       await this.activeCellInfoNormalized.load();
       
-      const profilesClient = this.weaveClient !== undefined ? weaveClient.renderInfo.profilesClient : new ProfilesClient(this.client, $activeCellInfoNormalized.roleName);
-      return new KanDoStore(this, new ProfilesStore(profilesClient), $activeDnaHash, $activeCellInfoNormalized.roleName);
+      const roleName = $activeCellInfoNormalized.roleName;
+
+      if (this.weaveClient) {
+        const mossProfilesClient = weaveClient.renderInfo.profilesClient;
+        const dnaProfilesClient = new ProfilesClient(this.client, roleName);
+        const profilesStore = await createMergedProfilesStore(
+          mossProfilesClient, dnaProfilesClient, this.client
+        );
+        return new KanDoStore(this, profilesStore, $activeDnaHash, roleName);
+      } else {
+        const profilesClient = new ProfilesClient(this.client, roleName);
+        return new KanDoStore(this, new ProfilesStore(profilesClient), $activeDnaHash, roleName);
+      }
     });
   }
   
