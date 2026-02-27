@@ -2,13 +2,13 @@ use holochain_types::prelude::AppBundle;
 use std::path::PathBuf;
 use tauri_plugin_holochain::{HolochainPluginConfig, HolochainExt, NetworkConfig, vec_to_locked};
 use url2::Url2;
-use tauri::AppHandle;
+use tauri::{AppHandle, Listener, Manager};
 
 const APP_ID: &'static str = "kando";
 pub const HAPP_BUNDLE_BYTES: &'static [u8] = include_bytes!("../../workdir/kando.happ");
 
-pub fn happ_bundle() -> AppBundle {
-    AppBundle::unpack(HAPP_BUNDLE_BYTES).expect("Failed to decode kando happ")
+pub fn happ_bundle() -> anyhow::Result<AppBundle> {
+    AppBundle::unpack(HAPP_BUNDLE_BYTES).map_err(|e| anyhow::anyhow!(e))
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -21,24 +21,50 @@ pub fn run() {
         )
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_os::init())
-        .plugin(tauri_plugin_holochain::init(
+        .plugin(tauri_plugin_holochain::async_init(
             vec_to_locked(vec![]),
             HolochainPluginConfig::new(holochain_dir(), network_config())
         ))
         .setup(|app| {
             let handle = app.handle().clone();
-            let result: anyhow::Result<()> = tauri::async_runtime::block_on(async move {
-                setup(handle).await?;
+            let handle_fail = app.handle().clone();
+            app.handle()
+                .listen("holochain://setup-failed", move |_event| {
+                    handle_fail.exit(1);
+                });
+            app.handle()
+                .listen("holochain://setup-completed", move |_event| {
+                    let handle = handle.clone();
+                    tauri::async_runtime::spawn(async move {
+                        setup(handle.clone()).await.expect("Failed to setup");
 
-                // After set up we can be sure our app is installed and up to date, so we can just open it
-                app.holochain()?
-                    .main_window_builder(String::from("main"), false, Some(String::from("kando")), None).await?
-                    .build()?;
+                        let mut window = handle
+                            .holochain()
+                            .expect("Failed to get holochain")
+                            .main_window_builder(
+                                String::from("main"),
+                                false,
+                                Some(String::from("kando")),
+                                None,
+                            )
+                            .await
+                            .expect("Failed to build window");
 
-                Ok(())
-            });
+                        #[cfg(desktop)]
+                        {
+                            window = window.title(String::from("Kando"));
+                        }
 
-            result?;
+                        window.build().expect("Failed to open main window");
+
+                        #[cfg(desktop)]
+                        {
+                            if let Some(splashscreen) = handle.get_webview_window("splashscreen") {
+                                let _ = splashscreen.close();
+                            }
+                        }
+                    });
+                });
 
             Ok(())
         })
@@ -48,12 +74,10 @@ pub fn run() {
 
 // Very simple setup for now:
 // - On app start, list installed apps:
-//   - If there are no apps installed, this is the first time the app is opened: install our hApp
-//   - If there **are** apps:
+//   - If our hApp is not installed, this is the first time the app is opened: install our hApp
+//   - If our hApp **is** installed:
 //     - Check if it's necessary to update the coordinators for our hApp
 //       - And do so if it is
-//
-// You can modify this function to suit your needs if they become more complex
 async fn setup(handle: AppHandle) -> anyhow::Result<()> {
     let admin_ws = handle.holochain()?.admin_websocket().await?;
 
@@ -62,27 +86,29 @@ async fn setup(handle: AppHandle) -> anyhow::Result<()> {
         .await
         .map_err(|err| tauri_plugin_holochain::Error::ConductorApiError(err))?;
 
-    if installed_apps.len() == 0 {
+    if installed_apps
+        .iter()
+        .find(|app| app.installed_app_id.as_str().eq(APP_ID))
+        .is_none()
+    {
         handle
             .holochain()?
             .install_app(
                 String::from(APP_ID),
-                happ_bundle(),
+                happ_bundle()?,
                 None,
                 None,
                 None,
             )
             .await?;
-
-        Ok(())
     } else {
         handle.holochain()?.update_app_if_necessary(
             String::from(APP_ID),
-            happ_bundle()
+            happ_bundle()?
         ).await?;
-
-        Ok(())
     }
+
+    Ok(())
 }
 
 fn network_config() -> NetworkConfig {
