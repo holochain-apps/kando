@@ -1,37 +1,112 @@
 name: "release-tauri-app"
 on:
-  push: 
+  push:
     tags:
       - 'v[0-9]+.[0-9]+.[0-9]+'
 
 jobs:
-  release-tauri-app:
+  create-release:
+    runs-on: ubuntu-latest
+    outputs:
+      releaseId: ${{ steps.create_release.outputs.id }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Create release
+        id: create_release
+        uses: ncipollo/release-action@v1
+        with:
+          name: "Kando ${{ github.ref_name }}"
+          body: "See assets below to download and install this version."
+          draft: true
+          prerelease: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  build-app-artifacts:
+    needs: create-release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install nix
+        uses: cachix/install-nix-action@v27
+        with:
+          extra_nix_config: |
+            experimental-features = flakes nix-command
+
+      - uses: cachix/cachix-action@v15
+        with:
+          name: holochain-ci
+
+      - name: Download happ from happ release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          HAPP_TAG=$(cat .happ-version | tr -d '[:space:]')
+          echo "Downloading happ from release: $HAPP_TAG"
+          gh release download "$HAPP_TAG" -p kando.happ -D workdir
+
+      - name: Build webhapp and weave-hash
+        run: |
+          nix develop --no-update-lock-file --accept-flake-config --command bash -c "
+            npm i
+            npm run package -w ui
+            hc web-app pack workdir --recursive
+            APP_VER=\$(node -p \"require('./ui/package.json').version\")
+            weave hash-webhapp \$APP_VER ./workdir/kando.webhapp > weave-hash.txt
+          "
+
+      - name: Upload happ artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: kando-happ
+          path: workdir/kando.happ
+
+      - name: Upload webhapp artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: kando-webhapp
+          path: workdir/kando.webhapp
+
+      - name: Upload weave-hash artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: weave-hash
+          path: weave-hash.txt
+
+  release-desktop:
+    needs: [create-release, build-app-artifacts]
     strategy:
       fail-fast: false
       matrix:
         platform: [windows-2019, macos-11, ubuntu-22.04]
     env:
       MACOSX_DEPLOYMENT_TARGET: 10.13
-
-    runs-on: $
+    runs-on: ${{ matrix.platform }}
     steps:
       - name: Support longpaths
         if: matrix.platform != 'ubuntu-22.04'
         run: git config --system core.longpaths true
 
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      # Checks out a copy of your repository on the ubuntu-latest machine
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+
+      - name: Download happ artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: kando-happ
+          path: workdir
 
       - name: setup node
         uses: actions/setup-node@v1
         with:
           node-version: 20
+
       - name: install Rust stable
         uses: actions-rs/toolchain@v1
         with:
           override: true
           toolchain: stable
+
       - name: install Go stable
         uses: actions/setup-go@v4
         with:
@@ -61,11 +136,87 @@ jobs:
       - name: build the app
         uses: tauri-apps/tauri-action@v0
         env:
-          GITHUB_TOKEN: $
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           projectPath: src-tauri
-          tagName: v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version
-          releaseName: "Kando v__VERSION__"
-          releaseBody: "See assets below to download and install this version."
-          releaseDraft: true
-          prerelease: true
+          releaseId: ${{ needs.create-release.outputs.releaseId }}
+
+  release-android:
+    needs: [create-release, build-app-artifacts]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Download happ artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: kando-happ
+          path: workdir
+
+      - name: Install nix
+        uses: cachix/install-nix-action@v27
+        with:
+          extra_nix_config: |
+            experimental-features = flakes nix-command
+
+      - uses: cachix/cachix-action@v15
+        with:
+          name: holochain-ci
+
+      - name: Setup Android signing
+        env:
+          ANDROID_KEY_BASE64: ${{ secrets.ANDROID_KEY_BASE64 }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          cd src-tauri/gen/android
+          printf '%s' "$ANDROID_KEY_BASE64" | base64 -d > key.jks
+          echo "keyAlias=$ANDROID_KEY_ALIAS" > key.properties
+          echo "keyPassword=$ANDROID_KEY_PASSWORD" >> key.properties
+          echo "storeFile=../key.jks" >> key.properties
+          echo "storePassword=$ANDROID_KEY_PASSWORD" >> key.properties
+
+      - name: Build Android APK
+        run: |
+          nix develop .#androidDev --no-update-lock-file --accept-flake-config --command bash -c "
+            npm i
+            npx tauri android build --apk --target aarch64
+          "
+
+      - name: Prepare APK for upload
+        run: |
+          APK_PATH=$(find src-tauri/gen/android/app/build/outputs/apk -name "*.apk" -type f | head -1)
+          cp "$APK_PATH" kando-aarch64.apk
+
+      - name: Upload APK to release
+        uses: AButler/upload-release-assets@v3.0
+        with:
+          files: "kando-aarch64.apk"
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          release-id: ${{ needs.create-release.outputs.releaseId }}
+
+  release-web-artifacts:
+    needs: [create-release, build-app-artifacts]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download happ artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: kando-happ
+
+      - name: Download webhapp artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: kando-webhapp
+
+      - name: Download weave-hash artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: weave-hash
+
+      - name: Upload artifacts to release
+        uses: AButler/upload-release-assets@v3.0
+        with:
+          files: "kando.happ;kando.webhapp;weave-hash.txt"
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          release-id: ${{ needs.create-release.outputs.releaseId }}

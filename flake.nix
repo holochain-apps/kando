@@ -33,6 +33,19 @@
               export PS1='\[\033[1;34m\][holonix:\w]\$\[\033[0m\] '
             '';
           };
+          devShells.androidDev = pkgs.mkShell {
+            inputsFrom = [
+              inputs'.p2p-shipyard.devShells.holochainTauriAndroidDev
+              inputs'.holonix.devShells.default
+            ];
+
+            packages = with pkgs; [
+              nodejs_22
+              yarn
+              binaryen
+              typescript
+            ];
+          };
         };
     };
 }
