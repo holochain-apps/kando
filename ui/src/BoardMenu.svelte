@@ -13,8 +13,8 @@
     import { BoardType } from "./boardList";
     import { isWeaveContext } from "@theweave/api";
     import { UngroupedName } from "./board";
-    import CloneManagerDialog from "./CloneManagerDialog.svelte";
     import CloneManagerShareDialog from "./CloneManagerShareDialog.svelte";
+    import NetworkTabs from "./NetworkTabs.svelte";
     export let wide = false
 
     let newBoardDialog
@@ -27,7 +27,6 @@
     let weaveGroupName: string
     let aboutDialog
     let settingsDialog
-    let cloneManagerDialog
     let cloneManagerShareDialog
 
     $: activeBoards = store.boardList.activeBoardHashes
@@ -69,6 +68,7 @@
     class:wide={wide} >
 
     {#if !isWeaveContext() && !USING_FEEDBACK}
+        <NetworkTabs />
         <GroupParticipants/>
     {/if}
         <h3 class="type-header">Boards</h3>
@@ -161,13 +161,6 @@
                         <SvgIcon icon="faShare" size="20px" color="#fff"/>
                     </div>
                 </div>
-            {:else}
-                <div on:click={()=>cloneManagerDialog.open()} style="background-color:  #164B9A; padding: 3px 5px; border-radius: 10px;">
-                    <div style="display: flex; justify-content: flex-start; align-items: center">
-                        <div style="margin-right: 10px; font-weight: bold; color: #fff">{$activeCellInfoNormalized.displayName}</div>
-                        <SvgIcon icon="network" size="20px" color="#fff"/>
-                    </div>
-                </div>
             {/if}
             <div on:click={()=>settingsDialog.open()} style="margin-left:10px;"><SvgIcon icon=faCog size="20px" color="#fff"/></div>
             {#if USING_FEEDBACK}
@@ -182,8 +175,6 @@
 <SettingsDialog bind:this={settingsDialog} />
 {#if isWeaveContext()}
     <CloneManagerShareDialog bind:this={cloneManagerShareDialog} cell={$activeCellInfoNormalized} name={weaveGroupName}/>
-{:else}
-    <CloneManagerDialog bind:this={cloneManagerDialog} />
 {/if}
 
 <style>

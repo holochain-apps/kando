@@ -26,6 +26,8 @@
   import { USING_FEEDBACK } from "./stores/kando";
   import { KanDoCloneManagerStore } from "./stores/cloneManager";
   import { setContext } from "svelte";
+  import NetworkOnboarding from "./NetworkOnboarding.svelte";
+  import { saveDefaultProfile } from "./utils/defaultProfile";
 
   const appId = import.meta.env.VITE_APP_ID
     ? import.meta.env.VITE_APP_ID
@@ -41,6 +43,7 @@
   let kandoCloneManagerStore: KanDoCloneManagerStore | undefined = undefined;
 
   let connected = false;
+  let appPhase: 'loading' | 'onboarding' | 'ready' = 'loading';
 
   let createView;
 
@@ -189,7 +192,19 @@
         client,
         weaveClient
       );
+
+      // In non-Weave mode, check if we need onboarding (no clone cells yet)
+      if (!isWeaveContext()) {
+        const hasClones = await kandoCloneManagerStore.hasClones();
+        if (!hasClones) {
+          appPhase = 'onboarding';
+          connected = true;
+          return;
+        }
+      }
+
       await kandoCloneManagerStore.activeStore.load();
+      appPhase = 'ready';
       connected = true;
     }
     catch (e) {
@@ -201,6 +216,11 @@
     getStore: () => kandoCloneManagerStore,
   });
 
+  async function onOnboardingComplete() {
+    await kandoCloneManagerStore.activeStore.load();
+    appPhase = 'ready';
+  }
+
   $: kandoStore = kandoCloneManagerStore?.activeStore;
   $: profilesStore = $kandoStore?.profilesStore;
   $: prof = profilesStore?.myProfile;
@@ -208,51 +228,65 @@
 
 <svelte:head></svelte:head>
 {#if connected}
-  <profiles-context store={profilesStore}>
-    {#if $prof.status == "pending"}
-      <div class="loading"><div class="loader"></div></div>
-    {:else if $prof.status == "complete" && $prof.value == undefined}
-      <div class="create-profile">
-        {#if USING_FEEDBACK}
-          <div class="welcome-text-feedback" >
-            <h2 style="display:flex;justify-content:center">Welcome to the Moss feedback boards</h2>
-            <p style="display:flex;justify-content:center">powered by <span style="margin-left:10px;width:100px;" class="logo-frame"><KDLogoIcon color="#3498db"/></span></p>
-            <p style="display:flex;justify-content:center;font-size:110%;width:500px;">Our feedback system is public so the community can learn what others are saying about Moss and the various tools.  Thus that profile info you enter below will be visible to all Moss users.</p>
-          </div>
-        {:else}
-          <div class="welcome-text">
-            <div><KDLogoIcon /></div>
-          </div>
-        {/if}
-        <create-profile on:profile-created={() => {}}></create-profile>
-      </div>
-    {:else if $prof.status == "error"}
-      Error when loading profile: {$prof.error}
-    {:else if renderType == RenderType.CreateBoard}
-      <ControllerCreate
-        view={createView}
-        store={$kandoStore}
-      ></ControllerCreate>
-    {:else if renderType == RenderType.App}
-      <Controller store={$kandoStore}
-      ></Controller>
-    {:else if renderType == RenderType.Hrl && !wal.context}
-      <ControllerBoard
-        board={wal.hrl[1]}
-        store={$kandoStore}
-      ></ControllerBoard>
-    {:else if renderType == RenderType.Hrl && wal.context}
-      <ControllerCard
-        board={wal.hrl[1]}
-        cardId={wal.context}
-        store={$kandoStore}
-      ></ControllerCard>
-    {:else if renderType == RenderType.BlockActiveBoards}
-      <ControllerBlockActiveBoards
-        store={$kandoStore}
-      ></ControllerBlockActiveBoards>
-    {/if}
-  </profiles-context>
+  {#if appPhase === 'onboarding'}
+    <NetworkOnboarding
+      cloneManagerStore={kandoCloneManagerStore}
+      on:complete={onOnboardingComplete}
+    />
+  {:else if appPhase === 'ready'}
+    <profiles-context store={profilesStore}>
+      {#if $prof.status == "pending"}
+        <div class="loading"><div class="loader"></div></div>
+      {:else if $prof.status == "complete" && $prof.value == undefined}
+        <div class="create-profile">
+          {#if USING_FEEDBACK}
+            <div class="welcome-text-feedback" >
+              <h2 style="display:flex;justify-content:center">Welcome to the Moss feedback boards</h2>
+              <p style="display:flex;justify-content:center">powered by <span style="margin-left:10px;width:100px;" class="logo-frame"><KDLogoIcon color="#3498db"/></span></p>
+              <p style="display:flex;justify-content:center;font-size:110%;width:500px;">Our feedback system is public so the community can learn what others are saying about Moss and the various tools.  Thus that profile info you enter below will be visible to all Moss users.</p>
+            </div>
+          {:else}
+            <div class="welcome-text">
+              <div><KDLogoIcon /></div>
+            </div>
+          {/if}
+          <create-profile on:profile-created={(e) => {
+            if (e.detail?.profile) {
+              saveDefaultProfile({
+                nickname: e.detail.profile.nickname,
+                avatar: e.detail.profile.fields?.avatar,
+              });
+            }
+          }}></create-profile>
+        </div>
+      {:else if $prof.status == "error"}
+        Error when loading profile: {$prof.error}
+      {:else if renderType == RenderType.CreateBoard}
+        <ControllerCreate
+          view={createView}
+          store={$kandoStore}
+        ></ControllerCreate>
+      {:else if renderType == RenderType.App}
+        <Controller store={$kandoStore}
+        ></Controller>
+      {:else if renderType == RenderType.Hrl && !wal.context}
+        <ControllerBoard
+          board={wal.hrl[1]}
+          store={$kandoStore}
+        ></ControllerBoard>
+      {:else if renderType == RenderType.Hrl && wal.context}
+        <ControllerCard
+          board={wal.hrl[1]}
+          cardId={wal.context}
+          store={$kandoStore}
+        ></ControllerCard>
+      {:else if renderType == RenderType.BlockActiveBoards}
+        <ControllerBlockActiveBoards
+          store={$kandoStore}
+        ></ControllerBlockActiveBoards>
+      {/if}
+    </profiles-context>
+  {/if}
 {:else}
   {#if initializationError}
     <div class="init-error">

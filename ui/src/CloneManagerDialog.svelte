@@ -44,7 +44,7 @@
     await cloneManagerStore.enable(cellId);
     listInstances();
   };
-  const create = async (name: string) => {
+  const create = async (name: string, _useDefaultProfile: boolean) => {
     await cloneManagerStore.create(name);
     listInstances();
   };
@@ -52,7 +52,7 @@
     shareInstance = instance;
     shareCloneDialog.open();
   };
-  const join = async (joiningCode: DnaJoiningInfo) => {
+  const join = async (joiningCode: DnaJoiningInfo, _useDefaultProfile: boolean) => {
     await cloneManagerStore.join(joiningCode.name, joiningCode.networkSeed);
     listInstances();
   };
