@@ -1016,7 +1016,7 @@ export class Board {
     if (! this.session) {
       this.session = await this.workspace.joinSession({
         newPeersDiscoveryInterval: 2 * 1000,
-        enablePresenceHeartbeat: !isWeaveContext(),
+        hearbeatInterval: isWeaveContext() ? 30 * 1000 : 2 * 1000,
       })
       console.log("JOINED", this.session)
     }

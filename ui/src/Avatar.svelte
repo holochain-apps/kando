@@ -16,11 +16,13 @@
   export let showAvatar = true
   export let showNickname = true
   export let placeholder = false
+  export let statusText: string = ""
 
   $: agentPubKey
   $: agentPubKeyB64 = encodeHashToBase64(agentPubKey)
   $: profile = store.profilesStore.profiles.get(agentPubKey)
   $: nickname = $profile.status=="complete" && $profile.value ? $profile.value.entry.nickname : agentPubKeyB64.slice(5,9)+"..."
+  $: tooltip = statusText ? `${nickname} - ${statusText}` : nickname
   
 </script>
 
@@ -38,7 +40,7 @@
                 <SvgIcon color="#fff" icon=faUser size="" style="margin-left:5px;margin-right:5px"></SvgIcon>
             {:else}
             <!-- <div title={nickname}> -->
-                <agent-avatar title={nickname} disable-tooltip={true} disable-copy={true} size={size} agent-pub-key="{agentPubKeyB64}"></agent-avatar>
+                <agent-avatar title={tooltip || nickname} disable-tooltip={true} disable-copy={true} size={size} agent-pub-key="{agentPubKeyB64}"></agent-avatar>
             <!-- </div> -->
             {/if}
         {/if}
