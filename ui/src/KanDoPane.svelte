@@ -33,7 +33,7 @@
   import hljs from "highlight.js";
   import AttachmentsList from "./AttachmentsList.svelte";
   import AttachmentsDialog from "./AttachmentsDialog.svelte";
-  import type { WAL } from "@theweave/api";
+  import { isWeaveContext, type WAL } from "@theweave/api";
   import DisableForOs from "./DisableForOs.svelte";
   import FeedElement from "./FeedElement.svelte";
   import CommitItem from "./CommitItem.svelte";
@@ -87,6 +87,73 @@
 
   $: uiProps = store.uiProps;
   $: participants = activeBoard.participants();
+  $: sessionMembers = activeBoard.sessionParticipants();
+  $: peerStatusStore = isWeaveContext() ? store.weaveClient?.renderInfo?.peerStatusStore : undefined;
+
+  // Unified participant list with status, deduped by agent key
+  $: participantEntries = (() => {
+    const myKeyB64 = store.myAgentPubKeyB64;
+    const seen = new Set<string>();
+    const entries: Array<{agentPubKey: Uint8Array, status: "active" | "idle" | "offline", lastSeen: number | undefined, lastActive: number | undefined}> = [];
+
+    const addAgent = (agentPubKey: Uint8Array, status: "active" | "idle" | "offline", lastSeen?: number, lastActive?: number) => {
+      const keyB64 = encodeHashToBase64(agentPubKey);
+      if (seen.has(keyB64)) return;
+      seen.add(keyB64);
+      // Self is always active
+      if (keyB64 === myKeyB64) status = "active";
+      entries.push({agentPubKey, status, lastSeen, lastActive});
+    };
+
+    if (peerStatusStore) {
+      // Moss mode: membership from syn DHT + syn signals, status from Moss
+      addAgent(store.myAgentPubKey, "active"); // self always active
+
+      // Collect all known peers from both DHT links and syn signals
+      const peerKeys = new Set<string>();
+      if ($sessionMembers?.status === "complete") {
+        for (const agentPubKey of $sessionMembers.value) {
+          peerKeys.add(encodeHashToBase64(agentPubKey));
+        }
+      }
+      if ($participants) {
+        for (const {pubkey} of [...$participants.active, ...$participants.idle, ...$participants.offline]) {
+          peerKeys.add(encodeHashToBase64(pubkey));
+        }
+      }
+
+      for (const keyB64 of peerKeys) {
+        if (keyB64 === myKeyB64) continue;
+        const peerStatus = $peerStatusStore?.[keyB64];
+        const status = peerStatus?.status === "offline" ? "offline"
+          : peerStatus?.status === "inactive" ? "idle"
+          : "active";
+        addAgent(decodeHashFromBase64(keyB64), status, peerStatus?.lastSeen);
+      }
+    } else if ($participants) {
+      // Standalone mode: single list from syn's active/idle/offline
+      for (const {pubkey, lastSeen: ls, lastActive: la} of $participants.active) {
+        addAgent(pubkey, "active", ls);
+      }
+      for (const {pubkey, lastSeen: ls, lastActive: la} of $participants.idle) {
+        addAgent(pubkey, "idle", ls, la);
+      }
+      for (const {pubkey, lastSeen: ls} of $participants.offline) {
+        addAgent(pubkey, "offline", ls);
+      }
+    }
+    return entries;
+  })();
+
+  function formatTimeAgo(timestamp: number | undefined, prefix: string): string {
+    if (!timestamp) return "";
+    const seconds = Math.floor((Date.now() - timestamp) / 1000);
+    if (seconds < 60) return `${prefix} ${seconds}s ago`;
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${prefix} ${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    return `${prefix} ${hours}h ago`;
+  }
   $: activeCard = store.boardList.activeCard;
   $: activeHashB64 = store.boardList.activeBoardHashB64;
   $: state = activeBoard.readableState();
@@ -747,12 +814,18 @@
           {/if}
         </div>
       {/if}
-      {#if $participants}
+      {#if participantEntries.length > 0}
         <div class="participants">
-          <div style="display:flex; flex-direction: row">
-            {#each Array.from($participants.entries()) as [agentPubKey, sessionData]}
-              <div class:idle={Date.now() - sessionData.lastSeen > 30000}>
-                <Avatar {agentPubKey} showNickname={false} size={30} />
+          <div style="display:flex; flex-direction: row; gap: 4px;">
+            {#each participantEntries as {agentPubKey, status, lastSeen, lastActive}}
+              {@const statusText = status === "offline"
+                ? (formatTimeAgo(lastSeen, "Last seen") || "Offline")
+                : status === "idle"
+                ? (formatTimeAgo(lastActive, "Idle since") || "Idle")
+                : ""}
+              <div class="participant-avatar">
+                <Avatar {agentPubKey} showNickname={false} size={30} {statusText} />
+                <span class="status-dot" class:active={status === "active"} class:idle={status === "idle"} class:offline={status === "offline"}></span>
               </div>
             {/each}
           </div>
@@ -1614,7 +1687,27 @@
     border-top: solid 1px gray;
     padding-top: 5px;
   }
-  .idle {
-    opacity: 0.5;
+  .participant-avatar {
+    position: relative;
+    cursor: default;
+  }
+  .status-dot {
+    position: absolute;
+    bottom: -1px;
+    right: -1px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid white;
+  }
+  .status-dot.active {
+    background-color: #00e676;
+  }
+  .status-dot.idle {
+    background-color: #ffa726;
+  }
+  .status-dot.offline {
+    background-color: transparent;
+    border-color: #999;
   }
 </style>

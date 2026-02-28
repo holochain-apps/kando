@@ -6,6 +6,7 @@ import { BoardType } from "./boardList";
 import { cloneDeep } from "lodash";
 import type { WALUrl } from "./utils/util";
 import { NotificationType } from "./stores/kando";
+import { isWeaveContext } from "@theweave/api";
 
 export class LabelDef {
     type: uuidv1
@@ -1013,7 +1014,10 @@ export class Board {
 
   async join() {
     if (! this.session) {
-      this.session = await this.workspace.joinSession()
+      this.session = await this.workspace.joinSession({
+        newPeersDiscoveryInterval: 2 * 1000,
+        hearbeatInterval: isWeaveContext() ? 30 * 1000 : 2 * 1000,
+      })
       console.log("JOINED", this.session)
     }
   }
@@ -1063,7 +1067,7 @@ export class Board {
     if (!this.session) {
       return undefined
     } else {
-      return this.session._participants
+      return this.session.participants
     }
   }
   async commitChanges() {
