@@ -25,6 +25,7 @@ holochain = { version = "0.6.1-rc.0", default-features = false, features = ["sql
 holochain_types = { version = "0.6.1-rc.0" }
 lair_keystore = { version = "0.6.3" }
 
+serde = { version = "1", features = ["derive"] }
 log = "0.4"
 tauri-plugin-log = "2.4.0"
 tauri-plugin-opener = "2.2.7"

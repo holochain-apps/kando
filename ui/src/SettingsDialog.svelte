@@ -1,6 +1,7 @@
 <script lang="ts">
     import { getContext } from "svelte";
     import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
+    import '@shoelace-style/shoelace/dist/components/details/details.js';
     import SvgIcon from "./SvgIcon.svelte";
     import { type KanDoStore, NotificationOptions, NotificationType } from "./stores/kando";
     import {asyncDerived, toPromise} from '@holochain-open-dev/stores'
@@ -12,6 +13,7 @@
     import { isWeaveContext } from "@theweave/api";
     import DisableForOs from "./DisableForOs.svelte";
     import { loadDefaultProfile, saveDefaultProfile } from "./utils/defaultProfile";
+    import { isTauriContext } from "./utils/util";
 
     const { getStore } :any = getContext('store');
 
@@ -22,10 +24,59 @@
     export const open = ()=>{
         const dp = loadDefaultProfile();
         defaultNickname = dp?.nickname || "";
+        loadNetworkConfig();
         dialog.show();
     }
 
     let defaultNickname = "";
+
+    // --- Network server config (tauri only) ---
+    let bootstrapUrl = "";
+    let relayUrl = "";
+    let networkConfigLoaded = false;
+
+    async function loadNetworkConfig() {
+        if (!isTauriContext()) return;
+        try {
+            const { invoke } = await import("@tauri-apps/api/core");
+            let config = await invoke("get_user_network_config");
+            if (!config) {
+                config = await invoke("default_user_network_config");
+            }
+            bootstrapUrl = config.bootstrapUrl || "";
+            relayUrl = config.relayUrl || "";
+            networkConfigLoaded = true;
+        } catch (e) {
+            console.error("Failed to load network config:", e);
+        }
+    }
+
+    async function saveNetworkConfig() {
+        if (!confirm("Changing network servers requires restarting the app. Continue?")) return;
+        try {
+            const { invoke } = await import("@tauri-apps/api/core");
+            await invoke("set_user_network_config", {
+                bootstrapUrl,
+                relayUrl,
+            });
+        } catch (e) {
+            console.error("Failed to save network config:", e);
+        }
+    }
+
+    async function resetNetworkDefaults() {
+        if (!confirm("Reset to default servers and restart the app?")) return;
+        try {
+            const { invoke } = await import("@tauri-apps/api/core");
+            const defaults = await invoke("default_user_network_config");
+            await invoke("set_user_network_config", {
+                bootstrapUrl: defaults.bootstrapUrl,
+                relayUrl: defaults.relayUrl,
+            });
+        } catch (e) {
+            console.error("Failed to reset network config:", e);
+        }
+    }
 
     let fileinput;
 	const onFileSelected = (e)=>{
@@ -172,12 +223,55 @@
         {:else if $allBoards.status == "error"}
             Error: {$allBoards.error}
         {/if}
+
+        {#if isTauriContext()}
+            <sl-details summary="Advanced Network Options" class="network-servers">
+                <p style="font-size:12px;color:#666;margin-top:0;">Configure bootstrap and relay servers. Changes require an app restart.</p>
+                {#if networkConfigLoaded}
+                    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:10px;">
+                        <div>
+                            <label style="font-weight:bold;font-size:14px;">Bootstrap URL:</label>
+                            <sl-input
+                                value={bootstrapUrl}
+                                placeholder="https://..."
+                                on:input={e => bootstrapUrl = e.target.value}
+                            ></sl-input>
+                        </div>
+                        <div>
+                            <label style="font-weight:bold;font-size:14px;">Relay URL:</label>
+                            <sl-input
+                                value={relayUrl}
+                                placeholder="https://..."
+                                on:input={e => relayUrl = e.target.value}
+                            ></sl-input>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:10px;align-items:center;">
+                        <sl-button size="small" variant="primary"
+                            disabled={bootstrapUrl.length === 0 || relayUrl.length === 0}
+                            on:click={saveNetworkConfig}
+                        >Save & Restart</sl-button>
+                        <sl-button size="small" variant="text"
+                            on:click={resetNetworkDefaults}
+                        >Reset to Defaults</sl-button>
+                    </div>
+                {:else}
+                    <div class="spinning" style="display:inline-block"><SvgIcon icon=faSpinner color="black"></SvgIcon></div>
+                {/if}
+            </sl-details>
+        {/if}
     </div>
 
 </sl-dialog>
 
 <style>
     .default-profile {
+        border-bottom: solid 1px lightgray;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+    }
+
+    .network-servers {
         border-bottom: solid 1px lightgray;
         margin-bottom: 20px;
         padding-bottom: 15px;

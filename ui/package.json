@@ -21,6 +21,7 @@
     "@msgpack/msgpack": "^3.0.0-beta2",
     "@shoelace-style/shoelace": "^2.19",
     "@square/svelte-store": "^1.0.18",
+    "@tauri-apps/api": "^2.5.0",
     "@tauri-apps/plugin-opener": "^2.2.7",
     "@tauri-apps/plugin-os": "^2.2.1",
     "@theweave/elements": "^0.6.3",
