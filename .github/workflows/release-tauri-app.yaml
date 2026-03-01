@@ -54,9 +54,9 @@ jobs:
           nix develop --no-update-lock-file --accept-flake-config --command bash -c "
             npm i
             npm run package -w ui
-            hc web-app pack workdir --recursive
+            hc web-app pack workdir
             APP_VER=\$(node -p \"require('./ui/package.json').version\")
-            weave hash-webhapp \$APP_VER ./workdir/kando.webhapp > weave-hash.txt
+            npx weave hash-webhapp \$APP_VER ./workdir/kando.webhapp > weave-hash.txt
           "
 
       - name: Upload happ artifact
