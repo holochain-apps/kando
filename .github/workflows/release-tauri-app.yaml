@@ -96,11 +96,11 @@ jobs:
         with:
           node-version: 20
 
-      - name: install Rust stable
+      - name: install Rust
         uses: actions-rs/toolchain@v1
         with:
           override: true
-          toolchain: stable
+          toolchain: "1.88.0"
 
       - name: install Go stable
         uses: actions/setup-go@v4
