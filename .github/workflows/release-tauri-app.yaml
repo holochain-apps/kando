@@ -49,6 +49,9 @@ jobs:
           echo "Downloading happ from release: $HAPP_TAG"
           gh release download "$HAPP_TAG" -p kando.happ -D workdir
 
+      - name: Enable unprivileged user namespaces for Electron sandbox
+        run: sudo sysctl -w kernel.unprivileged_userns_clone=1
+
       - name: Build webhapp and weave-hash
         run: |
           nix develop --no-update-lock-file --accept-flake-config --command bash -c "
