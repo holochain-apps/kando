@@ -14,10 +14,13 @@
     import { isWeaveContext } from "@theweave/api";
     import { UngroupedName } from "./board";
     import CloneManagerShareDialog from "./CloneManagerShareDialog.svelte";
+    import CloneManagerDialog from "./CloneManagerDialog.svelte";
     import NetworkTabs from "./NetworkTabs.svelte";
     export let wide = false
 
     let newBoardDialog
+    let cloneManagerDialog
+    let networkTabs
 
     const { getStore } :any = getContext('store');
     const { getStore: getCloneManagerStore } :any = getContext("cloneManagerStore");
@@ -68,7 +71,6 @@
     class:wide={wide} >
 
     {#if !isWeaveContext() && !USING_FEEDBACK}
-        <NetworkTabs />
         <GroupParticipants/>
     {/if}
         <h3 class="type-header">Boards</h3>
@@ -143,8 +145,8 @@
     {/if}
 
     <NewBoardDialog bind:this={newBoardDialog}></NewBoardDialog>
-    <div class="footer" 
-        class:slideOut={$uiProps.showMenu == false}>   
+    <div class="footer"
+        class:slideOut={$uiProps.showMenu == false}>
         <div class="logo" title="About KanDo!"
             on:click={()=>{
                 if (USING_FEEDBACK) {
@@ -153,7 +155,13 @@
         >
             <KDLogoIcon />
         </div>
+        {#if !isWeaveContext() && !USING_FEEDBACK}
+            <NetworkTabs bind:this={networkTabs} />
+        {/if}
         <div>
+            {#if !isWeaveContext() && !USING_FEEDBACK}
+                <div on:click={()=>cloneManagerDialog.open()} style="margin-left:10px;" title="Manage Networks"><SvgIcon icon="faCircleNodes" size="20px" color="#fff"/></div>
+            {/if}
             {#if isWeaveContext()}
                 <div on:click={()=>cloneManagerShareDialog.open()} style="background-color:  #164B9A; padding: 3px 5px; border-radius: 10px;">
                     <div style="display: flex; justify-content: flex-start; align-items: center">
@@ -173,6 +181,9 @@
 
 <AboutDialog bind:this={aboutDialog} />
 <SettingsDialog bind:this={settingsDialog} />
+{#if !isWeaveContext() && !USING_FEEDBACK}
+    <CloneManagerDialog bind:this={cloneManagerDialog} onChange={() => networkTabs?.loadClones()} />
+{/if}
 {#if isWeaveContext()}
     <CloneManagerShareDialog bind:this={cloneManagerShareDialog} cell={$activeCellInfoNormalized} name={weaveGroupName}/>
 {/if}
@@ -200,7 +211,7 @@
         align-items: flex-start;
         position: relative;
         padding: 15px;
-        padding-bottom: 50px;
+        padding-bottom: 60px;
     }
 
     .wide.board-menu {
@@ -303,7 +314,7 @@
 
     .footer {
         position: fixed;
-        padding: 10px;
+        padding: 0 10px;
         border-radius: 0;
         bottom: 0px;
         height: 40px;
@@ -313,6 +324,8 @@
         width: 330px;
         left: 0;
         background-color: rgba(23, 55, 123, .9);
+        border-top: 1px solid rgba(255, 255, 255, 0.25);
+        overflow: visible;
         animation-duration: .3s;
         animation-name: slideIn;
         animation-iteration-count: 1;
@@ -360,6 +373,7 @@
     .logo {
         height: 16px;
         margin-right: 5px;
+        flex-shrink: 0;
     }
 
     .board-bg {

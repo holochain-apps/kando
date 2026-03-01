@@ -76,7 +76,8 @@ export class KanDoCloneManagerStore {
 
     return cells
       .filter((cell) => cell.type === CellType.Cloned && cell.value.enabled)
-      .map((cell) => this._makeCellInfoNormalized(provisioned, cell));
+      .map((cell) => this._makeCellInfoNormalized(provisioned, cell))
+      .sort((a, b) => a.name.localeCompare(b.name));
   }
 
   async list(): Promise<CellInfoNormalized[]> {

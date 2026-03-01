@@ -16,6 +16,7 @@
   let shareCloneDialog;
   let joinCloneDialog;
   let shareInstance: CellInfoNormalized | undefined;
+  export let onChange: (() => void) | undefined = undefined;
   export const open = () => { dialog.show() };
   
   let instances: CellInfoNormalized[];
@@ -39,14 +40,17 @@
   const disable = async (cellId: CellId) => {
     await cloneManagerStore.disable(cellId);
     listInstances();
+    onChange?.();
   };
   const enable = async (cellId: CellId) => {
     await cloneManagerStore.enable(cellId);
     listInstances();
+    onChange?.();
   };
   const create = async (name: string, _useDefaultProfile: boolean) => {
     await cloneManagerStore.create(name);
     listInstances();
+    onChange?.();
   };
   const share = (instance: CellInfoNormalized) => {
     shareInstance = instance;
@@ -55,6 +59,7 @@
   const join = async (joiningCode: DnaJoiningInfo, _useDefaultProfile: boolean) => {
     await cloneManagerStore.join(joiningCode.name, joiningCode.networkSeed);
     listInstances();
+    onChange?.();
   };
   const isInstanceActive = (instance: CellInfoNormalized) => hashEqual(get(cloneManagerStore.activeDnaHash), instance.cellId[0]);
   

@@ -217,7 +217,13 @@
   });
 
   async function onOnboardingComplete() {
-    await kandoCloneManagerStore.activeStore.load();
+    try {
+      // Force reload the activeCellInfoNormalized first, then activeStore
+      await kandoCloneManagerStore.activeCellInfoNormalized.load();
+      await kandoCloneManagerStore.activeStore.load();
+    } catch (err) {
+      console.error("Error completing onboarding:", err);
+    }
     appPhase = 'ready';
   }
 

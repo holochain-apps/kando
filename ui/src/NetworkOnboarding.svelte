@@ -2,12 +2,10 @@
   import { createEventDispatcher } from "svelte";
   import '@shoelace-style/shoelace/dist/components/button/button.js';
   import '@shoelace-style/shoelace/dist/components/input/input.js';
-  import '@shoelace-style/shoelace/dist/components/checkbox/checkbox.js';
   import SvgIcon from './SvgIcon.svelte';
   import KDLogoIcon from "./icons/KDLogoIcon.svelte";
   import type { KanDoCloneManagerStore } from "./stores/cloneManager";
   import { decodeDnaJoiningInfo } from "./utils/dnaJoiningInfo";
-  import { loadDefaultProfile } from "./utils/defaultProfile";
 
   export let cloneManagerStore: KanDoCloneManagerStore;
 
@@ -16,11 +14,9 @@
   let mode: 'choose' | 'create' | 'join' = 'choose';
   let networkName = "";
   let joiningCode = "";
-  let useDefaultProfile = true;
   let saving = false;
   let error: string | undefined;
 
-  $: hasDefaultProfile = loadDefaultProfile() !== null;
   $: createValid = networkName.length > 0;
   $: joinValid = joiningCode.length > 0;
 
@@ -31,7 +27,7 @@
       const cloneCell = await cloneManagerStore.create(networkName);
       cloneManagerStore.activate(cloneCell.cell_id);
       cloneManagerStore.needsOnboarding.set(false);
-      dispatch('complete', { useDefaultProfile: useDefaultProfile && hasDefaultProfile });
+      dispatch('complete');
     } catch (e) {
       error = `${e}`;
     }
@@ -46,7 +42,7 @@
       const cloneCell = await cloneManagerStore.join(info.name, info.networkSeed);
       cloneManagerStore.activate(cloneCell.cell_id);
       cloneManagerStore.needsOnboarding.set(false);
-      dispatch('complete', { useDefaultProfile: useDefaultProfile && hasDefaultProfile });
+      dispatch('complete');
     } catch (e) {
       error = `${e}`;
     }
@@ -88,12 +84,6 @@
         ></sl-input>
       </div>
 
-      {#if hasDefaultProfile}
-        <sl-checkbox checked={useDefaultProfile} on:sl-change={e => useDefaultProfile = e.target.checked}>
-          Use default profile
-        </sl-checkbox>
-      {/if}
-
       {#if error}
         <div class="error">Error: {error}</div>
       {/if}
@@ -125,12 +115,6 @@
         ></sl-input>
       </div>
 
-      {#if hasDefaultProfile}
-        <sl-checkbox checked={useDefaultProfile} on:sl-change={e => useDefaultProfile = e.target.checked}>
-          Use default profile
-        </sl-checkbox>
-      {/if}
-
       {#if error}
         <div class="error">Error: {error}</div>
       {/if}
@@ -160,8 +144,8 @@
     align-items: center;
     justify-content: center;
     min-height: 100vh;
-    background: linear-gradient(135deg, #164B9A 0%, #5B47D6 100%);
-    color: #fff;
+    background: #1a1a2e;
+    color: #f0f0f0;
     padding: 40px;
   }
 
@@ -173,14 +157,13 @@
   h2 {
     font-size: 28px;
     margin: 0 0 8px 0;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    color: #ffffff;
   }
 
   .subtitle {
     font-size: 16px;
-    opacity: 1;
     margin: 0 0 40px 0;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    color: #b0b0c0;
   }
 
   .choices {
@@ -191,8 +174,8 @@
   }
 
   .choice-card {
-    background: rgba(255, 255, 255, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: #2a2a4a;
+    border: 1px solid #4a4a6a;
     border-radius: 12px;
     padding: 30px;
     width: 220px;
@@ -202,28 +185,27 @@
   }
 
   .choice-card:hover {
-    background: rgba(255, 255, 255, 0.2);
-    border-color: rgba(255, 255, 255, 0.4);
+    background: #3a3a5a;
+    border-color: #6a6a9a;
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
   }
 
   .choice-card h3 {
     margin: 15px 0 8px 0;
     font-size: 18px;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    color: #ffffff;
   }
 
   .choice-card p {
     margin: 0;
     font-size: 14px;
-    opacity: 1;
-    color: rgba(255, 255, 255, 0.9);
+    color: #a0a0b8;
   }
 
   .form {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: #2a2a4a;
+    border: 1px solid #4a4a6a;
     border-radius: 12px;
     padding: 30px;
     width: 400px;
@@ -239,6 +221,7 @@
     margin-bottom: 8px;
     font-weight: bold;
     font-size: 14px;
+    color: #d0d0e0;
   }
 
   .controls {
