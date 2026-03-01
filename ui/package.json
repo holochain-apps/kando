@@ -14,7 +14,7 @@
     "@holochain-open-dev/profiles": "^0.601.3",
     "@holochain-open-dev/stores": "^0.601.0",
     "@holochain-open-dev/utils": "^0.601.0",
-    "@holochain-syn/core": "^0.600.0",
+    "@holochain-syn/core": "^0.601.0",
     "@holochain/client": "^0.20.4-rc.0",
     "@theweave/api": "0.6.6",
     "@mdi/js": "^7.1.96",
