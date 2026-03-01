@@ -82,15 +82,94 @@ AGENTS=3 npm run network
 Substitute the "3" for the number of nodes that you want to bootstrap in your network.
 This will also bring up the Holochain Playground for advanced introspection of the conductors.
 
+## Tauri Desktop Development
+
+### Running 2 tauri agents
+
+```bash
+npm run start:tauri
+```
+
+This launches 2 tauri desktop instances connected via a local bootstrap server, each with its own holochain data directory (`~/.cache/kando/holochain-0/`, `holochain-1/`, etc.).
+
+### Running tauri alongside Android
+
+```bash
+npm run network:android
+```
+
+Launches 1 tauri desktop instance and 1 Android device/emulator on the same local network.
+
+### Network Configuration
+
+In tauri mode, bootstrap and relay server URLs can be configured per-instance via Settings > Advanced Network Options. Changes are persisted to a `user-network-config.json` file and require an app restart to take effect.
+
+- **Dev mode**: config stored per-instance at `~/.cache/kando/holochain-N/user-network-config.json`
+- **Production**: config stored at `~/.local/share/kando/user-network-config.json` (Linux), `~/Library/Application Support/kando/` (macOS), or `%APPDATA%\kando\` (Windows)
+
+User-configured URLs override all defaults, including the dev-mode local bootstrap.
+
 ## Packaging
 
 To package the web happ:
-``` bash
+```bash
 npm run package
 ```
 
 You'll have the `kando.webhapp` in `workdir`. This is what you should distribute so that the Holochain Launcher can install it.
-You will also have its subcomponent `kando.happ` in the same folder`.
+You will also have its subcomponent `kando.happ` in the same folder.
+
+## Versioning
+
+There are three version numbers to keep in sync:
+
+| Version | Location | Purpose |
+|---------|----------|---------|
+| `dnaVersion` | `ui/package.json` | hApp / DNA version (zome changes) |
+| `version` | `ui/package.json` | UI + runtime version (app version shown in releases) |
+| `version` | `src-tauri/tauri.conf.json` | Tauri bundle version (should match `ui/package.json` version) |
+
+The `.happ-version` file (e.g. `happ-v0.17.0`) tells the runtime release workflow which hApp release to download and bundle.
+
+## Release Process
+
+Releases use two separate GitHub Actions workflows, triggered by git tags.
+
+### 1. Release the hApp (when zomes change)
+
+Bump `dnaVersion` in `ui/package.json`, then:
+
+```bash
+npm run release:happ
+```
+
+This pushes a `happ-v<dnaVersion>` tag, triggering `.github/workflows/release-happ.yaml` which builds and publishes the `.happ` as a draft GitHub release.
+
+### 2. Release the runtimes (desktop + Android + webhapp)
+
+1. Update `.happ-version` to point to the hApp release tag from step 1 (e.g. `happ-v0.17.0`)
+2. Bump `version` in `ui/package.json` and `src-tauri/tauri.conf.json`
+3. Then run:
+
+```bash
+npm run release:runtimes
+```
+
+This pushes a `v<version>` tag, triggering `.github/workflows/release-tauri-app.yaml` which:
+- Downloads the hApp from the referenced hApp release
+- Builds the webhapp and weave hash
+- Builds desktop binaries for Linux, macOS, and Windows via `tauri-action`
+- Builds an Android APK (aarch64)
+- Uploads all artifacts to a draft GitHub release
+
+After the workflow completes, review and publish the draft release on GitHub.
+
+### Android Signing
+
+The Android build requires signing secrets configured in GitHub Actions:
+- `ANDROID_KEY_BASE64` - base64-encoded keystore file
+- `ANDROID_KEY_ALIAS` - key alias
+- `ANDROID_KEY_PASSWORD` - key/store password
 
 ## Documentation
 
@@ -100,6 +179,7 @@ This repository is using these tools:
 - [@holochain/tryorama](https://www.npmjs.com/package/@holochain/tryorama): test framework.
 - [@holochain/client](https://www.npmjs.com/package/@holochain/client): client library to connect to Holochain from the UI.
 - [@holochain-playground/cli](https://www.npmjs.com/package/@holochain-playground/cli): introspection tooling to understand what's going on in the Holochain nodes.
+- [tauri-plugin-holochain](https://github.com/darksoil-studio/tauri-plugin-holochain): Tauri plugin for running Holochain in desktop and mobile apps.
 
 
 ## License
