@@ -33,7 +33,8 @@
     "tauri": "tauri",
     "release:happ": "HAPP_VER=$(node -p \"require('./ui/package.json').dnaVersion\") && git tag happ-v$HAPP_VER && git push origin happ-v$HAPP_VER",
     "release:runtimes": "APP_VER=$(node -p \"require('./ui/package.json').version\") && git tag v$APP_VER && git push origin v$APP_VER",
-    "weave-hash": "APP_VER=$(node -p \"require('./ui/package.json').version\") && weave hash-webhapp $APP_VER ./workdir/kando.webhapp"
+    "weave-hash": "APP_VER=$(node -p \"require('./ui/package.json').version\") && weave hash-webhapp $APP_VER ./workdir/kando.webhapp",
+    "weave-hash:release": "APP_VER=$(node -p \"require('./ui/package.json').version\") && gh release download v$APP_VER -p kando.webhapp -p kando.happ -D workdir --clobber && weave hash-webhapp $APP_VER ./workdir/kando.webhapp"
   },
   "devDependencies": {
     "@holochain-playground/cli": "^0.300.1",
