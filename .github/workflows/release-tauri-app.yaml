@@ -55,8 +55,7 @@ jobs:
             npm i
             npm run package -w ui
             hc web-app pack workdir
-            APP_VER=\$(node -p \"require('./ui/package.json').version\")
-            ELECTRON_EXTRA_LAUNCH_ARGS=--no-sandbox npx weave hash-webhapp \$APP_VER ./workdir/kando.webhapp > weave-hash.txt
+            npm run --silent weave-hash > weave-hash.txt
           "
 
       - name: Upload happ artifact
