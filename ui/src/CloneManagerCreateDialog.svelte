@@ -3,19 +3,24 @@
     import { getContext } from 'svelte';
     import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
     import '@shoelace-style/shoelace/dist/components/button/button.js';
+    import '@shoelace-style/shoelace/dist/components/checkbox/checkbox.js';
     import type SlDialog from '@shoelace-style/shoelace/dist/components/dialog/dialog';
     import SvgIcon from './SvgIcon.svelte';
+    import { loadDefaultProfile } from './utils/defaultProfile';
 
     let saving = false;
     let dialog: SlDialog
     let name: string = "";
+    let useDefaultProfile = true;
     let error;
 
     const { getStore } :any = getContext('store');
 
     const store:KanDoStore = getStore();
 
-    export let handleSave: (name: string) => Promise<void>;
+    $: hasDefaultProfile = loadDefaultProfile() !== null;
+
+    export let handleSave: (name: string, useDefaultProfile: boolean) => Promise<void>;
     export const open = ()=> {
         dialog.show()
     }
@@ -29,7 +34,7 @@
     const create = async () => {
         saving = true
         try {
-            await handleSave(name);
+            await handleSave(name, useDefaultProfile && hasDefaultProfile);
             close();
         } catch(e) {
             error = e;
@@ -57,6 +62,12 @@
         <div class="edit-title setting">
             <div class="title-text">Title</div> <sl-input class='textarea' maxlength="60" value={name}  on:input={e=> name = e.target.value}></sl-input>
         </div>
+
+        {#if hasDefaultProfile}
+            <sl-checkbox checked={useDefaultProfile} on:sl-change={e => useDefaultProfile = e.target.checked} style="margin-bottom: 10px;">
+                Use default profile
+            </sl-checkbox>
+        {/if}
 
         <div class='controls'>
             <sl-button on:click={close} class="board-control">

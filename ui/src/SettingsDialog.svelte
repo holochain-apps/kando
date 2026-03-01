@@ -11,6 +11,7 @@
     import { encodeHashToBase64 } from "@holochain/client";
     import { isWeaveContext } from "@theweave/api";
     import DisableForOs from "./DisableForOs.svelte";
+    import { loadDefaultProfile, saveDefaultProfile } from "./utils/defaultProfile";
 
     const { getStore } :any = getContext('store');
 
@@ -18,7 +19,13 @@
     $: uiProps = store.uiProps
 
     let dialog
-    export const open = ()=>{dialog.show()}
+    export const open = ()=>{
+        const dp = loadDefaultProfile();
+        defaultNickname = dp?.nickname || "";
+        dialog.show();
+    }
+
+    let defaultNickname = "";
 
     let fileinput;
 	const onFileSelected = (e)=>{
@@ -101,6 +108,29 @@
             </div>
         {/if}
 
+        {#if !isWeaveContext()}
+            <div class="default-profile">
+                <h3>Default Profile</h3>
+                <p style="font-size:12px;color:#666;margin-top:0;">This profile is auto-applied when you create or join a new network.</p>
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+                    <label style="font-weight:bold;font-size:14px;">Nickname:</label>
+                    <sl-input
+                        value={defaultNickname}
+                        placeholder="Your display name"
+                        maxlength="60"
+                        on:input={e => defaultNickname = e.target.value}
+                        style="flex:1;"
+                    ></sl-input>
+                </div>
+                <sl-button size="small" variant="primary"
+                    disabled={defaultNickname.length === 0}
+                    on:click={() => {
+                        saveDefaultProfile({ nickname: defaultNickname, avatar: undefined });
+                    }}
+                >Save Default Profile</sl-button>
+            </div>
+        {/if}
+
         <DisableForOs os={["android", "ios"]}>
             <div class="import-export">
                 <h3>Import/Export</h3>
@@ -147,6 +177,12 @@
 </sl-dialog>
 
 <style>
+    .default-profile {
+        border-bottom: solid 1px lightgray;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+    }
+
     .import-export {
         display:flex;
         flex-direction: column;
