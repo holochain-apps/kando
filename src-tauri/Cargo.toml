@@ -1,6 +1,6 @@
 [package]
 name = "kandoapp"
-version = "0.17.0"
+version = "0.17.1"
 description = "Kando"
 authors = ["eric@holochain.org"]
 license = ""
