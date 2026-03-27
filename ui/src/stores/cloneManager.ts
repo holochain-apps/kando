@@ -10,13 +10,14 @@ import {
   type AppInfo,
 } from '@holochain/client';
 import { get, writable, type Writable } from "svelte/store";
-import { ProfilesClient, ProfilesStore } from '@holochain-open-dev/profiles';
+import { type Profile, ProfilesClient, ProfilesStore } from '@holochain-open-dev/profiles';
 import type { WeaveClient } from '@theweave/api';
 import { v7 as uuidv7 } from "uuid";
 import { asyncDerived, type Loadable } from '@square/svelte-store';
 import { hashEqual } from '../utils/util';
 import { KanDoStore, ROLE_NAME } from './kando';
-import { createMergedProfilesStore } from './mergedProfilesStore';
+import { isEqual } from "lodash-es";
+import { decode } from '@msgpack/msgpack';
 
 export interface CellInfoNormalized {
   originalDnaHash: Uint8Array;
@@ -62,12 +63,26 @@ export class KanDoCloneManagerStore {
       const roleName = $activeCellInfoNormalized.roleName;
 
       if (this.weaveClient) {
-        const mossProfilesClient = weaveClient.renderInfo.profilesClient;
-        const dnaProfilesClient = new ProfilesClient(this.client, roleName);
-        const profilesStore = await createMergedProfilesStore(
-          mossProfilesClient, dnaProfilesClient, this.client
-        );
-        return new KanDoStore(this, profilesStore, $activeDnaHash, roleName);
+        // === Profile synchronization logic ===
+        const profilesClient = new ProfilesClient(this.client, roleName);
+        const myLocalProfileRaw = await profilesClient.getAgentProfile(this.client.myPubKey)
+        const localEncodedField = (myLocalProfileRaw?.record?.entry as any)?.Present?.entry
+        const myLocalProfile = localEncodedField ? decode(localEncodedField) as Profile : undefined
+        const weaveProfilesClient = weaveClient.renderInfo.profilesClient as ProfilesClient
+        const myWeaveProfileRaw = await weaveProfilesClient.getAgentProfile(this.client.myPubKey)
+        const weaveEncodedField = (myWeaveProfileRaw?.record?.entry as any)?.Present?.entry
+        const myWeaveProfile = weaveEncodedField ? decode(weaveEncodedField) as Profile : undefined
+        const areProfilesInSync = isEqual(myLocalProfile, myWeaveProfile)
+        if (!areProfilesInSync && myWeaveProfile) {
+          if (!myLocalProfile) {
+            await profilesClient.createProfile({...myWeaveProfile})
+          } else {
+            await profilesClient.updateProfile({...myWeaveProfile})
+          }
+        }
+        // === Profile synchronization logic ends ===
+
+        return new KanDoStore(this, new ProfilesStore(profilesClient), $activeDnaHash, roleName);
       } else {
         const profilesClient = new ProfilesClient(this.client, roleName);
         return new KanDoStore(this, new ProfilesStore(profilesClient), $activeDnaHash, roleName);

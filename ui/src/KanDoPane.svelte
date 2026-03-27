@@ -37,6 +37,7 @@
   import DisableForOs from "./DisableForOs.svelte";
   import FeedElement from "./FeedElement.svelte";
   import CommitItem from "./CommitItem.svelte";
+  import '@holochain-syn/core/dist/elements/session-participants.js'
 
   onMount(async () => {
     onVisible(columnNameElem, () => {
@@ -86,64 +87,7 @@
   export let standAlone = false;
 
   $: uiProps = store.uiProps;
-  $: participants = activeBoard.participants();
-  $: sessionMembers = activeBoard.sessionParticipants();
-  $: peerStatusStore = isWeaveContext() ? store.weaveClient?.renderInfo?.peerStatusStore : undefined;
-
-  // Unified participant list with status, deduped by agent key
-  $: participantEntries = (() => {
-    const myKeyB64 = store.myAgentPubKeyB64;
-    const seen = new Set<string>();
-    const entries: Array<{agentPubKey: Uint8Array, status: "active" | "idle" | "offline", lastSeen: number | undefined, lastActive: number | undefined}> = [];
-
-    const addAgent = (agentPubKey: Uint8Array, status: "active" | "idle" | "offline", lastSeen?: number, lastActive?: number) => {
-      const keyB64 = encodeHashToBase64(agentPubKey);
-      if (seen.has(keyB64)) return;
-      seen.add(keyB64);
-      // Self is always active
-      if (keyB64 === myKeyB64) status = "active";
-      entries.push({agentPubKey, status, lastSeen, lastActive});
-    };
-
-    if (peerStatusStore) {
-      // Moss mode: membership from syn DHT + syn signals, status from Moss
-      addAgent(store.myAgentPubKey, "active"); // self always active
-
-      // Collect all known peers from both DHT links and syn signals
-      const peerKeys = new Set<string>();
-      if ($sessionMembers?.status === "complete") {
-        for (const agentPubKey of $sessionMembers.value) {
-          peerKeys.add(encodeHashToBase64(agentPubKey));
-        }
-      }
-      if ($participants) {
-        for (const {pubkey} of [...$participants.active, ...$participants.idle, ...$participants.offline]) {
-          peerKeys.add(encodeHashToBase64(pubkey));
-        }
-      }
-
-      for (const keyB64 of peerKeys) {
-        if (keyB64 === myKeyB64) continue;
-        const peerStatus = $peerStatusStore?.[keyB64];
-        const status = peerStatus?.status === "offline" ? "offline"
-          : peerStatus?.status === "inactive" ? "idle"
-          : "active";
-        addAgent(decodeHashFromBase64(keyB64), status, peerStatus?.lastSeen);
-      }
-    } else if ($participants) {
-      // Standalone mode: single list from syn's active/idle/offline
-      for (const {pubkey, lastSeen: ls, lastActive: la} of $participants.active) {
-        addAgent(pubkey, "active", ls);
-      }
-      for (const {pubkey, lastSeen: ls, lastActive: la} of $participants.idle) {
-        addAgent(pubkey, "idle", ls, la);
-      }
-      for (const {pubkey, lastSeen: ls} of $participants.offline) {
-        addAgent(pubkey, "offline", ls);
-      }
-    }
-    return entries;
-  })();
+  $: sessionStore = activeBoard.session
 
   function formatTimeAgo(timestamp: number | undefined, prefix: string): string {
     if (!timestamp) return "";
@@ -814,23 +758,11 @@
           {/if}
         </div>
       {/if}
-      {#if participantEntries.length > 0}
-        <div class="participants">
-          <div style="display:flex; flex-direction: row; gap: 4px;">
-            {#each participantEntries as {agentPubKey, status, lastSeen, lastActive}}
-              {@const statusText = status === "offline"
-                ? (formatTimeAgo(lastSeen, "Last seen") || "Offline")
-                : status === "idle"
-                ? (formatTimeAgo(lastActive, "Idle since") || "Idle")
-                : ""}
-              <div class="participant-avatar">
-                <Avatar {agentPubKey} showNickname={false} size={30} {statusText} />
-                <span class="status-dot" class:active={status === "active"} class:idle={status === "idle"} class:offline={status === "offline"}></span>
-              </div>
-            {/each}
-          </div>
+      <div class="participants">
+        <div style="display:flex; flex-direction: row; gap: 4px;">
+          <session-participants direction="row" showOffline={true} sessionstore={sessionStore} />
         </div>
-      {/if}
+      </div>
     </div>
   </div>
   {#if $state}
@@ -1191,7 +1123,7 @@
     width: 100%;
     top: 0;
     left: 0;
-    z-index: 200;
+    z-index: 999;
     color: white;
   }
   .left-items {
@@ -1686,28 +1618,5 @@
     overflow: auto;
     border-top: solid 1px gray;
     padding-top: 5px;
-  }
-  .participant-avatar {
-    position: relative;
-    cursor: default;
-  }
-  .status-dot {
-    position: absolute;
-    bottom: -1px;
-    right: -1px;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    border: 2px solid white;
-  }
-  .status-dot.active {
-    background-color: #00e676;
-  }
-  .status-dot.idle {
-    background-color: #ffa726;
-  }
-  .status-dot.offline {
-    background-color: transparent;
-    border-color: #999;
   }
 </style>
