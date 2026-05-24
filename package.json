@@ -33,15 +33,11 @@
     "tauri": "tauri",
     "release:happ": "HAPP_VER=$(node -p \"require('./ui/package.json').dnaVersion\") && git tag happ-v$HAPP_VER && git push origin happ-v$HAPP_VER",
     "release:runtimes": "APP_VER=$(node -p \"require('./ui/package.json').version\") && git tag v$APP_VER && git push origin v$APP_VER",
-    "download:happ": "HAPP_TAG=$(cat .happ-version | tr -d '[:space:]') && gh release download $HAPP_TAG -p kando.happ -D workdir --clobber",
-    "start:tauri:release": "AGENTS=2 BOOTSTRAP_PORT=$(port) SIGNAL_PORT=$BOOTSTRAP_PORT npm run network:tauri:release",
-    "network:tauri:release": "hc s clean && npm run download:happ && INTERNAL_IP=$(internal-ip --ipv4) concurrently -k \"npm run local-services\" \"UI_PORT=1420 npm run -w ui start\" \"npm run launch:tauri\"",
-    "weave-hash": "APP_VER=$(node -p \"require('./ui/package.json').version\") && weave hash-webhapp $APP_VER ./workdir/kando.webhapp",
-    "weave-hash:release": "APP_VER=$(node -p \"require('./ui/package.json').version\") && gh release download v$APP_VER -p kando.webhapp -p kando.happ -D workdir --clobber && weave hash-webhapp $APP_VER ./workdir/kando.webhapp"
+    "weave-hash": "APP_VER=$(node -p \"require('./ui/package.json').version\") && weave hash-webhapp $APP_VER ./workdir/kando.webhapp"
   },
   "devDependencies": {
     "@holochain-playground/cli": "^0.300.1",
-    "@holochain/hc-spin": "^0.600.3-rc.0",
+    "@holochain/hc-spin": "^0.601.3",
     "@rollup/plugin-typescript": "^8.0.0",
     "@tauri-apps/cli": "^2.0.0-beta.22",
     "@theweave/cli": "0.15.16",
@@ -63,7 +59,7 @@
     "npm": ">=7.0.0"
   },
   "dependencies": {
-    "@holochain-syn/core": "^0.601.0",
+    "@holochain-syn/core": "^0.601.3",
     "update": "^0.7.4"
   }
 }
