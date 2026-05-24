@@ -181,8 +181,8 @@
     createCardDialog.open();
   };
 
-  const createCard = (_groupId: uuidv1, props: any) => {
-    addCard(creatingInColumn, props);
+  const createCard = (_groupId: uuidv1, props: any, checklists: Checklists = {}) => {
+    addCard(creatingInColumn, props, checklists);
     creatingInColumn = undefined;
   };
 
@@ -205,14 +205,14 @@
     //cardDetailsDialog.open(id)
   };
 
-  const addCard = (column: uuidv1, props: CardProps) => {
+  const addCard = (column: uuidv1, props: CardProps, checklists: Checklists = {}) => {
     if (column === undefined) {
       column = 0;
     }
     const card: Card = {
       id: uuidv1(),
       comments: {},
-      checklists: {},
+      checklists,
       creator: store.myAgentPubKeyB64,
       props,
     };
