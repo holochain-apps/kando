@@ -886,6 +886,9 @@
             </sl-dialog>
 
             <div class="cards">
+              <div class="add-card" on:click={newCard(columnId)}>
+                <span class="add-icon">+</span><span>Add Card</span>
+              </div>
               {#each sorted($state.grouping[columnId], sortCards) as { id: cardId, comments, props, checklists }, i}
                 {#if (!filterOption || props.labels.includes(filterOption)) && (filterAgents.length === 0 || filterAgents.some((a) => a === "__unassigned__" ? !props.agents || props.agents.length === 0 : props.agents && props.agents.includes(a)))}
                   {#if dragTarget == columnId && cardId != draggedItemId && dragOrder == i && (!dragWithSelf || $state.grouping[columnId][dragOrder - 1] != draggedItemId)}
@@ -995,9 +998,6 @@
               {#if dragTarget == columnId && dragOrder == $state.grouping[columnId].length}
                 <div><SvgIcon icon="faArrowRight" /></div>
               {/if}
-              <div class="add-card" on:click={newCard(columnId)}>
-                <span class="add-icon">+</span><span>Add Card</span>
-              </div>
             </div>
           </div>
         </div>

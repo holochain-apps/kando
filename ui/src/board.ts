@@ -722,7 +722,7 @@ export interface BoardState {
     _initGrouping(state)
     state.cards.push(card)
     if (state.grouping[gropuId] !== undefined) {
-      state.grouping[gropuId].push(card.id)
+      state.grouping[gropuId].unshift(card.id)
     }
     else {
       state.grouping[gropuId] = [gropuId.id]
