@@ -23,7 +23,7 @@
 
 <div class='options'>
   {#each $state.labelDefs as {type, toolTip, emoji}}
-  <div on:click={handleClick(type)} class='wrapper board-button' class:selected={option === type} title="Filter by '{emoji}'">
+  <div on:click={handleClick(type)} class='wrapper board-button' class:selected={option === type} title="Filter by {toolTip}">
     <EmojiIcon emoji="{emoji}" on:click={handleClick(type)}/>
   </div>
   {/each}

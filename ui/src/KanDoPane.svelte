@@ -5,6 +5,7 @@
   import EmojiIcon from "./EmojiIcon.svelte";
   import type { KanDoStore } from "./stores/kando";
   import LabelSelector from "./LabelSelector.svelte";
+  import AvatarFilter from "./AvatarFilter.svelte";
   import { v1 as uuidv1 } from "uuid";
   import {
     type Card,
@@ -75,9 +76,14 @@
   });
 
   $: filterOption = null;
+  let filterAgents: Array<string> = [];
 
   function setFilterOption(newOption) {
     filterOption = newOption;
+  }
+
+  function setFilterAgents(agents: Array<string>) {
+    filterAgents = agents;
   }
 
   const { getStore }: any = getContext("store");
@@ -633,6 +639,7 @@
     </div>
     <div class="filter-by">
       <LabelSelector setOption={setFilterOption} option={filterOption} />
+      <AvatarFilter setSelected={setFilterAgents} selected={filterAgents} />
     </div>
     <div class="right-items">
       <svg
@@ -879,7 +886,7 @@
 
             <div class="cards">
               {#each sorted($state.grouping[columnId], sortCards) as { id: cardId, comments, props, checklists }, i}
-                {#if !filterOption || props.labels.includes(filterOption)}
+                {#if (!filterOption || props.labels.includes(filterOption)) && (filterAgents.length === 0 || filterAgents.some((a) => a === "__unassigned__" ? !props.agents || props.agents.length === 0 : props.agents && props.agents.includes(a)))}
                   {#if dragTarget == columnId && cardId != draggedItemId && dragOrder == i && (!dragWithSelf || $state.grouping[columnId][dragOrder - 1] != draggedItemId)}
                     <div><SvgIcon icon="faArrowRight" /></div>
                   {/if}

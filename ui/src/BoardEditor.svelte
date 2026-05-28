@@ -68,7 +68,7 @@
     }
 
     const addLabelDef = () => {
-      labelDefs.push(new LabelDef(`🙂`, `description: edit-me`))
+      labelDefs.push(new LabelDef(`🙂`, ``))
       labelDefs = labelDefs
     }
     const deleteLabelDef = (index) => () => {
@@ -171,7 +171,7 @@
           <sl-button on:click={()=>{showEmojiPicker = index;emojiDialog.show()}} >
             <span style="font-size:180%">{labelDefs[index].emoji}</span>
           </sl-button>
-          <sl-input class='textarea' value={labelDefs[index].toolTip} title="label name"
+          <sl-input class='textarea' value={labelDefs[index].toolTip} title="label name" placeholder="label name"
           on:input={e=>labelDefs[index].toolTip = e.target.value}> </sl-input>
           <sl-button size="small"  on:click={deleteLabelDef(index)} >
             <SvgIcon icon=faTrash size=12px/>
