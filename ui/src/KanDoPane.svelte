@@ -393,22 +393,23 @@
     return props.labels !== undefined && props.labels.includes(type);
   };
 
-  $: sortedColumns = () => {
+  $: sortedColumns = (() => {
+    if (!$state) return [];
+    const groups = $state.groups || [];
+    const grouping = $state.grouping || {};
     if ($uiProps.showArchived[$activeHashB64]) {
-      // make sure the ungrouped group is at the end.
-      let cols = $state.groups.map((group) => [
-        group.id,
-        $state.grouping[group.id],
-      ]);
-      const idx = cols.findIndex(([id, _]) => id == UngroupedId);
-      const g = cols.splice(idx, 1);
-      return cols.concat(g);
-    } else {
-      return $state.groups
+      // make sure the ungrouped (archived) group is at the end.
+      const cols = groups
         .filter((g) => g.id != UngroupedId)
-        .map((group) => [group.id, $state.grouping[group.id]]);
+        .map((g) => [g.id, grouping[g.id] || []]);
+      cols.push([UngroupedId, grouping[UngroupedId] || []]);
+      return cols;
+    } else {
+      return groups
+        .filter((g) => g.id != UngroupedId)
+        .map((g) => [g.id, grouping[g.id] || []]);
     }
-  };
+  })();
 
   let commentText;
   let commenting = "";
@@ -809,7 +810,7 @@
         close();
       }}
     >
-      {#each sortedColumns() as [columnId, cardIds], i}
+      {#each sortedColumns as [columnId, cardIds], i}
         <div class="column-wrap">
           <div
             class="column"
