@@ -1,6 +1,6 @@
 {
   "productName": "kando",
-  "version": "0.17.3",
+  "version": "0.17.4",
   "identifier": "org.holochain.kando",
   "build": {
     "beforeBuildCommand": "npm run build -w ui",
