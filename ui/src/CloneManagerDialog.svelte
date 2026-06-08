@@ -2,10 +2,10 @@
   import { getContext } from "svelte";
   import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
   import SvgIcon from "./SvgIcon.svelte";
-  import { type CellInfoNormalized, KanDoCloneManagerStore } from "./stores/cloneManager";
+  import type { CellInfoNormalized, KanDoCloneManagerStore } from "./stores/cloneManager";
   import { CellType, type CellId } from "@holochain/client";
   import { hashEqual } from "./utils/util";
-  import { type DnaJoiningInfo } from "./utils/dnaJoiningInfo";
+  import type { DnaJoiningInfo } from "./utils/dnaJoiningInfo";
   import { get } from "svelte/store";
   import CloneManagerCreateDialog from "./CloneManagerCreateDialog.svelte";
   import CloneManagerShareDialog from "./CloneManagerShareDialog.svelte";
@@ -81,21 +81,21 @@
         <div style="width: 30px; height: 30px; margin-left: 10px"></div>
         {:else if (instance.cellInfo.type === CellType.Cloned && instance.cellInfo.value.enabled) || 
           instance.cellInfo.type === CellType.Provisioned}
-        <div class="details-button" title="Switch to this Network" on:click={activate(instance.cellId)}>
+        <div class="details-button" title="Switch to this Network" on:click={() => activate(instance.cellId)}>
           <SvgIcon icon="faToggleOff" size="16px"/>
         </div>
         {/if}
         
-        <div class="details-button" title="Share Joining Code" on:click={share(instance)}>
+        <div class="details-button" title="Share Joining Code" on:click={() => share(instance)}>
           <SvgIcon icon="faShare" size="16px"/>
         </div>
         
         {#if !isInstanceActive(instance) && instance.cellInfo.type === CellType.Cloned && instance.cellInfo.value.enabled}
-        <div class="details-button" title="Disable Network" on:click={disable(instance.cellId)}>
+        <div class="details-button" title="Disable Network" on:click={() => disable(instance.cellId)}>
           <SvgIcon icon="faStopCircle" size="16px"/>
         </div>
         {:else if instance.cellInfo.type === CellType.Cloned && instance.cellInfo.value.enabled === false}
-        <div class="details-button" title="Enable Network" on:click={enable(instance.cellId)}>
+        <div class="details-button" title="Enable Network" on:click={() => enable(instance.cellId)}>
           <SvgIcon icon="faPlayCircle" size="16px"/>
         </div>
         {:else}

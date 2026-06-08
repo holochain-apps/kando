@@ -7,6 +7,7 @@ import {
   CellType,
   type CellId,
   type ProvisionedCell,
+  type ClonedCell,
   type AppInfo,
 } from '@holochain/client';
 import { get, writable, type Writable } from "svelte/store";
@@ -68,7 +69,9 @@ export class KanDoCloneManagerStore {
         const myLocalProfileRaw = await profilesClient.getAgentProfile(this.client.myPubKey)
         const localEncodedField = (myLocalProfileRaw?.record?.entry as any)?.Present?.entry
         const myLocalProfile = localEncodedField ? decode(localEncodedField) as Profile : undefined
-        const weaveProfilesClient = weaveClient.renderInfo.profilesClient as ProfilesClient
+        // renderInfo is a union; profilesClient only exists on the 'applet-view' branch
+        const weaveRenderInfo = weaveClient.renderInfo as Extract<typeof weaveClient.renderInfo, { type: 'applet-view' }>
+        const weaveProfilesClient = weaveRenderInfo.profilesClient as ProfilesClient
         const myWeaveProfileRaw = await weaveProfilesClient.getAgentProfile(this.client.myPubKey)
         const weaveEncodedField = (myWeaveProfileRaw?.record?.entry as any)?.Present?.entry
         const myWeaveProfile = weaveEncodedField ? decode(weaveEncodedField) as Profile : undefined
@@ -199,7 +202,8 @@ export class KanDoCloneManagerStore {
       (c: CellInfo) => c.type === CellType.Cloned && c.value.enabled
     );
     if (clones.length > 0) {
-      this.activeDnaHash.set(clones[0].value.cell_id[0]);
+      const clonedValue = clones[0].value as ClonedCell;
+      this.activeDnaHash.set(clonedValue.cell_id[0]);
     } else {
       // No clones available - signal onboarding needed
       this.needsOnboarding.set(true);

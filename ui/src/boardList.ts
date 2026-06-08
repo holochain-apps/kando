@@ -64,7 +64,7 @@ export class BoardList {
 
         const board = pipe(docStore.allWorkspaces,
             workspaces => {
-                const board = new Board(docStore,  new WorkspaceStore(docStore, Array.from(workspaces.keys())[0]), this.synStore.client.client.myPubKey)
+                const board = new Board(docStore,  new WorkspaceStore(docStore, Array.from(workspaces.keys())[0] as Uint8Array), this.synStore.client.client.myPubKey)
                 if (this.weaveClient) {
                     board.workspace.tip.subscribe((tip)=>{
                         try {
@@ -136,9 +136,10 @@ export class BoardList {
         
     constructor(public profilesStore: ProfilesStore, public dnaHash:DnaHash, public synStore: SynStore, public weaveClient : WeaveClient, public notifications: Readable<{[key: string]: NotificationType}>) {
     
-        const boardHashes = asyncDerived(this.synStore.documentsByTag.get(BoardType.active),x=>Array.from(x.keys()))
+        // documentsByTag keys are typed as unknown by the syn store; they are EntryHashes
+        const boardHashes = asyncDerived(this.synStore.documentsByTag.get(BoardType.active),x=>Array.from(x.keys()) as EntryHash[])
         this.activeBoardHashes = boardHashes
-        const archivedHashes = asyncDerived(this.synStore.documentsByTag.get(BoardType.archived),x=>Array.from(x.keys()))
+        const archivedHashes = asyncDerived(this.synStore.documentsByTag.get(BoardType.archived),x=>Array.from(x.keys()) as EntryHash[])
         this.archivedBoardHashes = archivedHashes
 
         // const activeTypedHashes = asyncDerived(boardHashes, hashes=>hashes.map(hash=>{const h:TypedHash = {hash, type:BoardType.active}; return h}))

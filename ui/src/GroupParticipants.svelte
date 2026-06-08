@@ -81,9 +81,10 @@
               {:else if $agentBoards.status == "error"}
                 <div>Error loading agent boards: {$agentBoards.error} </div>
               {:else if $agentBoards.status=="complete"}
+                {@const agentBoardsValue = $agentBoards.value}
                 <div class="participant-list">
                   {#each $agents.value as agentPubKey}
-                    {@const agentBoards = $agentBoards.value.get(agentPubKey)}
+                    {@const agentBoards = agentBoardsValue.get(agentPubKey)}
                     <div class="list-item">
                         <Avatar agentPubKey={agentPubKey} size={24} namePosition="row" />
                         <div style="margin-left:10px; font-size:120%">

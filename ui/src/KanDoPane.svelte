@@ -35,7 +35,7 @@
   import hljs from "highlight.js";
   import AttachmentsList from "./AttachmentsList.svelte";
   import AttachmentsDialog from "./AttachmentsDialog.svelte";
-  import { isWeaveContext, type WAL } from "@theweave/api";
+  import type { isWeaveContext, WAL } from "@theweave/api";
   import { columnContext } from "./walContext";
   import DisableForOs from "./DisableForOs.svelte";
   import FeedElement from "./FeedElement.svelte";

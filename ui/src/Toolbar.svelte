@@ -2,7 +2,7 @@
   import Folk from "./Folk.svelte";
   import Search from './Search.svelte';
   import { getContext } from "svelte";
-  import { KanDoStore } from "./stores/kando";
+  import type { KanDoStore } from "./stores/kando";
   import SvgIcon from "./SvgIcon.svelte";
   import ExternalLink from './ExternalLink.svelte';
   

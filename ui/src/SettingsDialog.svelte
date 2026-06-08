@@ -31,6 +31,7 @@
     let defaultNickname = "";
 
     // --- Network server config (tauri only) ---
+    type NetworkConfig = { bootstrapUrl: string; relayUrl: string };
     let bootstrapUrl = "";
     let relayUrl = "";
     let networkConfigLoaded = false;
@@ -39,9 +40,9 @@
         if (!isTauriContext()) return;
         try {
             const { invoke } = await import("@tauri-apps/api/core");
-            let config = await invoke("get_user_network_config");
+            let config = await invoke<NetworkConfig | null>("get_user_network_config");
             if (!config) {
-                config = await invoke("default_user_network_config");
+                config = await invoke<NetworkConfig>("default_user_network_config");
             }
             bootstrapUrl = config.bootstrapUrl || "";
             relayUrl = config.relayUrl || "";
@@ -68,7 +69,7 @@
         if (!confirm("Reset to default servers and restart the app?")) return;
         try {
             const { invoke } = await import("@tauri-apps/api/core");
-            const defaults = await invoke("default_user_network_config");
+            const defaults = await invoke<NetworkConfig>("default_user_network_config");
             await invoke("set_user_network_config", {
                 bootstrapUrl: defaults.bootstrapUrl,
                 relayUrl: defaults.relayUrl,
@@ -116,11 +117,11 @@
         exporting = true
 
         const hashes = await toPromise(asyncDerived(store.synStore.documentsByTag.get(BoardType.active),x=>Array.from(x.keys())))
-        const docs = hashes.map(hash=>new DocumentStore<BoardState, BoardEphemeralState>(store.synStore, hash))
+        const docs = hashes.map(hash=>new DocumentStore<BoardState, BoardEphemeralState>(store.synStore, hash as Uint8Array))
         for (const docStore of docs) {
             try {
                 const workspaces = await toPromise(docStore.allWorkspaces)
-                const workspaceStore = new WorkspaceStore(docStore, Array.from(workspaces.keys())[0])
+                const workspaceStore = new WorkspaceStore(docStore, Array.from(workspaces.keys())[0] as Uint8Array)
                 boardStates.push(await toPromise(workspaceStore.latestSnapshot))
             } catch(e) {
                 console.log("Error getting snapshot for ", encodeHashToBase64(docStore.documentHash), e)

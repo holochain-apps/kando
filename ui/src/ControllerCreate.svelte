@@ -1,10 +1,10 @@
 <script lang="ts">
-    import { KanDoStore } from './stores/kando'
+    import type { KanDoStore } from './stores/kando'
     import { setContext } from 'svelte';
     import { SynStore } from '@holochain-syn/store';
     import { SynClient } from '@holochain-syn/core';
     import { Board } from './board';
-    import { type WAL } from '@theweave/api';
+    import type { WAL } from '@theweave/api';
 
     export let store: KanDoStore;
     export let view

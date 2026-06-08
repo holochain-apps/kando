@@ -52,7 +52,7 @@ export const appletServices: AppletServices = {
           const documentHash = wal.hrl[1]
           const docStore = new DocumentStore<BoardState, BoardEphemeralState> (synStore, documentHash)
           const workspaces = await toPromise(docStore.allWorkspaces)
-          const workspace = new WorkspaceStore(docStore, Array.from(workspaces.keys())[0])
+          const workspace = new WorkspaceStore(docStore, Array.from(workspaces.keys())[0] as Uint8Array)
           const latestState = await toPromise(workspace.latestState)
 
           const target = parseContext(wal.context)
@@ -92,14 +92,15 @@ export const appletServices: AppletServices = {
     ): Promise<Array<WAL>> => {
         const synClient = new SynClient(appletClient, ROLE_NAME, ZOME_NAME);
         const synStore = new SynStore(synClient, true);
-        const boardHashes = asyncDerived(synStore.documentsByTag.get(BoardType.active),x=>Array.from(x.keys()))
+        // documentsByTag keys are typed as unknown by the syn store; they are EntryHashes
+        const boardHashes = asyncDerived(synStore.documentsByTag.get(BoardType.active),x=>Array.from(x.keys()) as Uint8Array[])
             
         const boardData = new LazyHoloHashMap( documentHash => {
             const docStore = synStore.documents.get(documentHash)
     
             const workspace = pipe(docStore.allWorkspaces,
                 workspaces => {
-                    return new WorkspaceStore(docStore, Array.from(workspaces.keys())[0])
+                    return new WorkspaceStore(docStore, Array.from(workspaces.keys())[0] as Uint8Array)
                 }
             ) 
             const latestState = pipe(workspace, 

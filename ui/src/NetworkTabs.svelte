@@ -1,6 +1,6 @@
 <script lang="ts">
   import { getContext, onMount } from "svelte";
-  import { type CellInfoNormalized, KanDoCloneManagerStore } from "./stores/cloneManager";
+  import type { CellInfoNormalized, KanDoCloneManagerStore } from "./stores/cloneManager";
   import { hashEqual } from "./utils/util";
   import { get } from "svelte/store";
 

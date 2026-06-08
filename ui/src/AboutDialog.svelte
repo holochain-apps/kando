@@ -1,6 +1,6 @@
 <script lang="ts">
     import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
-    import { KanDoCloneManagerStore } from './stores/cloneManager';
+    import type { KanDoCloneManagerStore } from './stores/cloneManager';
     import { getContext } from 'svelte';
     import { encodeHashToBase64 } from '@holochain/client';
 

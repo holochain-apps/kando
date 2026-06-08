@@ -2,7 +2,7 @@
   import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
   import '@shoelace-style/shoelace/dist/components/checkbox/checkbox.js';
   import { decodeDnaJoiningInfo } from "./utils/dnaJoiningInfo";
-  import SlDialog from "@shoelace-style/shoelace/dist/components/dialog/dialog.js";
+  import type SlDialog from "@shoelace-style/shoelace/dist/components/dialog/dialog.js";
   import SvgIcon from './SvgIcon.svelte';
   import { loadDefaultProfile } from './utils/defaultProfile';
 

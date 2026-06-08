@@ -994,7 +994,7 @@ export class Board {
       initState.steward = encodeHashToBase64(synStore.client.client.myPubKey)
     }
   
-    const documentStore = await synStore.createDocument(initState,{})
+    const documentStore = await synStore.createDocument(initState as unknown as Record<string, unknown>,{})
 
     await synStore.client.tagDocument(documentStore.documentHash, BoardType.active)
 

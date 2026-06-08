@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { type AsyncReadable } from "@holochain-open-dev/stores";
-  import { EntryRecord } from "@holochain-open-dev/utils";
-  import { type Commit } from "@holochain-syn/core";
+  import type { AsyncReadable } from "@holochain-open-dev/stores";
+  import type { EntryRecord } from "@holochain-open-dev/utils";
+  import type { Commit } from "@holochain-syn/core";
   import { createEventDispatcher, getContext } from "svelte";
   import type { KanDoStore } from "./stores/kando";
   import Avatar from "./Avatar.svelte";

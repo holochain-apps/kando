@@ -1,4 +1,4 @@
-import { ProfilesClient } from '@holochain-open-dev/profiles';
+import type { ProfilesClient } from '@holochain-open-dev/profiles';
 import type { AgentPubKey } from '@holochain/client';
 
 /**
