@@ -6,6 +6,7 @@
   import type { KanDoStore } from "./stores/kando";
   import LabelSelector from "./LabelSelector.svelte";
   import AvatarFilter from "./AvatarFilter.svelte";
+  import CategoryFilter from "./CategoryFilter.svelte";
   import { v1 as uuidv1 } from "uuid";
   import {
     type Card,
@@ -78,6 +79,7 @@
 
   $: filterOption = null;
   let filterAgents: Array<string> = [];
+  let filterCategories: Array<string> = [];
 
   function setFilterOption(newOption) {
     filterOption = newOption;
@@ -86,6 +88,21 @@
   function setFilterAgents(agents: Array<string>) {
     filterAgents = agents;
   }
+
+  function setFilterCategories(categories: Array<string>) {
+    filterCategories = categories;
+  }
+
+  // A card passes the category filter if no categories are selected, or it
+  // matches any selected category (OR). "__uncategorized__" matches cards with
+  // no category set. Declared reactively so the card list re-filters when
+  // filterCategories changes.
+  $: matchesCategoryFilter = (props): boolean => {
+    if (filterCategories.length === 0) return true;
+    return filterCategories.some((c) =>
+      c === "__uncategorized__" ? !props.category : props.category === c
+    );
+  };
 
   const { getStore }: any = getContext("store");
   let store: KanDoStore = getStore();
@@ -596,6 +613,7 @@
     </div>
     <div class="filter-by">
       <LabelSelector setOption={setFilterOption} option={filterOption} />
+      <CategoryFilter setSelected={setFilterCategories} selected={filterCategories} />
       <AvatarFilter setSelected={setFilterAgents} selected={filterAgents} />
     </div>
     {:else}
@@ -702,6 +720,7 @@
     </div>
     <div class="filter-by">
       <LabelSelector setOption={setFilterOption} option={filterOption} />
+      <CategoryFilter setSelected={setFilterCategories} selected={filterCategories} />
       <AvatarFilter setSelected={setFilterAgents} selected={filterAgents} />
     </div>
     <div class="right-items">
@@ -964,7 +983,7 @@
                 <span class="add-icon">+</span><span>Add Card</span>
               </div>
               {#each sorted($state.grouping[columnId], sortCards) as { id: cardId, comments, props, checklists }, i}
-                {#if (!filterOption || props.labels.includes(filterOption)) && (filterAgents.length === 0 || filterAgents.some((a) => a === "__unassigned__" ? !props.agents || props.agents.length === 0 : props.agents && props.agents.includes(a)))}
+                {#if (!filterOption || props.labels.includes(filterOption)) && (filterAgents.length === 0 || filterAgents.some((a) => a === "__unassigned__" ? !props.agents || props.agents.length === 0 : props.agents && props.agents.includes(a))) && matchesCategoryFilter(props)}
                   {#if dragTarget == columnId && cardId != draggedItemId && dragOrder == i && (!dragWithSelf || $state.grouping[columnId][dragOrder - 1] != draggedItemId)}
                     <div><SvgIcon icon="faArrowRight" /></div>
                   {/if}
