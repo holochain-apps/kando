@@ -35,6 +35,7 @@
   import AttachmentsList from "./AttachmentsList.svelte";
   import AttachmentsDialog from "./AttachmentsDialog.svelte";
   import { isWeaveContext, type WAL } from "@theweave/api";
+  import { columnContext } from "./walContext";
   import DisableForOs from "./DisableForOs.svelte";
   import FeedElement from "./FeedElement.svelte";
   import CommitItem from "./CommitItem.svelte";
@@ -91,6 +92,9 @@
 
   export let activeBoard: Board;
   export let standAlone = false;
+  // When set, the pane renders just this one column (used for the
+  // single-column asset view); board chrome and card dragging are disabled.
+  export let singleColumnId: uuidv1 | undefined = undefined;
 
   $: uiProps = store.uiProps;
   $: sessionStore = activeBoard.session
@@ -107,6 +111,10 @@
   $: activeCard = store.boardList.activeCard;
   $: activeHashB64 = store.boardList.activeBoardHashB64;
   $: state = activeBoard.readableState();
+  $: singleColumnName =
+    singleColumnId !== undefined && $state
+      ? ($state.groups.find((g) => g.id === singleColumnId)?.name ?? "")
+      : "";
   $: items = $state ? $state.cards : undefined;
   $: sortCards = (items) => items; // no sort algorithm for now
   $: sessionStatus = activeBoard.session?.sessionStatus
@@ -397,6 +405,11 @@
     if (!$state) return [];
     const groups = $state.groups || [];
     const grouping = $state.grouping || {};
+    if (singleColumnId !== undefined) {
+      return groups
+        .filter((g) => g.id == singleColumnId)
+        .map((g) => [g.id, grouping[g.id] || []]);
+    }
     if ($uiProps.showArchived[$activeHashB64]) {
       // make sure the ungrouped (archived) group is at the end.
       const cols = groups
@@ -513,6 +526,37 @@
     store.weaveClient?.assets.assetToPocket(attachment);
   };
 
+  const columnToPocket = (columnId: uuidv1) => {
+    const attachment: WAL = {
+      hrl: [store.dnaHash, activeBoard.hash],
+      context: columnContext(columnId),
+    };
+    store.weaveClient?.assets.assetToPocket(attachment);
+  };
+
+  // Open the whole board (used by the board-name link in the single-column
+  // asset view). We open the applet's main view in the group context (passing
+  // the board WAL) rather than openAsset(), which would just open the board in
+  // the side asset panel.
+  const openBoard = async () => {
+    const boardWal: WAL = {
+      hrl: [store.dnaHash, activeBoard.hash],
+      context: "",
+    };
+    try {
+      const renderInfo = store.weaveClient?.renderInfo;
+      const appletHash =
+        renderInfo?.type === "applet-view" ? renderInfo.appletHash : undefined;
+      if (appletHash) {
+        await store.weaveClient.openAppletMain(appletHash, boardWal);
+      } else {
+        await store.weaveClient?.openAsset(boardWal);
+      }
+    } catch (e) {
+      alert(`Error opening board: ${e}`);
+    }
+  };
+
   enum RightPane {
     None,
     Feed,
@@ -534,9 +578,27 @@
   ></div>
 </div>
 
-<div class="board">
+<div class="board" class:single-column={singleColumnId !== undefined}>
   <EditBoardDialog bind:this={editBoardDialog}></EditBoardDialog>
   <div class="top-bar">
+    {#if singleColumnId !== undefined}
+    <div class="left-items">
+      <h3>
+        <span
+          class="board-link"
+          title="Open board"
+          on:click={openBoard}
+          on:keydown={(e) => { if (e.key === "Enter") openBoard(); }}
+          role="link"
+          tabindex="0"
+        >{$state.name}</span>: {singleColumnName}
+      </h3>
+    </div>
+    <div class="filter-by">
+      <LabelSelector setOption={setFilterOption} option={filterOption} />
+      <AvatarFilter setSelected={setFilterAgents} selected={filterAgents} />
+    </div>
+    {:else}
     <div class="left-items">
       {#if standAlone}
         <h2>{$state.name}</h2>
@@ -772,6 +834,7 @@
         </div>
       </div>
     </div>
+    {/if}
   </div>
   {#if $state}
     <CardEditor
@@ -822,7 +885,8 @@
             on:drop={handleDragDropColumn}
             on:dragover={handleDragOver}
           >
-            <div class="column-item column-title">
+            {#if singleColumnId === undefined}
+            <div class="column-item column-title" style="display:flex;align-items:center">
               <div style="width:100%">
                 {#if columnId === UngroupedId}
                   {UngroupedName}
@@ -845,7 +909,17 @@
                   ></ClickEdit>
                 {/if}
               </div>
+              {#if store.weaveClient && columnId !== UngroupedId}
+                <button
+                  title="Add Column to Pocket"
+                  class="attachment-button"
+                  on:click={() => columnToPocket(columnId)}
+                >
+                  <SvgIcon icon="addToPocket" size="16px" />
+                </button>
+              {/if}
             </div>
+            {/if}
 
             <sl-dialog bind:this={commentDialog}>
               <sl-textarea bind:this={commentText}></sl-textarea>
@@ -1002,6 +1076,7 @@
           </div>
         </div>
       {/each}
+      {#if singleColumnId === undefined}
       <div class:hidden={addingColumn} class="column-wrap">
         <div class="column">
           <div
@@ -1066,6 +1141,7 @@
           </div>
         </div>
       </div>
+      {/if}
     </div>
   {/if}
   <div class="bottom-fade"></div>
@@ -1274,6 +1350,15 @@
     padding-right: 10px;
   }
 
+  .board-link {
+    color: #3498db;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+  .board-link:hover {
+    text-decoration: none;
+  }
+
   .bottom-fade {
     position: fixed;
     bottom: 0;
@@ -1402,6 +1487,35 @@
   .first-column {
     margin-left: 0px !important;
   }
+
+  /* Single-column asset view: one column fills the width and height with no
+     empty footer. */
+  .board.single-column {
+    max-height: 100vh;
+    height: 100vh;
+  }
+  .board.single-column .columns {
+    flex: 1 1 auto;
+    min-height: 0;
+    padding: 0 15px 10px 15px;
+  }
+  .board.single-column .column-wrap,
+  .board.single-column .column {
+    flex: 1 1 auto;
+    width: 100%;
+    max-height: none;
+    margin: 0;
+  }
+  .board.single-column .cards {
+    flex: 1 1 auto;
+    height: auto;
+    min-height: 0;
+    width: 100%;
+  }
+  .board.single-column .bottom-fade {
+    display: none;
+  }
+
   .cards {
     display: flex;
     flex-direction: column;

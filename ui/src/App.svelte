@@ -3,6 +3,7 @@
   import ControllerCreate from "./ControllerCreate.svelte";
   import ControllerBoard from "./ControllerBoard.svelte";
   import ControllerCard from "./ControllerCard.svelte";
+  import ControllerColumn from "./ControllerColumn.svelte";
   import ControllerBlockActiveBoards from "./ControllerBlockActiveBoards.svelte";
   import {
     AppWebsocket,
@@ -23,9 +24,11 @@
   import "@holochain-open-dev/profiles/dist/elements/create-profile.js";
   import KDLogoIcon from "./icons/KDLogoIcon.svelte";
   import { appletServices } from "./we";
+  import { parseContext } from "./walContext";
   import { USING_FEEDBACK } from "./stores/kando";
   import { KanDoCloneManagerStore } from "./stores/cloneManager";
   import { setContext } from "svelte";
+  import { get } from "svelte/store";
   import NetworkOnboarding from "./NetworkOnboarding.svelte";
   import { saveDefaultProfile } from "./utils/defaultProfile";
 
@@ -56,6 +59,7 @@
 
   let renderType = RenderType.App;
   let wal: WAL;
+  let mainViewWal: WAL | undefined;
 
   let initializationError
 
@@ -103,7 +107,10 @@
           case "applet-view":
             switch (weaveClient.renderInfo.view.type) {
               case "main":
-                // here comes your rendering logic for the main view
+                // here comes your rendering logic for the main view.
+                // If a WAL was passed (e.g. via openAppletMain from a board
+                // link), remember it so we can open that board once loaded.
+                mainViewWal = weaveClient.renderInfo.view.wal;
                 break;
               case "block":
                 switch (weaveClient.renderInfo.view.block) {
@@ -204,6 +211,12 @@
       }
 
       await kandoCloneManagerStore.activeStore.load();
+      // If we were opened into the main view with a board WAL (e.g. via the
+      // board-name link in a column asset), navigate to that board.
+      if (mainViewWal) {
+        const activeStore = get(kandoCloneManagerStore.activeStore);
+        activeStore?.boardList.setActiveBoard(mainViewWal.hrl[1]);
+      }
       appPhase = 'ready';
       connected = true;
     }
@@ -227,6 +240,7 @@
     appPhase = 'ready';
   }
 
+  $: walTarget = parseContext(wal?.context);
   $: kandoStore = kandoCloneManagerStore?.activeStore;
   $: profilesStore = $kandoStore?.profilesStore;
   $: prof = profilesStore?.myProfile;
@@ -275,15 +289,21 @@
       {:else if renderType == RenderType.App}
         <Controller store={$kandoStore}
         ></Controller>
-      {:else if renderType == RenderType.Hrl && !wal.context}
+      {:else if renderType == RenderType.Hrl && walTarget.kind == "board"}
         <ControllerBoard
           board={wal.hrl[1]}
           store={$kandoStore}
         ></ControllerBoard>
-      {:else if renderType == RenderType.Hrl && wal.context}
+      {:else if renderType == RenderType.Hrl && walTarget.kind == "column"}
+        <ControllerColumn
+          board={wal.hrl[1]}
+          columnId={walTarget.id}
+          store={$kandoStore}
+        ></ControllerColumn>
+      {:else if renderType == RenderType.Hrl && walTarget.kind == "card"}
         <ControllerCard
           board={wal.hrl[1]}
-          cardId={wal.context}
+          cardId={walTarget.id}
           store={$kandoStore}
         ></ControllerCard>
       {:else if renderType == RenderType.BlockActiveBoards}
