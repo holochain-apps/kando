@@ -33,6 +33,7 @@
   }
 </script>
 
+{#if $state && $state.categoryDefs.length > 0}
 <sl-dropdown class="category-filter" skidding="15" hoist>
   <div
     slot="trigger"
@@ -55,22 +56,21 @@
     >
       Not categorized
     </sl-menu-item>
-    {#if $state}
-      {#each $state.categoryDefs as { type, name, color }}
-        <sl-menu-item
-          type="checkbox"
-          value={type}
-          checked={selected.includes(type)}
-        >
-          <div class="item">
-            <span class="swatch" style="background-color: {color}"></span>
-            <span class="name">{name}</span>
-          </div>
-        </sl-menu-item>
-      {/each}
-    {/if}
+    {#each $state.categoryDefs as { type, name, color }}
+      <sl-menu-item
+        type="checkbox"
+        value={type}
+        checked={selected.includes(type)}
+      >
+        <div class="item">
+          <span class="swatch" style="background-color: {color}"></span>
+          <span class="name">{name}</span>
+        </div>
+      </sl-menu-item>
+    {/each}
   </sl-menu>
 </sl-dropdown>
+{/if}
 
 <style>
   .trigger {
