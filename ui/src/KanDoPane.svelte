@@ -583,6 +583,8 @@
   let rightPane = RightPane.None;
 
   let showCommits = {}
+  const COMMITS_PAGE_SIZE = 20
+  let commitsShown = COMMITS_PAGE_SIZE
 </script>
 
 <div class="background">
@@ -774,11 +776,14 @@
       <span 
         style="display: flex; margin-right:10px; cursor: pointer" 
         title={$sessionStatus.code == "error" ? $sessionStatus.error : ($sessionStatus.code == "syncing" ? "syncing..." : "Last save " + getTimeAgo($sessionStatus.lastSave))}
-        on:mousedown={() =>
-              (rightPane =
-                rightPane === RightPane.Commits
-                  ? RightPane.None
-                  : RightPane.Commits)}>
+        on:mousedown={() => {
+              if (rightPane === RightPane.Commits) {
+                rightPane = RightPane.None
+              } else {
+                commitsShown = COMMITS_PAGE_SIZE
+                rightPane = RightPane.Commits
+              }
+            }}>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -817,7 +822,7 @@
       {#if rightPane === RightPane.Commits}
         <div class="right-pane" class:hidden={rightPane !== RightPane.Commits}>
           <div class="right-pane-header">
-            <span><strong>Commits</strong> </span>
+            <span><strong>Commits</strong>{#if $commits.status=="complete"}&nbsp;({$commits.value.size}){/if}</span>
             <div
               class="details-button"
               title="Close"
@@ -829,8 +834,9 @@
             </div>
           </div>
           {#if $commits.status=="complete"}
+            {@const allCommitEntries = Array.from($commits.value.entries()).reverse()}
             <div class="commit-items">
-              {#each Array.from($commits.value.entries()).reverse() as [commitHash,commit]}
+              {#each allCommitEntries.slice(0, commitsShown) as [commitHash,commit]}
                 {@const commitHashB64=encodeHashToBase64(commitHash)}
                 <CommitItem showCommit={showCommits[commitHashB64]}
                 on:toggle-commit = {()=>{
@@ -843,6 +849,15 @@
                   commit={commit}>
                 </CommitItem>
               {/each}
+              {#if allCommitEntries.length > commitsShown}
+                <sl-button
+                  size="small"
+                  style="margin: 4px;"
+                  on:click={() => commitsShown += COMMITS_PAGE_SIZE}
+                >
+                  Show more ({allCommitEntries.length - commitsShown} remaining)
+                </sl-button>
+              {/if}
             </div>
           {/if}
         </div>
@@ -1742,7 +1757,15 @@
     display: flex;
     flex-direction: column;
     overflow-y: auto;
-    max-height: calc(100vh - 100px)
+    max-height: calc(100vh - 100px);
+    max-width: calc(100vw - 30px);
+  }
+  .commit-items {
+    display: flex;
+    flex-direction: column;
+    padding: 5px;
+    overflow-x: auto;
+    border-top: solid 1px gray;
   }
   .right-pane-header {
     margin: 5px;

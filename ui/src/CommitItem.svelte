@@ -31,7 +31,7 @@
 {#if $commitEntry.status == "pending"}
   ...
 {:else if $commitEntry.status == "error"}
-  err:{$commitEntry.error}
+  <div class="commit-error">err: {$commitEntry.error}</div>
 {:else if $commitEntry.status == "complete"}
   {@const entry = $commitEntry.value}
   <div
@@ -92,7 +92,15 @@
   .columns {
     display: flex;
     flex-direction: row;
+    flex-wrap: wrap;
+    gap: 4px 0;
     margin-top: 4px;
+    max-width: 380px;
+  }
+  .commit-error {
+    max-width: 380px;
+    word-break: break-word;
+    font-size: 80%;
   }
   .column {
     padding: 0px 5px;
