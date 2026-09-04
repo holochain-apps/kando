@@ -4,11 +4,11 @@
     import { setContext } from 'svelte';
     import type { EntryHash } from '@holochain/client';
     import type { SynStore } from '@holochain-syn/store';
-    import type { v1 as uuidv1 } from "uuid";
+    import type { Uuid } from "./board";
 
     export let store: KanDoStore;
     export let board : EntryHash
-    export let cardId : uuidv1
+    export let cardId : Uuid
 
     let synStore: SynStore = store.synStore
     store.boardList.setActiveBoard(board)

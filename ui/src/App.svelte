@@ -112,18 +112,10 @@
                 // link), remember it so we can open that board once loaded.
                 mainViewWal = weaveClient.renderInfo.view.wal;
                 break;
-              case "block":
-                switch (weaveClient.renderInfo.view.block) {
-                  case "active_boards":
-                    renderType = RenderType.BlockActiveBoards;
-                    break;
-                  default:
-                    throw new Error(
-                      "Unknown applet-view block type:" +
-                        weaveClient.renderInfo.view.block
-                    );
-                }
-                break;
+              // NOTE: the "block" AppletView variant was removed in @theweave/api 0.7
+              // (AppletView is now only main | asset | creatable), so RenderType
+              // .BlockActiveBoards is no longer reachable. Left in place with its
+              // component in case blocks return to Moss.
               case "asset":
                 if (!weaveClient.renderInfo.view.recordInfo) {
                   throw new Error(

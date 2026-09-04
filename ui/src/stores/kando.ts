@@ -14,7 +14,7 @@ import { SynStore,  SynClient} from '@holochain-syn/core';
 import { BoardList } from '../boardList';
 import TimeAgo from "javascript-time-ago"
 import en from 'javascript-time-ago/locale/en'
-import type { v1 as uuidv1 } from "uuid";
+import type { Uuid } from "../board";
 import { derived, get, writable, type Unsubscriber, type Writable } from "svelte/store";
 import type { ProfilesStore } from '@holochain-open-dev/profiles';
 import { UngroupedName, type BoardState } from '../board';
@@ -166,19 +166,19 @@ export class KanDoStore {
         })
     }
 
-    updateLatestComment(boardHash: EntryHash, cardId:uuidv1, timestamp:Timestamp) {
+    updateLatestComment(boardHash: EntryHash, cardId:Uuid, timestamp:Timestamp) {
         localStorage.setItem(`${SeenType.Comment}:${encodeHashToBase64(boardHash)}:${cardId}`, `${timestamp}`)
         this.setLatestComment(boardHash,cardId,timestamp)
     }
 
-    setLatestComment(boardHash: EntryHash, cardId:uuidv1, timestamp:Timestamp) {
+    setLatestComment(boardHash: EntryHash, cardId:Uuid, timestamp:Timestamp) {
         this.uiProps.update((n) => {
             n.latestComment[`${encodeHashToBase64(boardHash)}:${cardId}`] = timestamp
             return n
         })
     }
 
-    getLatestComment(boardHash: EntryHash, cardId:uuidv1) : Timestamp {
+    getLatestComment(boardHash: EntryHash, cardId:Uuid) : Timestamp {
         return get(this.uiProps).latestComment[`${encodeHashToBase64(boardHash)}:${cardId}`]
     }
 
@@ -218,7 +218,7 @@ export class KanDoStore {
         return this.client.myPubKey;
     }
 
-    getCardGroupId(cardId: uuidv1, state: BoardState) : uuidv1  {
+    getCardGroupId(cardId: Uuid, state: BoardState) : Uuid  {
         const keyValPairs = Object.entries(state.grouping)
         for (const [gId, cardIds] of keyValPairs) {
             if (cardIds.includes(cardId)) {
@@ -228,7 +228,7 @@ export class KanDoStore {
         return undefined
     }
 
-    getCardGroupName(cardId: uuidv1, state: BoardState) : string  {
+    getCardGroupName(cardId: Uuid, state: BoardState) : string  {
         const gId = this.getCardGroupId(cardId, state)
         if (gId === "_") {
             return UngroupedName

@@ -1,7 +1,7 @@
 <script lang="ts">
 
   import '@shoelace-style/shoelace/dist/components/drawer/drawer.js';
-  import type { v1 as uuidv1 } from "uuid";
+  import type { Uuid } from "./board";
   import { getContext } from 'svelte';
   import type { KanDoStore } from './stores/kando';
 
@@ -10,12 +10,12 @@
   const { getStore } :any = getContext("store");
   let store: KanDoStore = getStore();
 
-  let cardId:uuidv1 = ""
+  let cardId:Uuid = ""
 
   let dialog
   let details: CardDetails
     
-  export const open = (id: uuidv1)=>{
+  export const open = (id: Uuid)=>{
     cardId = id
     details.updateLatestComment()
     dialog.show()

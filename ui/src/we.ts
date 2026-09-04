@@ -23,15 +23,10 @@ export const appletServices: AppletServices = {
         icon_src: BOARD_ICON_SRC,
       }
     },
-    // Types of UI widgets/blocks that this Applet supports
-    blockTypes: {
-      'active_boards': {
-        label: 'Active Boards',
-        icon_src: 
-        `<svg xmlns="http://www.w3.org/2000/svg" height="16" width="16" viewBox="0 0 512 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M0 96C0 60.7 28.7 32 64 32H448c35.3 0 64 28.7 64 64V416c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V96zm64 0v64h64V96H64zm384 0H192v64H448V96zM64 224v64h64V224H64zm384 0H192v64H448V224zM64 352v64h64V352H64zm384 0H192v64H448V352z"/></svg>`,
-        view: "applet-view",
-      },      
-    },
+    // NOTE: `blockTypes` was removed from AppletServices in @theweave/api 0.7 —
+    // Moss 0.16 has no block views. The Active Boards block and its
+    // ControllerBlockActiveBoards component are therefore unreachable; they are
+    // kept in the tree in case blocks return.
     // bindAsset: async (appletClient: AppClient,
     //   srcWal: WAL, dstWal: WAL): Promise<void> => {
     //   console.log("Bind requested.  Src:", srcWal, "  Dst:", dstWal)

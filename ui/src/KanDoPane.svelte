@@ -8,6 +8,7 @@
   import AvatarFilter from "./AvatarFilter.svelte";
   import CategoryFilter from "./CategoryFilter.svelte";
   import { v1 as uuidv1 } from "uuid";
+  import type { Uuid } from "./board";
   import {
     type Card,
     Group,
@@ -111,7 +112,7 @@
   export let standAlone = false;
   // When set, the pane renders just this one column (used for the
   // single-column asset view); board chrome and card dragging are disabled.
-  export let singleColumnId: uuidv1 | undefined = undefined;
+  export let singleColumnId: Uuid | undefined = undefined;
 
   $: uiProps = store.uiProps;
   $: sessionStore = activeBoard.session
@@ -155,11 +156,11 @@
 
   $: cardDetailsId = openCard($activeCard);
 
-  let creatingInColumn: uuidv1 | undefined = undefined;
+  let creatingInColumn: Uuid | undefined = undefined;
   let createCardDialog;
   let editCardDialog;
   let cardDetailsDialog;
-  let editingCardId: uuidv1;
+  let editingCardId: Uuid;
   let columns: { [key: string]: Group } = {};
   let cardsMap: { [key: string]: Card } = {};
   $: unused = groupCards(items);
@@ -207,12 +208,12 @@
     return items;
   };
 
-  const newCard = (group: uuidv1) => () => {
+  const newCard = (group: Uuid) => () => {
     creatingInColumn = group;
     createCardDialog.open();
   };
 
-  const createCard = (_groupId: uuidv1, props: any, checklists: Checklists = {}) => {
+  const createCard = (_groupId: Uuid, props: any, checklists: Checklists = {}) => {
     addCard(creatingInColumn, props, checklists);
     creatingInColumn = undefined;
   };
@@ -226,19 +227,21 @@
     clearEdit();
   };
 
-  const editCard = (id: uuidv1, props: Object) => () => {
+  const editCard = (id: Uuid, props: Object) => () => {
     editingCardId = id;
     editCardDialog.edit(id, props);
   };
 
-  const cardDetails = (id: uuidv1) => {
+  const cardDetails = (id: Uuid) => {
     store.boardList.setActiveCard(id);
     //cardDetailsDialog.open(id)
   };
 
-  const addCard = (column: uuidv1, props: CardProps, checklists: Checklists = {}) => {
+  const addCard = (column: Uuid, props: CardProps, checklists: Checklists = {}) => {
     if (column === undefined) {
-      column = 0;
+      // FIXME (pre-existing defect, surfaced by typing ids as `Uuid`): the fallback
+      // is the number 0, not a group id. Preserved verbatim; behaviour unchanged.
+      column = 0 as unknown as Uuid;
     }
     const card: Card = {
       id: uuidv1(),
@@ -252,7 +255,7 @@
     ]);
   };
 
-  const addComment = (id: uuidv1, text: string) => {
+  const addComment = (id: Uuid, text: string) => {
     const comment: Comment = {
       id: uuidv1(),
       text,
@@ -262,18 +265,18 @@
 
     activeBoard.requestChanges([{ type: "add-card-comment", id, comment }]);
   };
-  const updateComment = (id: uuidv1, commentId: uuidv1, text: string) => {
+  const updateComment = (id: Uuid, commentId: Uuid, text: string) => {
     activeBoard.requestChanges([
       { type: "update-card-comment", id, commentId, text },
     ]);
   };
-  const deleteComment = (id: uuidv1, commentId: uuidv1) => {
+  const deleteComment = (id: Uuid, commentId: Uuid) => {
     activeBoard.requestChanges([
       { type: "delete-card-comment", id, commentId },
     ]);
   };
 
-  const updateCard = (_groupId: uuidv1, props: CardProps) => {
+  const updateCard = (_groupId: Uuid, props: CardProps) => {
     const card = items.find((card) => card.id === editingCardId);
     if (!card) {
       console.error("Failed to find item with id", editingCardId);
@@ -293,7 +296,7 @@
     clearEdit();
   };
 
-  const deleteCard = (id: uuidv1) => {
+  const deleteCard = (id: Uuid) => {
     activeBoard.requestChanges([{ type: "delete-card", id }]);
     clearEdit();
   };
@@ -418,26 +421,28 @@
     return props.labels !== undefined && props.labels.includes(type);
   };
 
-  $: sortedColumns = (() => {
+  // The IIFE returns array literals, which TS widens to `(Uuid | Uuid[])[]` instead
+  // of a tuple; annotating the result is a pure type fix, no behaviour change.
+  $: sortedColumns = ((): Array<[Uuid, Uuid[]]> => {
     if (!$state) return [];
     const groups = $state.groups || [];
     const grouping = $state.grouping || {};
     if (singleColumnId !== undefined) {
       return groups
         .filter((g) => g.id == singleColumnId)
-        .map((g) => [g.id, grouping[g.id] || []]);
+        .map((g): [Uuid, Uuid[]] => [g.id, grouping[g.id] || []]);
     }
     if ($uiProps.showArchived[$activeHashB64]) {
       // make sure the ungrouped (archived) group is at the end.
       const cols = groups
         .filter((g) => g.id != UngroupedId)
-        .map((g) => [g.id, grouping[g.id] || []]);
+        .map((g): [Uuid, Uuid[]] => [g.id, grouping[g.id] || []]);
       cols.push([UngroupedId, grouping[UngroupedId] || []]);
       return cols;
     } else {
       return groups
         .filter((g) => g.id != UngroupedId)
-        .map((g) => [g.id, grouping[g.id] || []]);
+        .map((g): [Uuid, Uuid[]] => [g.id, grouping[g.id] || []]);
     }
   })();
 
@@ -445,14 +450,14 @@
   let commenting = "";
   let commentingCardId = "";
   let commentDialog;
-  const newComment = (cardId: uuidv1) => {
+  const newComment = (cardId: Uuid) => {
     commentingCardId = cardId;
     commentDialog.label = "New Comment";
     commentText.value = "";
     commenting = "new";
     commentDialog.show();
   };
-  const editComment = (cardId: uuidv1, comment: Comment) => {
+  const editComment = (cardId: Uuid, comment: Comment) => {
     commentingCardId = cardId;
     commentDialog.label = "Edit Comment";
     commenting = comment.id;
@@ -543,7 +548,7 @@
     store.weaveClient?.assets.assetToPocket(attachment);
   };
 
-  const columnToPocket = (columnId: uuidv1) => {
+  const columnToPocket = (columnId: Uuid) => {
     const attachment: WAL = {
       hrl: [store.dnaHash, activeBoard.hash],
       context: columnContext(columnId),
@@ -846,7 +851,8 @@
                     showCommits[commitHashB64] = true
                   }
                 }}
-                  commit={commit}>
+                  commit={commit}
+                  documentStore={activeBoard.document}>
                 </CommitItem>
               {/each}
               {#if allCommitEntries.length > commitsShown}

@@ -8,15 +8,25 @@ import type { WALUrl } from "./utils/util";
 import { NotificationType } from "./stores/kando";
 import { isWeaveContext } from "@theweave/api";
 
+/** The id type used throughout the board state: a uuid string, as returned by
+ *  `uuidv1()`. Until the 0.7 upgrade the code wrote the *value* `uuidv1` in
+ *  type position; that only ever typechecked because uuid@10 ships no
+ *  declarations reachable under node10 module resolution, so "uuid" was an
+ *  implicit-`any` module. Bumping tryorama to 0.20 hoists uuid@14 (which does
+ *  ship reachable declarations) to the workspace root, and every one of those
+ *  type positions becomes an error. `Uuid` is the honest spelling; it is
+ *  erased identically. */
+export type Uuid = string;
+
 export class LabelDef {
-    type: uuidv1
+    type: Uuid
     constructor(public emoji: string, public toolTip: string){
         this.type = uuidv1()
     }
 }
 
 export class CategoryDef {
-  type: uuidv1
+  type: Uuid
   constructor(public name: string, public color: string){
       this.type = uuidv1()
   }
@@ -25,15 +35,15 @@ export class CategoryDef {
 export type CardProps = {
   title: string,
   description: string,
-  category: uuidv1,
+  category: Uuid,
   agents: Array<EntryHashB64>,
-  labels: Array<uuidv1>,
+  labels: Array<Uuid>,
   attachments: Array<WALUrl>
 }
 export const DEFAULT_PROPS = {title:"", description:"", category: "", agents:[], labels:[], attachments:[]}
 
 export type Comment = {
-  id: uuidv1;
+  id: Uuid;
   agent: AgentPubKeyB64,
   text: string,
   timestamp: Timestamp
@@ -45,7 +55,7 @@ export type ChecklistItem = {
 }
 
 export type Checklist = {
-  id: uuidv1;
+  id: Uuid;
   timestamp: Timestamp
   order: number,
   title: string,
@@ -57,7 +67,7 @@ export type Comments = {[key: string]: Comment}
 
 
 export type Card = {
-    id: uuidv1;
+    id: Uuid;
     props: CardProps;
     comments: Comments
     checklists: Checklists
@@ -67,7 +77,7 @@ export type Card = {
 export const UngroupedName = "Archived"
 export const UngroupedId = "_"
 export class Group {
-      id: uuidv1
+      id: Uuid
       constructor(public name: string) {
           this.id =  uuidv1()
       }
@@ -172,7 +182,12 @@ export const feedItemsGroupedByCard = (state: BoardState): Array<FeedItem[]> => 
   const items = feedItems(state.feed);
   const groupedItems: Array<FeedItem[]> = []
   let cardItems = []
-  let currentCardId = 0;
+  // Typed `Uuid | number` because the sentinel initialiser is the number 0 while the
+  // ids assigned to it are uuid strings. Before the 0.7 upgrade `Uuid` was spelled
+  // `uuidv1`, which resolved to `any`, so the mismatch was invisible. Preserved
+  // exactly rather than "fixed": 0 never equals a real id, which is the behaviour
+  // this loop relies on.
+  let currentCardId: Uuid | number = 0;
   for (const i of items) {
     const [id,] = getDeltaCardData(state,i.content.delta)
 
@@ -202,7 +217,7 @@ export interface BoardState {
   status: string;
   name: string;
   groups: Group[];
-  grouping: {[key: string]: Array<uuidv1>}
+  grouping: {[key: string]: Array<Uuid>}
   cards: Card[];
   labelDefs: LabelDef[];
   categoryDefs: CategoryDef[];
@@ -227,7 +242,7 @@ export interface BoardState {
       }
     | {
         type: "add-card";
-        group: uuidv1;
+        group: Uuid;
         value: Card;
       }
     | {
@@ -256,92 +271,92 @@ export interface BoardState {
       }
     | {
         type: "set-group-order";
-        id: uuidv1;
-        order: Array<uuidv1>;
+        id: Uuid;
+        order: Array<Uuid>;
       }
     | {
         type: "update-card-group";
-        id: uuidv1;
-        group: uuidv1;
+        id: Uuid;
+        group: Uuid;
         index: undefined | number
       }
     | {
         type: "update-card-props";
-        id: uuidv1;
+        id: Uuid;
         props: CardProps;
       }
     | {
         type: "set-card-agents";
-        id: uuidv1;
+        id: Uuid;
         agents: AgentPubKeyB64[];
       }
     | {
         type: "add-card-comment";
-        id: uuidv1;
+        id: Uuid;
         comment: Comment;
       }
     | {
         type: "update-card-comment";
-        id: uuidv1;
-        commentId: uuidv1;
+        id: Uuid;
+        commentId: Uuid;
         text: string;
       }
     | {
         type: "delete-card-comment";
-        id: uuidv1;
-        commentId: uuidv1;
+        id: Uuid;
+        commentId: Uuid;
       }
       | {
         type: "add-card-checklist";
-        id: uuidv1;
+        id: Uuid;
         checklist: Checklist;
       }
     | {
         type: "update-card-checklist";
-        id: uuidv1;
-        checklistId: uuidv1;
+        id: Uuid;
+        checklistId: Uuid;
         title: string;
         items: Array<ChecklistItem>;
         order: number;
       }
     | {
         type: "add-checklist-item";
-        id: uuidv1;
-        checklistId: uuidv1;
+        id: Uuid;
+        checklistId: Uuid;
         item: ChecklistItem;
       }
     | {
         type: "delete-checklist-item";
-        id: uuidv1;
-        checklistId: uuidv1;
+        id: Uuid;
+        checklistId: Uuid;
         itemId: number;
       }
     | {
         type: "set-checklist-item-state";
-        id: uuidv1;
-        checklistId: uuidv1;
+        id: Uuid;
+        checklistId: Uuid;
         itemId: number;
         state: boolean;
       }
     | {
         type: "convert-checklist-item";
-        id: uuidv1;
-        checklistId: uuidv1;
+        id: Uuid;
+        checklistId: Uuid;
         itemId: number;
         card: Card;
-        groupId: uuidv1;
+        groupId: Uuid;
       }
     | {
         type: "delete-card-checklist";
-        id: uuidv1;
-        checklistId: uuidv1;
+        id: Uuid;
+        checklistId: Uuid;
       }
     | {
         type: "delete-card";
         id: string;
       };
 
-  export const _getCard = (state: BoardState, cardId: uuidv1) : [Card, number] |undefined => {
+  export const _getCard = (state: BoardState, cardId: Uuid) : [Card, number] |undefined => {
     const index = state.cards.findIndex((card) => card.id === cardId)
     if (index >=0) {
       return [state.cards[index], index]
@@ -349,7 +364,7 @@ export interface BoardState {
     return undefined
   }
 
-  export const _getGroup = (state: BoardState, groupId: uuidv1) : [Group, number]|undefined => {
+  export const _getGroup = (state: BoardState, groupId: Uuid) : [Group, number]|undefined => {
     const index = state.groups.findIndex((g) => g.id === groupId)
     if (index >=0) {
       return [state.groups[index],index]
@@ -357,7 +372,7 @@ export interface BoardState {
     return undefined
   }
 
-  const _removeCardFromGroups = (state: BoardState, cardId: uuidv1) => {
+  const _removeCardFromGroups = (state: BoardState, cardId: Uuid) => {
     _initGrouping(state)
     // remove the item from the group it's in
     Object.entries(state.grouping).forEach(([groupId, itemIds]) =>{
@@ -368,7 +383,7 @@ export interface BoardState {
       }
     })
   }
-  const _addCardToGroup = (state: BoardState, groupId: uuidv1, cardId: uuidv1, index: undefined|number) => {
+  const _addCardToGroup = (state: BoardState, groupId: Uuid, cardId: Uuid, index: undefined|number) => {
     _initGrouping(state)
     // add it to the new group
     if (state.grouping[groupId] !== undefined) {
@@ -445,7 +460,7 @@ export interface BoardState {
     return state
   }
 
-  const _getCardFromDelta = (state: BoardState, cardId: uuidv1):Card|undefined=> {
+  const _getCardFromDelta = (state: BoardState, cardId: Uuid):Card|undefined=> {
     const c = _getCard(state, cardId)
     if (c) {
       const [card,i] = c
@@ -718,14 +733,18 @@ export interface BoardState {
     return feedText
   }
 
-  const _addCard = (state: BoardState, card:Card, gropuId: uuidv1) => {
+  const _addCard = (state: BoardState, card:Card, gropuId: Uuid) => {
     _initGrouping(state)
     state.cards.push(card)
     if (state.grouping[gropuId] !== undefined) {
       state.grouping[gropuId].unshift(card.id)
     }
     else {
-      state.grouping[gropuId] = [gropuId.id]
+      // FIXME (pre-existing defect, surfaced by typing ids as `Uuid` in the 0.7
+      // upgrade): `gropuId` is a uuid string, so `.id` is always undefined and this
+      // branch seeds a brand-new group with `[undefined]` rather than `[card.id]`.
+      // Left as written on purpose — this upgrade must not change board semantics.
+      state.grouping[gropuId] = [(gropuId as any).id]
     }
   }
   

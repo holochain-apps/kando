@@ -1,7 +1,7 @@
 import { derived, get, writable, type Readable, type Writable } from "svelte/store";
 import { type EntryHash, type EntryHashB64, encodeHashToBase64, decodeHashFromBase64, type DnaHash, LazyHoloHashMap } from "@holochain/client";
 import {toPromise, type AsyncReadable, pipe, joinAsync, asyncDerived, sliceAndJoin, alwaysSubscribed} from '@holochain-open-dev/stores'
-import { SynStore, WorkspaceStore, stateFromCommit } from "@holochain-syn/core";
+import { SynStore, WorkspaceStore } from "@holochain-syn/core";
 import type { ProfilesStore } from "@holochain-open-dev/profiles";
 import { cloneDeep } from "lodash";
 import { Board, feedItems, type BoardState, deltaToFeedString, feedItemShouldNotify, MAX_FEED_ITEMS, getDeltaCardData } from "./board";
@@ -66,7 +66,11 @@ export class BoardList {
             workspaces => {
                 const board = new Board(docStore,  new WorkspaceStore(docStore, Array.from(workspaces.keys())[0] as Uint8Array), this.synStore.client.client.myPubKey)
                 if (this.weaveClient) {
-                    board.workspace.tip.subscribe((tip)=>{
+                    // syn 0.700: most commits are deltas, and stateFromCommit() only
+                    // handles snapshots (it throws otherwise). resolveCommitState()
+                    // walks back to the snapshot ancestor and replays — but it hits the
+                    // DHT, so it is async and this subscriber has to be too.
+                    board.workspace.tip.subscribe(async (tip)=>{
                         try {
                             if (tip.status=="complete" && tip.value) {
                                 const tipRecord = tip.value
@@ -75,7 +79,7 @@ export class BoardList {
                                 const seenTipB64 = localStorage.getItem(key)
 
                                 if (tipB64 != seenTipB64) {
-                                    const boardState = stateFromCommit(tipRecord.entry) as BoardState
+                                    const boardState = await docStore.resolveCommitState(tipRecord) as unknown as BoardState
                                     const feed = feedItems(boardState.feed)
                                     const me = encodeHashToBase64(this.synStore.client.client.myPubKey)
                                     const notifications = []

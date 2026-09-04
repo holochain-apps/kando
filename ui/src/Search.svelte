@@ -9,7 +9,7 @@
     import '@shoelace-style/shoelace/dist/components/menu/menu.js';
     import '@shoelace-style/shoelace/dist/components/menu-item/menu-item.js';
     import '@shoelace-style/shoelace/dist/components/menu-label/menu-label.js';
-    import type { v1 as uuidv1 } from "uuid";
+    import type { Uuid } from "./board";
     import { toPromise } from "@holochain-open-dev/stores";
     import type { BoardState, BoardStateData } from "./board";
     import type { KanDoStore } from "./stores/kando";
@@ -18,7 +18,7 @@
     type FoundCard = {
         hash: EntryHash,
         state: BoardState,
-        card: uuidv1,
+        card: Uuid,
         title: string,
     }
     let foundCards: Array<FoundCard> = []

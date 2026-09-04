@@ -1,15 +1,14 @@
 <script lang="ts">
   import type { AsyncReadable } from "@holochain-open-dev/stores";
   import type { EntryRecord } from "@holochain-open-dev/utils";
-  import type { Commit } from "@holochain-syn/core";
+  import type { Commit, DocumentStore } from "@holochain-syn/core";
   import { createEventDispatcher, getContext } from "svelte";
   import type { KanDoStore } from "./stores/kando";
   import Avatar from "./Avatar.svelte";
-  import { stateFromCommit } from "@holochain-syn/core";
   import {
     decodeHashFromBase64,
   } from "@holochain/client";
-  import { _getCard, type BoardState } from "./board";
+  import { _getCard, type BoardState, type BoardEphemeralState } from "./board";
   import { exportBoard } from "./export";
   import SvgIcon from "./SvgIcon.svelte";
   import '@shoelace-style/shoelace/dist/components/button/button.js';
@@ -21,10 +20,16 @@
   export let commit: AsyncReadable<EntryRecord<Commit>>;
   $: commitEntry = commit;
   export let showCommit = false;
+  /** syn 0.700 needs the document store to reconstruct a delta commit's state. */
+  export let documentStore: DocumentStore<BoardState, BoardEphemeralState>;
 
-  const getState = (entry: EntryRecord<Commit>): BoardState => {
-    const state = stateFromCommit(entry.entry) as BoardState
-    return state
+  // syn 0.700: Commit.state is a CommitState and most commits are deltas, which
+  // carry only the changes since their parent. stateFromCommit() handles the
+  // snapshot case only and throws on a delta; resolveCommitState() walks back to
+  // the snapshot ancestor and replays forward. It fetches from the DHT, so it is
+  // async and the template awaits it.
+  const getState = async (entry: EntryRecord<Commit>): Promise<BoardState> => {
+    return (await documentStore.resolveCommitState(entry)) as unknown as BoardState
   }
 </script>
 
@@ -39,11 +44,12 @@
     on:click={() => dispatch("toggle-commit")}
   >
     
-    <Avatar size={20} agentPubKey={entry.action.author} />
-    {store.timeAgo.format(new Date(entry.action.timestamp))}
+    <Avatar size={20} agentPubKey={entry.action.header.author} />
+    {store.timeAgo.format(new Date(entry.action.header.timestamp))}
     {#if showCommit}
-      {@const state = getState(entry)}
-
+      {#await getState(entry)}
+        <div class="commit-loading">reconstructing state...</div>
+      {:then state}
     <sl-button size="small" title="Export"
     on:click={(e) => {
       e.stopPropagation()
@@ -84,6 +90,9 @@
           </div>
         {/each}
       </div>
+      {:catch e}
+        <div class="commit-error">err: {e.message}</div>
+      {/await}
     {/if}
   </div>
 {/if}
@@ -96,6 +105,11 @@
     gap: 4px 0;
     margin-top: 4px;
     max-width: 380px;
+  }
+  .commit-loading {
+    max-width: 380px;
+    font-size: 80%;
+    opacity: 0.6;
   }
   .commit-error {
     max-width: 380px;

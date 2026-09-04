@@ -7,6 +7,7 @@
   import type { AgentPubKeyB64 } from "@holochain/client/lib/types";
   import { cloneDeep } from "lodash";
   import { v1 as uuidv1 } from "uuid";
+  import type { Uuid } from "./board";
   import { getContext } from "svelte";
   import type { KanDoStore } from "./stores/kando";
   import { encodeHashToBase64 } from "@holochain/client";
@@ -26,7 +27,7 @@
   export let title
 
   let props:CardProps = DEFAULT_PROPS
-  let cardId:uuidv1 = ""
+  let cardId:Uuid = ""
   let columnId = undefined
 
   // Checklists aren't part of CardProps; we build them up locally here and ship
@@ -41,7 +42,7 @@
     init()
   }
 
-  export const edit = (id: uuidv1, prps:CardProps, col:uuidv1)=>{
+  export const edit = (id: Uuid, prps:CardProps, col:Uuid)=>{
     cardId = id
     props = prps
     checklists = {}

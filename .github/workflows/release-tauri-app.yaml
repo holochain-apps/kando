@@ -1,8 +1,13 @@
 name: "release-tauri-app"
+# DISABLED for the Holochain 0.7 line (Ruling P2). On the 0.6 line this fired on
+# every `v*` tag — the same tags `npm run release:webhapp` now creates — but the
+# Tauri/Android build cannot work in this phase: `src-tauri` is excluded from the
+# cargo workspace, its `tauri-plugin-holochain` is still on the 0.6 line, and
+# `flake.nix` no longer provides the `androidDev` devShell this workflow invokes.
+# Leaving the tag trigger in place would fail every UI release. Restoring Tauri
+# (and this trigger) is Phase F work.
 on:
-  push:
-    tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+'
+  workflow_dispatch:
 
 permissions:
   contents: write

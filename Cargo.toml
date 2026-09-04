@@ -10,8 +10,11 @@ exclude = ["src-tauri"]
 resolver = "2"
 
 [workspace.dependencies]
-hdi = "0.7.0"
-hdk = "0.6.0"
+# Exact pins: this DNA line is frozen (see .happ-sha256 / RELEASE.md). Any hdi/hdk
+# change rebuilds the wasm and therefore changes the DNA hash, which forks the
+# network. Never widen these to a caret range, not even for 0.7.1.
+hdi = "=0.8.0"
+hdk = "=0.7.0"
 serde = "1"
 
 [workspace.dependencies.file_storage]

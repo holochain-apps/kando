@@ -1,4 +1,4 @@
-import type { v1 as uuidv1 } from "uuid";
+import type { Uuid } from "./board";
 
 // A KanDo WAL always points at a board document via its hrl; the `context`
 // field of the WAL determines which slice of that board the asset refers to:
@@ -14,10 +14,10 @@ const COLUMN_PREFIX = "group:";
 
 export type WalTarget =
   | { kind: "board" }
-  | { kind: "column"; id: uuidv1 }
-  | { kind: "card"; id: uuidv1 };
+  | { kind: "column"; id: Uuid }
+  | { kind: "card"; id: Uuid };
 
-export const columnContext = (groupId: uuidv1): string =>
+export const columnContext = (groupId: Uuid): string =>
   `${COLUMN_PREFIX}${groupId}`;
 
 export const parseContext = (context: string | undefined): WalTarget => {

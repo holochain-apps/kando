@@ -6,6 +6,7 @@
   import '@shoelace-style/shoelace/dist/components/input/input.js';
   import { cloneDeep, isEqual } from "lodash";
   import { v1 as uuidv1 } from "uuid";
+  import type { Uuid } from "./board";
   import { getContext } from 'svelte';
   import type { KanDoStore } from './stores/kando';
   import Avatar from './Avatar.svelte';
@@ -35,7 +36,7 @@
   $: selectedAvatars = cloneDeep(props.agents)
   $: allProfiles = store.profilesStore.allProfiles
 
-  export let cardId:uuidv1
+  export let cardId:Uuid
   export let showControls = true
 
   export const updateLatestComment = () => {
@@ -109,7 +110,7 @@
     requestChanges([{ type: "update-card-group", id:cardId, group:UngroupedId  }])
   }
 
-  const handleDelete = (id: uuidv1) => {
+  const handleDelete = (id: Uuid) => {
     requestChanges([{ type: "delete-card", id }]);
     close()
   };
@@ -140,21 +141,21 @@
   let commenting= ""
   let commentingCardId = ""
   let commentDialog 
-  const newComment = (cardId:uuidv1)=> {
+  const newComment = (cardId:Uuid)=> {
     commentingCardId = cardId
     commentDialog.label="New Comment"
     commentTextElem.value = ""
     commenting="new"
     commentDialog.show()
   }
-  const editComment = (cardId:uuidv1, comment: Comment) => {
+  const editComment = (cardId:Uuid, comment: Comment) => {
     commentingCardId=cardId
     commentDialog.label="Edit Comment"
     commenting=comment.id
     commentTextElem.value = comment.text
     commentDialog.show()
   }
-  const addComment = (id: uuidv1, text: string) => {
+  const addComment = (id: Uuid, text: string) => {
     const comment:Comment = {
       id: uuidv1(),
       text,
@@ -164,16 +165,16 @@
     requestChanges([{ type: "add-card-comment", id, comment}])
     updateLatestComment()
   }
-  const updateComment = (id: uuidv1, commentId:uuidv1, text: string) => {
+  const updateComment = (id: Uuid, commentId:Uuid, text: string) => {
     requestChanges([{ type: "update-card-comment", id, commentId, text}]);
     updateLatestComment()
   }
-  const deleteComment = (id: uuidv1, commentId:uuidv1) => {
+  const deleteComment = (id: Uuid, commentId:Uuid) => {
     requestChanges([{ type: "delete-card-comment", id, commentId}]);
     updateLatestComment()
   }
 
-  const addChecklist = (id: uuidv1, title: string, order: number) => {
+  const addChecklist = (id: Uuid, title: string, order: number) => {
     const checklist:Checklist = {
       id: uuidv1(),
       title,
@@ -183,7 +184,7 @@
     }
     requestChanges([{ type: "add-card-checklist", id, checklist}])
   }
-  const addChecklistWithItem = (id: uuidv1, title: string, order: number, text: string) => {
+  const addChecklistWithItem = (id: Uuid, title: string, order: number, text: string) => {
     const checklist:Checklist = {
       id: uuidv1(),
       title,
@@ -193,37 +194,37 @@
     }
     requestChanges([{ type: "add-card-checklist", id, checklist}])
   }
-  const updateChecklist = (id: uuidv1, checklistId:uuidv1, title: string, order:number, items: Array<ChecklistItem>) => {
+  const updateChecklist = (id: Uuid, checklistId:Uuid, title: string, order:number, items: Array<ChecklistItem>) => {
     requestChanges([{ type: "update-card-checklist", id, checklistId, title, order, items}]);
   }
-  const updateChecklistTitle = (id: uuidv1, checklistId:uuidv1, title: string) => {
+  const updateChecklistTitle = (id: Uuid, checklistId:Uuid, title: string) => {
     const list = card?.checklists[checklistId]
     if (list && list.title != title) {
       updateChecklist(id, checklistId, title, list.order, list.items)
     }
   }
-  const deleteChecklist = (id: uuidv1, checklistId:uuidv1) => {
+  const deleteChecklist = (id: Uuid, checklistId:Uuid) => {
     requestChanges([{ type: "delete-card-checklist", id, checklistId}]);
   }
 
-  const addChecklistItem = (id: uuidv1, checklistId:uuidv1, text: string) => {
+  const addChecklistItem = (id: Uuid, checklistId:Uuid, text: string) => {
     const item = {checked:false, text}
     const changes:BoardDelta[] = [{ type: "add-checklist-item", id, checklistId, item }]
     requestChanges(changes)
   }
 
-  const setChecklistItemStatus = (id: uuidv1, checklistId:uuidv1, idx: number, checked: boolean) => {
+  const setChecklistItemStatus = (id: Uuid, checklistId:Uuid, idx: number, checked: boolean) => {
     const changes:BoardDelta[] = [{ type: "set-checklist-item-state", id, checklistId, itemId:idx, state:checked }]
     requestChanges(changes)
 
   }
 
-  const deleteChecklistItem = (id: uuidv1, checklistId:uuidv1, idx: number) => {
+  const deleteChecklistItem = (id: Uuid, checklistId:Uuid, idx: number) => {
     const changes:BoardDelta[] = [{ type: "delete-checklist-item", id, checklistId, itemId:idx }]
     requestChanges(changes)
   }
 
-  const convertChecklistItem = (id: uuidv1, checklistId:uuidv1, idx: number) => {
+  const convertChecklistItem = (id: Uuid, checklistId:Uuid, idx: number) => {
     const list = card.checklists[checklistId]
     if (!list) return
     const groupId = store.getCardGroupId(cardId, $state)
