@@ -8,6 +8,7 @@
   #
   #   nix develop               zomes, UI and the desktop app  (npm run start:tauri)
   #   nix develop .#androidDev  the same plus Android           (npm run start:android)
+  #   nix develop .#test        zomes, UI and tests only, no runtime-tauri (CI)
   inputs = {
     holonix.url = "github:holochain/holonix?ref=main-0.7";
 
@@ -25,19 +26,32 @@
     systems = builtins.attrNames inputs.holonix.devShells;
     perSystem = { inputs', pkgs, ... }:
       let
-        # On top of runtime-tauri's shells, which already provide holochain, hc,
-        # lair-keystore, kitsune2-bootstrap-srv, Rust and binaryen (wasm-opt,
-        # used by scripts/wasm-opt-zomes.mjs).
-        kandoPackages = (with inputs'.holonix.packages; [
-          hn-introspect
-        ]) ++ (with pkgs; [
-          nodejs_24 # For UI development
-          typescript
-        ]);
+        # Everything to build the zomes, pack the hApp, run the tryorama tests and
+        # develop the UI, from holonix alone. CI's test job uses it on its own, so
+        # it must not touch runtime-tauri (a private repo the runners can't fetch).
+        testShell = pkgs.mkShell {
+          inputsFrom = [ inputs'.holonix.devShells.default ];
+          packages = (with inputs'.holonix.packages; [
+            holochain
+            bootstrap-srv
+            lair-keystore
+            hc
+            hn-introspect
+            rust # Rust with the wasm32 target, for zome builds
+          ]) ++ (with pkgs; [
+            nodejs_24 # For UI development
+            binaryen # wasm-opt, used by scripts/wasm-opt-zomes.mjs
+            typescript
+          ]);
+        };
 
-        mkKandoShell = base: prompt: pkgs.mkShell {
-          inputsFrom = [ base ];
-          packages = kandoPackages;
+        # The app shells are runtime-tauri's shells plus everything in testShell,
+        # so a tool added there reaches every shell. The Tauri shell comes first in
+        # inputsFrom so its Rust (with the Android and iOS targets) is the one on
+        # PATH; holonix's Rust is only used by testShell. The Holochain binaries
+        # are the same store paths in both, as runtime-tauri follows our holonix.
+        mkTauriShell = base: prompt: pkgs.mkShell {
+          inputsFrom = [ base testShell ];
           shellHook = ''
             export PS1='\[\033[1;34m\][${prompt}:\w]\$\[\033[0m\] '
           '';
@@ -46,10 +60,11 @@
       {
         formatter = pkgs.nixpkgs-fmt;
 
+        devShells.test = testShell;
         devShells.default =
-          mkKandoShell inputs'.runtime-tauri.devShells.tauriDev "kando";
+          mkTauriShell inputs'.runtime-tauri.devShells.tauriDev "kando";
         devShells.androidDev =
-          mkKandoShell inputs'.runtime-tauri.devShells.tauriAndroidDev "kando-android";
+          mkTauriShell inputs'.runtime-tauri.devShells.tauriAndroidDev "kando-android";
       };
   };
 }
