@@ -1,11 +1,10 @@
 name: "release-tauri-app"
-# DISABLED for the Holochain 0.7 line (Ruling P2). On the 0.6 line this fired on
-# every `v*` tag — the same tags `npm run release:webhapp` now creates — but the
-# Tauri/Android build cannot work in this phase: `src-tauri` is excluded from the
-# cargo workspace, its `tauri-plugin-holochain` is still on the 0.6 line, and
-# `flake.nix` no longer provides the `androidDev` devShell this workflow invokes.
-# Leaving the tag trigger in place would fail every UI release. Restoring Tauri
-# (and this trigger) is Phase F work.
+# Manual-dispatch only. The Tauri shell now builds against tauri-plugin-hc from
+# holochain/runtime-tauri, which is a private repository: both `nix develop` and
+# `cargo` fetch it over SSH, and these runners have no key for it. The `v*` tag
+# trigger stays off until runtime-tauri is public or this workflow is given a
+# deploy key (and the desktop job, which builds without nix, a matching
+# `git-fetch-with-cli` SSH setup).
 on:
   workflow_dispatch:
 

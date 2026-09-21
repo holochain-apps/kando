@@ -4,9 +4,10 @@
   "description": "Capability for the main window",
   "windows": ["main"],
   "permissions": [
-    "core:app:default",
+    "core:default",
     "core:window:allow-set-title",
     "os:allow-os-type",
+    "hc:default",
     {
       "identifier": "opener:allow-open-url",
       "allow": [

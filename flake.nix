@@ -1,43 +1,55 @@
 {
   description = "Flake for Holochain app development";
 
+  # holonix main-0.7 supplies the Holochain toolchain. runtime-tauri supplies the
+  # Tauri shells KanDo builds on: Rust with the wasm32 and Android targets, the
+  # holonix tools, nix-provided webkit/GTK (a host webkit mixed with the nix
+  # compiler fails to link), and for Android the SDK/NDK, JDK and cargo-ndk.
+  #
+  #   nix develop               zomes, UI and the desktop app  (npm run start:tauri)
+  #   nix develop .#androidDev  the same plus Android           (npm run start:android)
   inputs = {
     holonix.url = "github:holochain/holonix?ref=main-0.7";
+
+    runtime-tauri = {
+      # SSH while runtime-tauri is private; github:holochain/runtime-tauri once public.
+      url = "git+ssh://git@github.com/holochain/runtime-tauri";
+      inputs.holonix.follows = "holonix";
+    };
 
     nixpkgs.follows = "holonix/nixpkgs";
     flake-parts.follows = "holonix/flake-parts";
   };
 
-  # NOTE (Holochain 0.7 upgrade): the p2p-shipyard / Tauri dev shells that used to live
-  # here were pinned to `main-0.6.1` and cannot evaluate against holonix `main-0.7`.
-  # `src-tauri` is excluded from the cargo workspace and is out of scope for this phase,
-  # so the Tauri and Android shells were dropped rather than half-ported. Restoring them
-  # (together with `devShells.androidDev`) is Phase F work.
   outputs = inputs@{ flake-parts, ... }: flake-parts.lib.mkFlake { inherit inputs; } {
     systems = builtins.attrNames inputs.holonix.devShells;
-    perSystem = { inputs', pkgs, ... }: {
-      formatter = pkgs.nixpkgs-fmt;
-
-      devShells.default = pkgs.mkShell {
-        inputsFrom = [ inputs'.holonix.devShells.default ];
-
-        packages = (with inputs'.holonix.packages; [
-          holochain
-          bootstrap-srv
-          lair-keystore
-          hc
+    perSystem = { inputs', pkgs, ... }:
+      let
+        # On top of runtime-tauri's shells, which already provide holochain, hc,
+        # lair-keystore, kitsune2-bootstrap-srv, Rust and binaryen (wasm-opt,
+        # used by scripts/wasm-opt-zomes.mjs).
+        kandoPackages = (with inputs'.holonix.packages; [
           hn-introspect
-          rust # For Rust development, with the WASM target included for zome builds
         ]) ++ (with pkgs; [
           nodejs_24 # For UI development
-          binaryen # For WASM optimisation (wasm-opt, used by scripts/wasm-opt-zomes.mjs)
           typescript
         ]);
 
-        shellHook = ''
-          export PS1='\[\033[1;34m\][holonix:\w]\$\[\033[0m\] '
-        '';
+        mkKandoShell = base: prompt: pkgs.mkShell {
+          inputsFrom = [ base ];
+          packages = kandoPackages;
+          shellHook = ''
+            export PS1='\[\033[1;34m\][${prompt}:\w]\$\[\033[0m\] '
+          '';
+        };
+      in
+      {
+        formatter = pkgs.nixpkgs-fmt;
+
+        devShells.default =
+          mkKandoShell inputs'.runtime-tauri.devShells.tauriDev "kando";
+        devShells.androidDev =
+          mkKandoShell inputs'.runtime-tauri.devShells.tauriAndroidDev "kando-android";
       };
-    };
   };
 }

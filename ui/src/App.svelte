@@ -8,6 +8,7 @@
   import {
     AppWebsocket,
     AdminWebsocket,
+    isTauriHolochain,
     type AppClient,
     type AppWebsocketConnectionOptions,
   } from "@holochain/client";
@@ -79,26 +80,34 @@
       }
       let tokenResp;
       if (!isWeaveContext()) {
-        console.log("adminPort is", adminPort);
-        if (adminPort) {
-          const url = `ws://localhost:${adminPort}`;
-          console.log("connecting to admin port at:", url);
-          const adminWebsocket = await AdminWebsocket.connect({
-            url: new URL(url),
-          });
-          tokenResp = await adminWebsocket.issueAppAuthenticationToken({
-            installed_app_id: appId,
-          });
-          const x = await adminWebsocket.listApps({});
-          console.log("apps", x);
-          const cellIds = await adminWebsocket.listCellIds();
-          console.log("CELL IDS", cellIds);
-          await adminWebsocket.authorizeSigningCredentials(cellIds[0]);
+        if (isTauriHolochain()) {
+          // Direct Tauri IPC: tauri-plugin-hc injected __HC_TAURI_HOLOCHAIN__ into
+          // this webview, so connect() routes the App API and zome-call signing over
+          // Tauri IPC — no websocket url, token, admin port or signing credentials.
+          client = await AppWebsocket.connect({ defaultTimeout: 240000 });
+        } else {
+          // Browser dev (launch:browser): connect over the app websocket.
+          console.log("adminPort is", adminPort);
+          if (adminPort) {
+            const url = `ws://localhost:${adminPort}`;
+            console.log("connecting to admin port at:", url);
+            const adminWebsocket = await AdminWebsocket.connect({
+              url: new URL(url),
+            });
+            tokenResp = await adminWebsocket.issueAppAuthenticationToken({
+              installed_app_id: appId,
+            });
+            const x = await adminWebsocket.listApps({});
+            console.log("apps", x);
+            const cellIds = await adminWebsocket.listCellIds();
+            console.log("CELL IDS", cellIds);
+            await adminWebsocket.authorizeSigningCredentials(cellIds[0]);
+          }
+          console.log("appPort and Id is", appPort, appId);
+          const params: AppWebsocketConnectionOptions = { url: new URL(url), defaultTimeout: 240000 };
+          if (tokenResp) params.token = tokenResp.token;
+          client = await AppWebsocket.connect(params);
         }
-        console.log("appPort and Id is", appPort, appId);
-        const params: AppWebsocketConnectionOptions = { url: new URL(url), defaultTimeout: 240000 };
-        if (tokenResp) params.token = tokenResp.token;
-        client = await AppWebsocket.connect(params);
       } else {
         console.log("is Weave context")
         weaveClient = await WeaveClient.connect(appletServices);

@@ -8,12 +8,17 @@ Real-time colloaboration delivered by [syn](https://github.com/holochain/syn).
 
 ### Environment Setup
 
-This app supports android using p2p-shipyard.
+The desktop and Android apps are Tauri shells built on
+[tauri-plugin-hc](https://github.com/holochain/runtime-tauri), which runs a Holochain
+conductor in-process. runtime-tauri is a private repository for now, so both the nix
+flake and cargo fetch it over SSH: you need a GitHub SSH key with access to it
+(`ssh -T git@github.com` should greet you by name).
 
 To setup the android development environment:
 
 
-1. Enter the android development nix shell:
+1. Enter the android development nix shell, which adds the Android SDK/NDK, JDK and
+   cargo-ndk to the desktop shell:
 
 ```bash
 nix develop .#androidDev
@@ -104,6 +109,12 @@ Launches 1 tauri desktop instance and 1 Android device/emulator on the same loca
 
 In tauri mode, bootstrap and relay server URLs can be configured per-instance via Settings > Advanced Network Options. Changes are persisted to a `user-network-config.json` file and require an app restart to take effect.
 
+In dev mode the app points both its bootstrap server and its iroh relay at the local
+`kitsune2-bootstrap-srv` the npm scripts start, at `http://$INTERNAL_IP:$BOOTSTRAP_PORT`.
+Desktop reads those variables at run time; Android bakes them in at compile time, since
+the phone can't see the host's environment — so `npm run start:android` and
+`npm run network:android` set `INTERNAL_IP` to the machine's LAN address for every agent.
+
 - **Dev mode**: config stored per-instance at `~/.cache/kando/holochain-N/user-network-config.json`
 - **Production**: config stored at `~/.local/share/kando/user-network-config.json` (Linux), `~/Library/Application Support/kando/` (macOS), or `%APPDATA%\kando\` (Windows)
 
@@ -179,7 +190,7 @@ This repository is using these tools:
 - [@holochain/tryorama](https://www.npmjs.com/package/@holochain/tryorama): test framework.
 - [@holochain/client](https://www.npmjs.com/package/@holochain/client): client library to connect to Holochain from the UI.
 - [@holochain-playground/cli](https://www.npmjs.com/package/@holochain-playground/cli): introspection tooling to understand what's going on in the Holochain nodes.
-- [tauri-plugin-holochain](https://github.com/darksoil-studio/tauri-plugin-holochain): Tauri plugin for running Holochain in desktop and mobile apps.
+- [tauri-plugin-hc](https://github.com/holochain/runtime-tauri): Tauri plugin that runs a Holochain conductor in-process for the desktop and Android apps.
 
 
 ## License

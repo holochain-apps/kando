@@ -168,7 +168,43 @@
         "nixpkgs": [
           "holonix",
           "nixpkgs"
+        ],
+        "runtime-tauri": "runtime-tauri"
+      }
+    },
+    "runtime-tauri": {
+      "inputs": {
+        "flake-parts": [
+          "runtime-tauri",
+          "holonix",
+          "flake-parts"
+        ],
+        "holonix": [
+          "holonix"
+        ],
+        "nixpkgs": [
+          "runtime-tauri",
+          "holonix",
+          "nixpkgs"
+        ],
+        "rust-overlay": [
+          "runtime-tauri",
+          "holonix",
+          "rust-overlay"
         ]
+      },
+      "locked": {
+        "lastModified": 1789835416,
+        "narHash": "sha256-QYwdSYxYI0fP1EK9EtZi93QkH5dRAPyzz/An7v1ITgI=",
+        "ref": "refs/heads/main",
+        "rev": "b4f02b7bcf238cf5494ecd471ee94281bb411823",
+        "revCount": 606,
+        "type": "git",
+        "url": "ssh://git@github.com/holochain/runtime-tauri"
+      },
+      "original": {
+        "type": "git",
+        "url": "ssh://git@github.com/holochain/runtime-tauri"
       }
     },
     "rust-overlay": {
@@ -179,11 +215,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1785302874,
-        "narHash": "sha256-fpKEww3TJoo1ANHO2q918ei+ayOrp0YEQAO1DuBLOB4=",
+        "lastModified": 1789977098,
+        "narHash": "sha256-fKY4BedarKx4aR0+UOHk65hhDW8pxFytFkaUi0VYDYk=",
         "owner": "oxalica",
         "repo": "rust-overlay",
-        "rev": "b99d48435bc3e34309d2c7ae6f7d45e77a156c38",
+        "rev": "2776e42828203ec89511699c8dcdedec69ab98e1",
         "type": "github"
       },
       "original": {
