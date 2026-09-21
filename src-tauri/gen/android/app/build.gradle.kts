@@ -61,6 +61,12 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
+    // Tauri's generated Logger.kt reads BuildConfig.DEBUG. Android Gradle plugin 8
+    // dropped the project-wide android.defaults.buildfeatures.buildconfig flag, so
+    // it is enabled here.
+    buildFeatures {
+        buildConfig = true
+    }
 }
 
 rust {
