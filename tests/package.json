@@ -2,12 +2,13 @@
   "name": "tests",
   "private": true,
   "scripts": {
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run"
   },
   "dependencies": {
     "@msgpack/msgpack": "^2.7.0",
     "@holochain/client": "^0.21.1",
     "@holochain-open-dev/tryorama": "^0.21.0",
+    "@holochain-open-dev/utils": "^0.701.0",
     "typescript": "^5.9.3",
     "vitest": "^0.28.4"
   },
