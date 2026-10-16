@@ -15,6 +15,14 @@ and 0.6 and 0.7 agents form disjoint networks. Boards created on the 0.6 line
 0.7 agent cannot see 0.6 peers at all. Use **Settings → Import/Export Boards**
 to carry board contents over.
 
+KanDo 0.19.0 (DNA version 0.19.0) uses Holochain 0.7.1, syn 0.701.1 and
+profiles 0.702.0. It is a new network again. Holochain 0.7.1 changed the
+capability-grant format, so these zomes cannot start on a 0.7.0 conductor. The
+0.18.x line (`happ-v0.18.0`) cannot see the 0.19.0 network. KanDo 0.19.0 needs
+Moss 0.16.0-rc.1 or later. Boards from 0.18.x do not carry over. A group must
+upgrade together. To move board contents, use **Settings → Import/Export
+Boards**.
+
 ## Why the happ is frozen (never rebuilt)
 
 The zome wasm embeds the builder's absolute paths (`~/.cargo/...` and source
